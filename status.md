@@ -26,3 +26,12 @@
 - Rimozione del boilerplate di Next.js in `src/app/page.tsx`.
 - Creazione della UI minima della Homepage tramite Tailwind CSS.
 - Salvataggio Git: `Giorno 2: pulizia boilerplate e setup homepage base`.
+
+**Data:** Giorno 3
+**Fase Attuale:** Sviluppo Componenti UI statici.
+
+## Attività Completate:
+- Creazione della cartella `src/components`.
+- Sviluppo del componente base `AircraftCard.tsx` con design gamificato (tag rarità).
+- Integrazione del componente in `page.tsx` con un layout a griglia flessibile (`flex gap-6`).
+- Salvataggio Git: `Giorno 3: creato componente statico AircraftCard`.
