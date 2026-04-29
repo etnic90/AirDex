@@ -35,3 +35,17 @@
 - Sviluppo del componente base `AircraftCard.tsx` con design gamificato (tag rarità).
 - Integrazione del componente in `page.tsx` con un layout a griglia flessibile (`flex gap-6`).
 - Salvataggio Git: `Giorno 3: creato componente statico AircraftCard`.
+
+# AirDex - Status Document
+**Data:** Giorno 4
+**Fase Attuale:** Architettura Routing Multilingua.
+
+## Decisioni Prese:
+- Il nome ufficiale del progetto è "AirDex".
+- MVP focalizzato solo sulla flotta "Emirates".
+- Framework: Next.js con App Router.
+
+## Attività Completate:
+- Creazione della rotta dinamica `src/app/[lang]` per l'i18n.
+- Spostamento della Homepage per supportare `/{lang}`.
+- Salvataggio Git: `Giorno 4: setup architettura routing multilingua [lang]`.
