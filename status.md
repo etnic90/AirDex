@@ -91,3 +91,13 @@
 - Refactoring di `AircraftCard.tsx` per accettare ed esporre dati dinamici tramite React Props.
 - Aggiornamento del loop in `page.tsx` per passare l'oggetto `aircraft` estratto da Supabase.
 - Salvataggio Git: `Giorno 7: definiti tipi TypeScript e rese dinamiche le AircraftCard con le props`.
+
+**Data:** Giorno 8
+**Fase Attuale:** Programmatic SEO e Pagine di Dettaglio.
+
+## Attività Completate:
+- Popolamento DB: Inseriti 3 nuovi aerei della flotta Emirates tramite SQL.
+- Creazione rotta dinamica annidata: `src/app/[lang]/aircraft/[id]/page.tsx`.
+- Implementazione query al DB per ID tramite `supabase.from().eq('id', id).single()`.
+- Creazione Layout UI per la scheda tecnica del singolo aereo.
+- Salvataggio Git: `Giorno 8: popolato DB e creata rotta dinamica per singolo aereo (SEO base)`.
