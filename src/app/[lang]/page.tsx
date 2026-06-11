@@ -1,16 +1,17 @@
 import AircraftCard from "../../components/AircraftCard";
-import { supabase } from "../../lib/supabase"; // Importiamo la connessione appena creata
+import { supabase } from "../../lib/supabase";
+import { Aircraft } from "../../types"; // Importiamo il tipo
 
-// Rendiamo la pagina asincrona per poter aspettare i dati dal DB
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
   const resolvedParams = await params;
 
-  // CHIAMATA AL DATABASE: Selezioniamo tutti gli aerei dalla tabella 'aircrafts'
-  const { data: aircrafts, error } = await supabase
+  // Forziamo TypeScript a capire che i dati che arrivano sono un array di Aircraft
+  const { data, error } = await supabase
     .from('aircrafts')
     .select('*');
+    
+  const aircrafts = data as Aircraft[];
 
-  // Se c'è un errore (es. tabella inesistente), stampiamo un messaggio
   if (error) {
     console.error("Errore Database:", error.message);
   }
@@ -24,11 +25,10 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
       </h1>
       
       <div className="flex gap-6 flex-wrap justify-center">
-        {/* Usiamo i dati REALI dal database. 
-            Mappiamo l'array e creiamo una Card per ogni aereo trovato! */}
         {aircrafts && aircrafts.length > 0 ? (
           aircrafts.map((aircraft) => (
-            <AircraftCard key={aircraft.id} />
+            // PASSIAMO L'AEREO REALE COME PROP
+            <AircraftCard key={aircraft.id} aircraft={aircraft} />
           ))
         ) : (
           <p className="text-white">Nessun aereo trovato nel database.</p>

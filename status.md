@@ -69,3 +69,12 @@
 - Configurazione variabili d'ambiente in `.env.local`.
 - Tabella `aircrafts` creata con successo e popolata con il primo aereo (Emirates A380-800).
 - Salvataggio Git: `Giorno 5: installato supabase-js, configurato .env e creato schema DB`.
+
+**Data:** Giorno 6
+**Fase Attuale:** Connessione Backend-Frontend.
+
+## Attività Completate:
+- Creazione del file `src/lib/supabase.ts` per istanziare il client Supabase.
+- Modifica della Homepage (`page.tsx`) per eseguire la prima query Server-Side: `.from('aircrafts').select('*')`.
+- Implementazione del rendering dinamico: la UI ora genera le card in base al numero di record presenti nel DB.
+- Salvataggio Git: `Giorno 6: creato supabase client e query per leggere aerei nella homepage`.
