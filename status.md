@@ -78,3 +78,16 @@
 - Modifica della Homepage (`page.tsx`) per eseguire la prima query Server-Side: `.from('aircrafts').select('*')`.
 - Implementazione del rendering dinamico: la UI ora genera le card in base al numero di record presenti nel DB.
 - Salvataggio Git: `Giorno 6: creato supabase client e query per leggere aerei nella homepage`.
+
+**Data:** Giorno 7
+**Fase Attuale:** Componenti Dinamici e Tipizzazione dati.
+
+## Decisioni Prese:
+- Gestione Dati: Creato file centralizzato `src/types/index.ts` per l'interfaccia `Aircraft` speculare al DB.
+- UI Gamificata: Il colore del badge rarità viene calcolato dinamicamente nel componente (es. Amber per LEGENDARY).
+
+## Attività Completate:
+- Creazione del tipo `Aircraft` in TypeScript.
+- Refactoring di `AircraftCard.tsx` per accettare ed esporre dati dinamici tramite React Props.
+- Aggiornamento del loop in `page.tsx` per passare l'oggetto `aircraft` estratto da Supabase.
+- Salvataggio Git: `Giorno 7: definiti tipi TypeScript e rese dinamiche le AircraftCard con le props`.
