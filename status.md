@@ -124,3 +124,17 @@
 - Blindata la rotta `profile/page.tsx` con logica di verifica sessione Server-to-Client.
 - Test di autenticazione, reindirizzamento e persistenza sessione superato con successo tramite utente admin.
 - Salvataggio Git: `Giorno 10: bypass rate limit Supabase, fix form login e auth guard profilo completato`.
+
+**Data:** Giorno 11
+**Fase Attuale:** Restyling UI/UX (Fase 4).
+
+## Decisioni Prese:
+- Stile Visivo: Abbandonato il design basic in favore di un'estetica "Observatory Sci-Fi" (Glassmorphism, colori ardesia scuri, accenti luminosi basati sulle rarità).
+- Risoluzione Bug: Sostituiti colori custom non riconosciuti da Tailwind con la palette nativa (amber, purple, blue) per ripristinare la visibilità di Navbar e Badge.
+
+## Attività Completate:
+- Risolto errore di Hydration Mismatch eliminando il file `layout.tsx` ridondante nella root.
+- Creata `Navbar.tsx` globale con indicatori di rotta attivi.
+- Aggiornato `layout.tsx` con font combinati (Inter + JetBrains Mono) e sfondo radiale.
+- Rivoluzionato `AircraftCard.tsx` con design olografico e feedback visivi on-hover.
+- Salvataggio Git: `Giorno 11: refactoring UI globale stile sci-fi, implementazione layout e colori nativi Tailwind`.

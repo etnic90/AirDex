@@ -1,44 +1,47 @@
 import { supabase } from "../../../../lib/supabase";
-import { Aircraft } from "../../../../types";
+import { AircraftModel } from "../../../../types"; // Importa il nuovo tipo
 
-// Leggiamo sia la lingua che l'ID dell'aereo dall'URL
 export default async function AircraftPage({ params }: { params: Promise<{ lang: string, id: string }> }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
 
-  // Chiediamo a Supabase l'aereo con questo esatto ID
+  // Query: prendiamo il modello specifico E i dati del suo costruttore
   const { data, error } = await supabase
-    .from('aircrafts')
-    .select('*')
+    .from('aircraft_models')
+    .select('*, manufacturers(*)') 
     .eq('id', id)
-    .single(); // .single() dice a Supabase che ci aspettiamo un solo aereo, non una lista
+    .single();
 
-  // Se l'aereo non esiste nell'URL
   if (error || !data) {
-    return <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">Aereo non trovato</div>;
+    return <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">Aereo non trovato nel database</div>;
   }
 
-  const aircraft = data as Aircraft;
+  const aircraft = data as unknown as AircraftModel;
 
   return (
-    <main className="min-h-screen bg-slate-900 p-10 flex flex-col items-center">
-      {/* Container della pagina singola (stile "Scheda Tecnica") */}
-      <div className="w-full max-w-2xl bg-slate-800 rounded-xl p-8 shadow-2xl border border-slate-700">
-        <h1 className="text-4xl font-bold text-white mb-2">{aircraft.model_name}</h1>
-        <p className="text-blue-500 font-semibold mb-8 uppercase tracking-widest">{aircraft.airline}</p>
+    <main className="min-h-screen bg-slate-950 p-10 flex flex-col items-center">
+      <div className="w-full max-w-2xl bg-slate-900/80 backdrop-blur-md rounded-2xl p-10 shadow-2xl border border-slate-800">
+        <h1 className="text-5xl font-black text-white mb-2 tracking-tight">{aircraft.model_name}</h1>
+        <p className="text-cyan-400 font-bold mb-10 uppercase tracking-widest">
+          {aircraft.manufacturers?.name || 'Costruttore Sconosciuto'}
+        </p>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-700 p-4 rounded-lg">
-            <span className="block text-xs text-slate-400 uppercase">Codice ICAO</span>
-            <span className="text-xl font-bold text-white">{aircraft.icao_code || 'N/A'}</span>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+            <span className="block text-xs text-slate-400 uppercase tracking-wider mb-1">Tipo Velivolo</span>
+            <span className="text-xl font-bold text-white">{aircraft.type || 'N/A'}</span>
           </div>
-          <div className="bg-slate-700 p-4 rounded-lg">
-            <span className="block text-xs text-slate-400 uppercase">Passeggeri</span>
-            <span className="text-xl font-bold text-white">{aircraft.passengers}</span>
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+            <span className="block text-xs text-slate-400 uppercase tracking-wider mb-1">Capienza Max</span>
+            <span className="text-xl font-bold text-white">{aircraft.max_passengers ? `${aircraft.max_passengers} PAX` : 'N/A'}</span>
           </div>
-          <div className="bg-slate-700 p-4 rounded-lg col-span-2">
-            <span className="block text-xs text-slate-400 uppercase">Motori</span>
-            <span className="text-lg font-bold text-white">{aircraft.engines}</span>
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 col-span-2">
+            <span className="block text-xs text-slate-400 uppercase tracking-wider mb-1">Motori</span>
+            <span className="text-lg font-bold text-white">{aircraft.engines || 'N/A'}</span>
+          </div>
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 col-span-2">
+            <span className="block text-xs text-slate-400 uppercase tracking-wider mb-1">Autonomia Operativa</span>
+            <span className="text-lg font-bold text-cyan-300">{aircraft.range_km ? `${aircraft.range_km.toLocaleString()} km` : 'N/A'}</span>
           </div>
         </div>
       </div>
