@@ -101,3 +101,13 @@
 - Implementazione query al DB per ID tramite `supabase.from().eq('id', id).single()`.
 - Creazione Layout UI per la scheda tecnica del singolo aereo.
 - Salvataggio Git: `Giorno 8: popolato DB e creata rotta dinamica per singolo aereo (SEO base)`.
+
+**Data:** Giorno 9
+**Fase Attuale:** Gamification & Autenticazione (Fase 3).
+
+## Attività Completate:
+- Iniziata l'implementazione del modulo di Auth.
+- Creata la pagina `src/app/[lang]/login/page.tsx` utilizzando la direttiva `"use client"`.
+- Interfacciato il frontend con i metodi `supabase.auth.signUp` e `supabase.auth.signInWithPassword`.
+- Creato componente UI per il form di accesso e registrazione.
+- Salvataggio Git: `Giorno 9: creata pagina di login/registrazione con Supabase Auth`.
