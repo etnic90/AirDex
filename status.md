@@ -38,14 +38,19 @@
 
 # AirDex - Status Document
 **Data:** Giorno 4
-**Fase Attuale:** Architettura Routing Multilingua.
+**Fase Attuale:** Architettura Routing Multilingua e Naming.
 
 ## Decisioni Prese:
-- Il nome ufficiale del progetto è "AirDex".
-- MVP focalizzato solo sulla flotta "Emirates".
-- Framework: Next.js con App Router.
+- Nome Ufficiale: **AirDex** (unione di Air + Pokedex, professionale e immediato).
+- Architettura: Supporto i18n nativo tramite cartella dinamica `[lang]`.
+- Rendering: Implementato il pattern **Asynchronous Server Components** per gestire i parametri dell'URL (params) nelle nuove versioni di Next.js.
 
 ## Attività Completate:
-- Creazione della rotta dinamica `src/app/[lang]` per l'i18n.
-- Spostamento della Homepage per supportare `/{lang}`.
-- Salvataggio Git: `Giorno 4: setup architettura routing multilingua [lang]`.
+- Creazione della rotta dinamica `src/app/[lang]`.
+- Spostamento e refactoring di `page.tsx` per supportare la variabile di lingua.
+- Risoluzione bug del parametro vuoto tramite `async/await` su `params`.
+- Homepage ora funzionante su URL dinamici (es. `/en`, `/it`).
+- Salvataggio Git: `Giorno 4: fix rendering asincrono [lang] e naming AirDex`.
+
+## Stato del Database:
+- Non ancora implementato (Pianificato per il Giorno 5).
