@@ -53,4 +53,19 @@
 - Salvataggio Git: `Giorno 4: fix rendering asincrono [lang] e naming AirDex`.
 
 ## Stato del Database:
-- Non ancora implementato (Pianificato per il Giorno 5).
+- Password DB: Yx%Acx3&+i4ezU,
+
+**Data:** Giorno 5
+**Fase Attuale:** Data Strategy & Database Setup.
+
+## Decisioni Prese:
+- Stack DB: **Supabase (PostgreSQL)** scelto per robustezza e integrazione Next.js.
+- Sicurezza: Credenziali isolate nel file protetto `.env.local`.
+- Schema SQL: Tabella `aircrafts` inizializzata con supporto a rarità e dati tecnici.
+
+## Attività Completate:
+- Creazione progetto "AirDex" su Supabase.
+- Installazione client: `npm install @supabase/supabase-js`.
+- Configurazione variabili d'ambiente in `.env.local`.
+- Tabella `aircrafts` creata con successo e popolata con il primo aereo (Emirates A380-800).
+- Salvataggio Git: `Giorno 5: installato supabase-js, configurato .env e creato schema DB`.
