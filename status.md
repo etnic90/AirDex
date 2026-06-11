@@ -111,3 +111,16 @@
 - Interfacciato il frontend con i metodi `supabase.auth.signUp` e `supabase.auth.signInWithPassword`.
 - Creato componente UI per il form di accesso e registrazione.
 - Salvataggio Git: `Giorno 9: creata pagina di login/registrazione con Supabase Auth`.
+
+**Data:** Giorno 10
+**Fase Attuale:** Gamification & Autenticazione (Fase 3).
+
+## Decisioni Prese:
+- Gestione Rate Limit: A causa delle restrizioni del piano gratuito Supabase (Email limit/IP limit), si è optato per il bypass del signup pubblico tramite la creazione manuale dell'utente direttamente nel database (Backend).
+- UX Navigazione: Utilizzato `window.location.assign()` per l'hard redirect post-login, garantendo il caricamento corretto della sessione.
+
+## Attività Completate:
+- Corretto bug del "refresh fantasma" nel form di login implementando `type="button"` e `e.preventDefault()`.
+- Blindata la rotta `profile/page.tsx` con logica di verifica sessione Server-to-Client.
+- Test di autenticazione, reindirizzamento e persistenza sessione superato con successo tramite utente admin.
+- Salvataggio Git: `Giorno 10: bypass rate limit Supabase, fix form login e auth guard profilo completato`.
