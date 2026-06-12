@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "../../../lib/supabase";
+import { createBrowserClient } from "@supabase/ssr";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   
+  // Inizializza il client Supabase SSR specifico per il client.
+  // Questo forzerà il salvataggio della sessione nei COOKIE del browser!
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   const handleSignUp = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setMessage("Caricamento...");
@@ -24,9 +31,11 @@ export default function LoginPage() {
     if (error) {
       setMessage("Errore: " + error.message);
     } else {
-      setMessage("Accesso effettuato! Reindirizzamento...");
-      // HARD REDIRECT: Forza il browser verso la VERA pagina profilo
-      window.location.assign("/it/profile");
+      setMessage("Accesso effettuato! Decriptazione...");
+      // Ricava la lingua corrente dall'URL
+      const lang = window.location.pathname.split('/')[1] || 'en';
+      // HARD REDIRECT: Forza il browser verso l'Admin (ora il cookie c'è!)
+      window.location.assign(`/${lang}/admin`);
     }
   };
 

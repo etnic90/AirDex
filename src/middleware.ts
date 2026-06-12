@@ -19,18 +19,14 @@ export async function middleware(request: NextRequest) {
         set(name: string, value: string, options: CookieOptions) {
           request.cookies.set({ name, value, ...options });
           response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+            request: { headers: request.headers },
           });
           response.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
           request.cookies.set({ name, value: '', ...options });
           response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+            request: { headers: request.headers },
           });
           response.cookies.set({ name, value: '', ...options });
         },
@@ -41,14 +37,24 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
 
   // Protezione rotte Admin
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  if (request.nextUrl.pathname.includes('/admin')) {
+    // 1. Controlla se l'utente è loggato
     if (!session) {
-      // Reindirizza al login se non autenticato
+      console.log("DEBUG: Nessuna sessione trovata, reindirizzamento al login.");
       return NextResponse.redirect(new URL('/en/login', request.url));
     }
+
+    // 2. Controllo specifico Admin
+    const userEmail = session.user.email;
+    const adminEmail = 'mirkogalantucci@gmail.com';
+    const isAdmin = userEmail === adminEmail;
     
-    // NOTA: Qui aggiungeremo il controllo del ruolo 'admin' 
-    // appena avremo la tabella profili pronta.
+    console.log(`DEBUG: Tentativo accesso admin. User: ${userEmail} | IsAdmin: ${isAdmin}`);
+
+    if (!isAdmin) {
+      console.log("DEBUG: Accesso negato, reindirizzamento alla home.");
+      return NextResponse.redirect(new URL('/en', request.url));
+    }
   }
 
   return response;
