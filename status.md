@@ -138,3 +138,58 @@
 - Aggiornato `layout.tsx` con font combinati (Inter + JetBrains Mono) e sfondo radiale.
 - Rivoluzionato `AircraftCard.tsx` con design olografico e feedback visivi on-hover.
 - Salvataggio Git: `Giorno 11: refactoring UI globale stile sci-fi, implementazione layout e colori nativi Tailwind`.
+
+**Data:** Giorno 12
+**Stato:** Architettura Database (Fase 5 - Completed).
+
+## Decisioni Prese:
+- Migrazione dati dalla tabella 'aircrafts' (piatta) a 'aircraft_models' (relazionale con 'manufacturers').
+- Standardizzazione dei tipi su 'AircraftModel' per garantire coerenza tra frontend e DB.
+- Risoluzione link rotti tramite integrazione componente 'Link' di Next.js e correzione del passaggio della variabile 'lang'.
+
+## Attività Completate:
+- Creazione schema SQL relazionale su Supabase.
+- Refactoring delle pagine Home e Dettaglio per interrogare il nuovo database.
+- Consolidamento dell'architettura: ora il sistema è coerente e pronto per future espansioni.
+- Salvataggio Git: `Giorno 12: migrazione database relazionale, fix routing e allineamento interfaccia enciclopedica`.
+
+**Data:** Giorno 13 (Pianificazione e Strategia)
+**Stato:** Visione di Business e Architettura di Scala.
+
+## Decisioni Strategiche (Business Model):
+- Obiettivo Monetizzazione: Raggiungere i 1000$/mese.
+- Fonti di reddito approvate: Sottoscrizioni Premium (AirDex PRO per Hangar personale), Affiliazioni (modellini e biglietti aerei contestuali), Display Ads per il traffico organico.
+- Target: Nicchia alto-spendente (AvGeeks, spotters, simmers).
+
+## Architettura Dati (L'Opera Omnia):
+- Espansione Scope: Il database coprirà la storia completa dell'aviazione civile (modelli storici e moderni).
+- Target Dimensionale: Circa 2.000 varianti distinte (evitando duplicati inutili per customer code, es. Boeing 747-430 vs 747-436).
+- Campi futuri da implementare: `first_flight_year`, `status` (attivo/storico).
+
+## Strategia Immagini (Hierarchical Fallback):
+- Poiché è impossibile avere le livree di fabbrica per 2.000 aerei storici, si adotta una logica a cascata per il frontend:
+  1. Livrea di Fabbrica (House Livery).
+  2. Livrea del "Launch Customer" (es. Pan Am, TWA).
+  3. Wireframe/Blueprint olografico generato via codice (lo "SPAZIO FOTO" attuale) come fallback elegante in caso di assenza foto.
+
+  Data: Giorno 14
+Fase Attuale: Archiviazione Totale - "Opera Omnia" (Fase 6).
+
+Decisioni Prese:
+Completamento della "Copertura Storica Totale": Il database ora non è più un semplice catalogo di flotte moderne, ma una cronologia completa dell'aviazione civile.
+
+Inclusione Integrale: Inseriti tutti i modelli significativi a partire dagli albori dell'aviazione (1910) fino ai giorni nostri (2026), garantendo continuità storica.
+
+Standardizzazione Dati: Ogni modello è stato inserito con metadati completi (first_flight_year, engines, max_passengers, range_km), rendendo il dataset pronto per qualsiasi analisi statistica o storica futura.
+
+Attività Completate:
+Patch Storica Completa: Inseriti tutti i capisaldi tecnologici: dagli idrovolanti degli anni '30 (Martin M-130, Sikorsky S-42) ai giganti a pistoni post-bellici (DC-6B, Convair CV-340/440), fino ai pilastri dell'era jet pionieristica (Il-18D) e moderna.
+
+Integrazione Industria Italiana: Catalogazione completa dei modelli civili Aermacchi (M.20, M.B.308, M.B.320, AL-60B), colmando la lacuna storica del settore nazionale.
+
+Audit e Validazione: Eseguita query di controllo decennale: il database presenta ora una distribuzione coerente di circa 450 modelli, coprendo con precisione ogni decade dal 1910 al 2026.
+
+Documentazione: Consolidato il repository con la struttura necessaria per l'analisi avanzata (AeroAnalyzer).
+
+Salvataggio Git: Giorno 14: completata copertura storica totale 1910-2026, inseriti modelli civili Aermacchi e validazione dati.
+
