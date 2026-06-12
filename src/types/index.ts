@@ -1,3 +1,6 @@
+export type RarityTier = 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+export type AircraftStatus = 'ACTIVE' | 'HISTORIC';
+
 export interface Manufacturer {
   id: string;
   name: string;
@@ -13,6 +16,10 @@ export interface AircraftModel {
   engines: string;
   max_passengers: number;
   range_km: number;
+  first_flight_year?: number;
+  status?: AircraftStatus;
+  rarity?: RarityTier;
   house_livery_url?: string;
+  launch_customer_livery_url?: string;
   manufacturers?: Manufacturer; 
 }

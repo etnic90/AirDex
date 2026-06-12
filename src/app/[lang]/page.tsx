@@ -6,10 +6,12 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const resolvedParams = await params;
   const lang = resolvedParams.lang;
 
-  // IMPORTANTE: Leggiamo dalla NUOVA tabella aircraft_models
+  // IMPORTANTE: Leggiamo dalla tabella aircraft_models
+  // Aggiunto ordinamento alfabetico: essenziale per gestire i 2.000 record futuri
   const { data, error } = await supabase
     .from('aircraft_models')
-    .select('*, manufacturers(*)');
+    .select('*, manufacturers(*)')
+    .order('model_name', { ascending: true });
 
   const aircrafts = data as unknown as AircraftModel[];
 
@@ -23,12 +25,12 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             <AircraftCard 
               key={aircraft.id} 
               aircraft={aircraft} 
-              lang={lang} // Passiamo la lingua correttamente
+              lang={lang}
             />
           ))
         ) : (
           <p className="text-cyan-400 font-mono animate-pulse tracking-widest mt-24">
-            &gt; DATABASE VUOTO. INSERISCI DATI IN AIRCRAFT_MODELS.
+            &gt; CONNESSIONE DB STABILITA. IN ATTESA DI DATI SUI VELIVOLI...
           </p>
         )}
       </div>
