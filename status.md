@@ -176,3 +176,8 @@
 - Implementato `src/middleware.ts` con logica di protezione (Auth Guard).
 - Configurato matcher per escludere assets statici e ottimizzare le performance.
 - Salvataggio Git: `Giorno 15: setup middleware e protezione rotte admin`.
+
+**Data:** Giorno 15 (Completamento)
+- Risolto disallineamento tra localStorage e cookie utilizzando `createBrowserClient` di `@supabase/ssr` in `login/page.tsx`.
+- L'accesso all'area `/admin` è ora completamente protetto e funzionante per l'utente amministratore designato.
+- Salvataggio Git: `Giorno 15: risolto disallineamento auth client-server usando ssr e completato setup admin guard`.
