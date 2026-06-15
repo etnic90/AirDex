@@ -1,6 +1,7 @@
 import { supabase } from "../../lib/supabase";
 import AircraftCard from "../../components/AircraftCard";
 import { AircraftModel } from "../../types";
+import SearchAutocomplete from "../../components/SearchAutocomplete";
 import Link from "next/link";
 
 export const revalidate = 60; // Sincronizzazione automatica cache DB ogni 60 secondi
@@ -9,13 +10,14 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const resolvedParams = await params;
   const lang = resolvedParams.lang;
 
-  // 1. Estrazione parallela ad altissime prestazioni dal Cockpit di Supabase
+  // 1. Estrazione parallela dal Cockpit di Supabase (Ora con 6 query simultanee)
   const [
     { data: recentAircrafts },
     { data: featuredAircraft },
     { count: totalCount },
     { count: activeCount },
-    { count: legendaryCount }
+    { count: legendaryCount },
+    { data: searchIndexData } // <-- 6a Query: Recupera i dati minimi per l'indice di ricerca
   ] = await Promise.all([
     // Griglia principale: Ultime aggiunte
     supabase
@@ -33,11 +35,20 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     // Statistiche generali per i contatori di telemetria
     supabase.from("aircraft_models").select("*", { count: "exact", head: true }),
     supabase.from("aircraft_models").select("*", { count: "exact", head: true }).eq("status", "ACTIVE"),
-    supabase.from("aircraft_models").select("*", { count: "exact", head: true }).eq("rarity", "LEGENDARY")
+    supabase.from("aircraft_models").select("*", { count: "exact", head: true }).eq("rarity", "LEGENDARY"),
+    // Index di ricerca: Scarica solo i dati necessari a fare il filtro istantaneo lato client
+    supabase.from("aircraft_models").select("id, model_name, manufacturers(name)")
   ]);
 
   const flottaRecente = (recentAircrafts as unknown as AircraftModel[]) || [];
   const aereoDelGiorno = featuredAircraft as unknown as AircraftModel | null;
+
+  // Formattiamo i dati della sesta query in un array pulito per l'autocomplete
+  const searchIndex = (searchIndexData as any[])?.map(item => ({
+    id: item.id,
+    model_name: item.model_name,
+    manufacturer: item.manufacturers?.name || "Sconosciuto"
+  })) || [];
 
   // Calcolo dati storici
   const totale = totalCount || 0;
@@ -73,27 +84,8 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
           L'Enciclopedia Definitiva e Registro di Telemetria per l'Aviazione Civile Mondiale.
         </p>
         
-        {/* BARRA DI RICERCA FUNZIONANTE (NATIVE URL ROUTING) */}
-        <form action={`/${lang}/radar`} method="GET" className="w-full max-w-3xl relative group mb-20">
-          <div className="absolute inset-0 bg-cyan-500/15 blur-2xl rounded-2xl group-hover:bg-cyan-500/25 transition-all duration-500"></div>
-          <div className="relative flex flex-col md:flex-row bg-slate-900/90 border border-slate-800 group-hover:border-cyan-500/50 rounded-2xl p-2.5 backdrop-blur-2xl transition-all shadow-2xl">
-            <div className="flex items-center flex-1 px-3">
-              <svg className="w-5 h-5 text-cyan-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input 
-                type="text" 
-                name="search"
-                placeholder="Inserisci Modello, Costruttore, Sigla ICAO (es. B747, Concorde)..." 
-                className="w-full bg-transparent border-none text-white p-4 focus:outline-none font-mono text-sm placeholder-slate-500"
-                autoComplete="off"
-              />
-            </div>
-            <button type="submit" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black font-mono text-xs tracking-widest uppercase px-10 py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)]">
-              INTERCETTA VELIVOLO
-            </button>
-          </div>
-        </form>
+        {/* BARRA DI RICERCA PREDITTIVA */}
+        <SearchAutocomplete lang={lang} searchIndex={searchIndex} />
 
         {/* TELEMETRIA DASHBOARD (STATISTICHE AVANZATE) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl relative">

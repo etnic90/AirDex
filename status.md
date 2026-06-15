@@ -188,3 +188,18 @@
 - Integrata UI di ritaglio olografica tramite `react-easy-crop` (standard 16:9).
 - Configurato upload diretto su Supabase Storage con conversione automatica in WebP ad alta qualità.
 - Salvataggio Git: `Giorno 15: completato Quick Editor con ordinamento client-side e WebP crop inline`.
+
+**Data:** Giorno 16
+**Fase Attuale:** Discovery & Advanced Filtering (Fase 7).
+
+## Decisioni Prese:
+- Architettura Homepage: Transizione verso un'interfaccia "Sci-Fi / Cockpit" ad alto impatto visivo.
+- Ottimizzazione Performance: Abbandonato il caricamento massivo dell'intera flotta in Home per evitare colli di bottiglia futuri (con 2.000+ record).
+- Routing Ricerca: Il form di ricerca in Home punta direttamente tramite metodo GET alla rotta `/radar`, precaricando l'URL prima ancora dell'inizializzazione del client JavaScript.
+
+## Attività Completate:
+- Sviluppata la nuova "Main Terminal" (Homepage) con statistiche aggregate in tempo reale tramite query Supabase ottimizzate (`count: "exact"`).
+- Implementato il modulo "Aereo del Giorno" dinamico (pesca da tier Epic/Legendary) con progress bar olografiche per range e capienza.
+- Aggiunta sezione "Navigatore Ere Storiche" con query string pronte per il radar (es. `?era=jetage`).
+- Ottimizzata la griglia "Ultime Aggiunte" limitando la query DB agli ultimi 3 record inseriti.
+- Salvataggio Git: `Giorno 16: refactoring completo Homepage stile Sci-Fi con telemetria live e ottimizzazione query`.
