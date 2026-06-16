@@ -245,3 +245,32 @@
 - Eseguite query SQL di indicizzazione su Supabase.
 - Creati `not-found.tsx` ed `error.tsx` nella root dell'App Router.
 - Salvataggio Git: `feat(fase-8): completata ottimizzazione asset, sanitizzazione AI, indici DB e error boundaries skeuomorfici`.
+
+Data: Giorno 20
+Fase Attuale: SEO Programmatico e Stabilità Routing (Fase 9 - Completata).
+
+Decisioni Prese:
+Architettura Routing: Migrata la struttura verso un approccio "piatto" all'interno di src/app/[lang]/ per garantire compatibilità nativa con next-intl e middleware di routing.
+
+Ottimizzazione Compilazione: Sostituito Turbopack con Webpack in fase di build (npx next dev --no-turbo) e pulizia forzata della cache per risolvere i conflitti di build (ENOENT, MODULE_NOT_FOUND).
+
+Strategia SEO: Implementazione del Programmatic SEO tramite generateStaticParams per pre-generare staticamente (SSG) tutte le 1.687 schede aereo, garantendo massima indicizzazione.
+
+Metadata Dinamici: Implementazione di generateMetadata su base ID per titoli e descrizioni univoche per ogni pagina di dettaglio.
+
+Gestione Risorse: Risolto conflitto di path critico per i file di localizzazione JSON tramite process.cwd() per garantire la portabilità tra ambienti di sviluppo e produzione.
+
+Attività Completate:
+Refactoring globale degli import con alias @/ per eliminare errori di path relativi.
+
+Configurazione Middleware: Spostato middleware.ts nella root di src/ e configurato per la gestione corretta dei prefissi di lingua.
+
+Implementazione generateMetadata dinamico in page.tsx con handling sicuro per il campo manufacturer (evitato errore never).
+
+Test di Build: Build di produzione (npm run build) verificata con successo: 1.687 pagine statiche generate correttamente.
+
+Risoluzione Bug: Correzione firme asincrone (params: Promise<{...}>) su Layout e Page per conformità con Next.js 16+.
+
+Salvataggio Git: Giorno 20: completata fase 9, routing stabile, SEO programmatico implementato e build di produzione verificata.
+
+Il sistema è ora pronto e ottimizzato. Abbiamo una base solida, performante e pronta per l'indicizzazione.

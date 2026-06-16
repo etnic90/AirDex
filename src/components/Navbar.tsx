@@ -5,40 +5,70 @@ import { usePathname } from "next/navigation";
 
 export default function Navbar({ lang }: { lang: string }) {
   const pathname = usePathname();
-  const isActive = (path: string) => pathname === path;
+
+  // Helper per evidenziare la rotta attiva
+  const isActive = (path: string) => pathname.includes(path);
 
   return (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur-sm bg-slate-950/70 border-b border-slate-800 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          
-          {/* Logo */}
-          <Link href={`/${lang}`} className="text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-100 drop-shadow-[0_0_6px_rgba(251,191,36,0.3)] uppercase">
-            AirDex
+    <nav className="bg-slate-950/80 backdrop-blur-lg border-b border-slate-800 sticky top-0 z-50">
+      {/* 
+        Il contenitore ora usa w-full e px-6/md:px-10 per allinearsi perfettamente 
+        con i bordi laterali della pagina Radar e delle altre schermate.
+      */}
+      <div className="w-full px-6 md:px-10 mx-auto flex items-center justify-between h-20">
+        
+        {/* LOGO METALLICO */}
+        <div className="flex-shrink-0 flex items-center gap-3">
+          <Link href={`/${lang}`} className="flex items-center gap-2 group">
+            {/* Logo in stile gradiente argento/bianco */}
+            <span className="text-3xl font-black tracking-widest bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent uppercase group-hover:from-cyan-100 group-hover:to-cyan-500 transition-all duration-500">
+              AirDex
+            </span>
           </Link>
-          
-          {/* Links e Integrazione Monetizzazione (PRO) */}
-          <div className="flex items-center space-x-4 md:space-x-8">
-            <Link href={`/${lang}`} className={`px-2 md:px-4 py-2 text-sm md:text-base font-bold tracking-wide transition-all ${isActive(`/${lang}`) ? 'text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)]' : 'text-slate-400 hover:text-amber-300'}`}>
-              Hangar Globale
-            </Link>
-            
-            <Link href={`/${lang}/profile`} className={`px-2 md:px-4 py-2 text-sm md:text-base font-bold tracking-wide transition-all ${isActive(`/${lang}/profile`) ? 'text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)]' : 'text-slate-400 hover:text-amber-300'}`}>
-              Profilo Pilota
-            </Link>
+        </div>
 
-            {/* Badge AirDex PRO */}
-            <Link 
-              href={`/${lang}/pro`} 
-              className={`ml-2 px-3 md:px-5 py-1.5 rounded text-sm md:text-base font-black tracking-widest uppercase transition-all border ${
-                isActive(`/${lang}/pro`) 
-                  ? 'bg-amber-500 text-amber-950 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.6)]' 
-                  : 'bg-amber-500/10 text-amber-400 border-amber-500/50 hover:bg-amber-500 hover:text-amber-950 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-              }`}
-            >
-              PRO
-            </Link>
-          </div>
+        {/* MENU CENTRALE (Desktop) */}
+        <div className="hidden lg:flex items-center gap-8">
+          <Link 
+            href={`/${lang}`} 
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/radar') || isActive('/compare') || isActive('/stats') ? 'text-slate-400 hover:text-white' : 'text-cyan-400 font-bold'}`}
+          >
+            Hangar
+          </Link>
+          <Link 
+            href={`/${lang}/radar`} 
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/radar') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
+          >
+            Radar
+          </Link>
+          <Link 
+            href={`/${lang}/compare`} 
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/compare') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
+          >
+            Confronto
+          </Link>
+          <Link 
+            href={`/${lang}/stats`} 
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/stats') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
+          >
+            Telemetria
+          </Link>
+        </div>
+
+        {/* MENU DESTRA (Profilo e PRO) */}
+        <div className="flex items-center gap-4">
+          <Link 
+            href={`/${lang}/profile`} 
+            className="hidden md:block text-slate-400 hover:text-white text-xs font-mono uppercase tracking-widest transition-colors"
+          >
+            Profilo Pilota
+          </Link>
+          <Link 
+            href={`/${lang}/pro`} 
+            className="px-4 py-2 rounded bg-slate-900 border border-slate-700 hover:border-amber-500 text-amber-500 text-xs font-black tracking-widest uppercase transition-colors shadow-[0_0_10px_rgba(245,158,11,0.1)] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+          >
+            PRO
+          </Link>
         </div>
       </div>
     </nav>
