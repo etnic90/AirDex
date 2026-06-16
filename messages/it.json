@@ -1,0 +1,13 @@
+{
+  "Navigation": {
+    "radar": "Radar",
+    "fleet": "Flotta",
+    "login": "Accedi"
+  },
+  "Aircraft": {
+    "max_pax": "Capienza Max",
+    "first_flight": "Primo Volo",
+    "engines": "Motori",
+    "range": "Autonomia"
+  }
+}

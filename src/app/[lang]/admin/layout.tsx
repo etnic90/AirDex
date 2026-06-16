@@ -1,11 +1,11 @@
 // src/app/[lang]/admin/layout.tsx
-// Aggiungi 'params' tra le props
+// Aggiornato: params tipizzato come Promise per Next.js 16+
 export default async function AdminLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params; // Risoluzione asincrona del parametro
 

@@ -228,3 +228,20 @@
 - Sviluppato lo script Node `scripts/fetchImages.mjs` (Generazione 3) con autenticazione via `User-Agent` per superare i firewall di Wikipedia e telemetria live in tempo reale sul terminale (`[Index/Total]`).
 - Completata con successo la copertura visiva e testuale della quasi totalità della flotta storica del database, isolando i modelli ultra-rari tramite flag `NOT_FOUND_WIKI` per la rifinitura e il crop manuale.
 - Salvataggio Git: `feat(database): completato arricchimento flotta e integrazione immagini` eseguito con successo per blindare il backend.
+
+**Data:** Giorno 19
+**Fase Attuale:** Ottimizzazione Asset e Stabilizzazione Tecnica (Fase 8 - Completata).
+
+## Decisioni Prese:
+- Gestione Immagini: Implementato un fallback skeuomorfico (ologramma + scansione radar) per proteggere la UI dai record mancanti (`NOT_FOUND_WIKI`).
+- Data Cleaning: Sanitizzate le descrizioni e i trivia generati dall'AI, rimuovendo markdown residuo e tag HTML tramite script regex ottimizzato.
+- Performance DB: Creati indici PostgreSQL B-Tree nativi su Supabase (`model_name`, `manufacturer_id`, `rarity`) per garantire latenze minime nei filtri del Radar.
+- Error Handling: Abbandonate le pagine di errore di default in favore di Error Boundaries skeuomorfici (404 "Segnale Radar Perso" e 500 "Avaria di Sistema") per Next.js App Router.
+- Types: Aggiornata l'interfaccia `AircraftModel` per supportare i nuovi campi AI (`era`, `description`, `trivia`, `extended_stats`).
+
+## Attività Completate:
+- Sviluppato e integrato il fallback visivo in `AircraftCard.tsx`.
+- Creato ed eseguito con successo `scripts/sanitizeTexts.mjs`.
+- Eseguite query SQL di indicizzazione su Supabase.
+- Creati `not-found.tsx` ed `error.tsx` nella root dell'App Router.
+- Salvataggio Git: `feat(fase-8): completata ottimizzazione asset, sanitizzazione AI, indici DB e error boundaries skeuomorfici`.
