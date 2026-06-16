@@ -203,3 +203,13 @@
 - Aggiunta sezione "Navigatore Ere Storiche" con query string pronte per il radar (es. `?era=jetage`).
 - Ottimizzata la griglia "Ultime Aggiunte" limitando la query DB agli ultimi 3 record inseriti.
 - Salvataggio Git: `Giorno 16: refactoring completo Homepage stile Sci-Fi con telemetria live e ottimizzazione query`.
+
+**Data:** Giorno 17
+**Fase Attuale:** Discovery & Advanced Filtering (Fase 7 - Completata).
+
+## Attività Completate:
+- Sviluppata rotta dinamica `/radar` (Radar Centrale) con architettura ibrida Server/Client tramite `<Suspense>`.
+- Implementato `RadarClient` per il filtraggio incrociato lato client (Testo, Status, Rarità, Epoca) ad alte prestazioni tramite `useMemo`.
+- Creato componente standalone `<SearchAutocomplete>` per la Homepage, con dropdown predittivo e intercettazione parametri URL.
+- Ottimizzato layout Grid a 3 colonne su schermi larghi (1600px) per ospitare le card senza distorsioni visive.
+- Salvataggio Git: `Giorno 17: completata Fase 7 con Radar Centrale, filtri live e motore predittivo olografico`.
