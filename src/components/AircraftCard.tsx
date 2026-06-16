@@ -56,7 +56,7 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
           </div>
         </div>
         
-        {/* Immagine con Fallback Olografico */}
+        {/* Immagine con Fallback Olografico Sci-Fi */}
         <div className="w-full h-48 bg-cyan-950/10 rounded-xl mb-6 flex flex-col items-center justify-center border border-cyan-900/40 relative overflow-hidden shadow-[inset_0_0_30px_rgba(6,182,212,0.1)]">
           {imageUrl ? (
             <img 
@@ -65,10 +65,28 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
               className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300 z-10"
             />
           ) : (
-            <>
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:15px_15px] opacity-40" />
-              <span className="text-cyan-700/50 font-mono text-sm tracking-widest z-10">BLUEPRINT STANDBY</span>
-            </>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80">
+              {/* Griglia olografica di base */}
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:15px_15px] opacity-60" />
+              
+              {/* Icona Radar / Sensore */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-cyan-600/70 mb-3 animate-pulse z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+
+              {/* Testo sci-fi */}
+              <div className="z-10 flex flex-col items-center text-center">
+                <span className="text-cyan-400 font-mono text-xs font-bold tracking-[0.2em] bg-slate-900/50 px-2 py-0.5 rounded">
+                  NO VISUAL DATA
+                </span>
+                <span className="text-cyan-600/70 font-mono text-[9px] tracking-widest mt-1.5 uppercase animate-pulse">
+                  Acquisizione in corso...
+                </span>
+              </div>
+
+              {/* Linea di scansione olografica */}
+              <div className="absolute top-1/2 left-0 w-full h-[1px] bg-cyan-400/30 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse" />
+            </div>
           )}
         </div>
 

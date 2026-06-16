@@ -151,20 +151,20 @@
 - Creazione schema SQL relazionale su Supabase.
 - Refactoring delle pagine Home e Dettaglio per interrogare il nuovo database.
 - Consolidamento dell'architettura: ora il sistema è coerente e pronto per future espansioni.
-- Salvataggio Git: `Giorno 12: migrazione database relazionale, fix routing e allineamento interfaccia enciclopedica`.
+- Salvataggio Git: `Giorno 12: migrazione database relazionale, fix routing e allineamento interface enciclopedica`.
 
 **Data:** Giorno 14
 **Fase Attuale:** Archiviazione Totale - "Opera Omnia" (Fase 6).
 
 ## Decisioni Prese:
-- Completamento della "Copertura Storica Totale": Il database ora non è più un semplice catalogo di flotte moderne, ma una cronologia completa dell'aviazione civile.
+- Completamento della "Copertura Storica Totale": Il database ora non è più un simple catalogo di flotte moderne, ma una cronologia completa dell'aviazione civile.
 - Inclusione Integrale: Inseriti tutti i modelli significativi a partire dagli albori dell'aviazione (1910) fino ai giorni nostri (2026), garantendo continuità storica.
 - Standardizzazione Dati: Ogni modello è stato inserito con metadati completi (first_flight_year, engines, max_passengers, range_km), rendendo il dataset pronto per qualsiasi analisi statistica o storica futura.
 
 ## Attività Completate:
 - Patch Storica Completa: Inseriti tutti i capisaldi tecnologici: dagli idrovolanti degli anni '30 (Martin M-130, Sikorsky S-42) ai giganti a pistoni post-bellici (DC-6B, Convair CV-340/440), fino ai pilastri dell'era jet pionieristica (Il-18D) e moderna.
 - Integrazione Industria Italiana: Catalogazione completa dei modelli civili Aermacchi (M.20, M.B.308, M.B.320, AL-60B), colmando la lacuna storica del settore nazionale.
-- Audit e Validazione: Eseguita query di controllo decennale: il database presenta ora una distribuzione coerente di circa 450 modelli, coprendo con precisione ogni decade dal 1910 al 2026.
+- Audit e Validazione: Eseguita query di controllo decennale: il database presenta ora una distributione coerente di circa 450 modelli, coprendo con precisione ogni decade dal 1910 al 2026.
 - Documentazione: Consolidato il repository con la struttura necessaria per l'analisi avanzata (AeroAnalyzer).
 - Salvataggio Git: `Giorno 14: completata copertura storica totale 1910-2026, inseriti modelli civili Aermacchi e validazione dati`.
 
@@ -186,7 +186,7 @@
 - Sviluppata tabella interattiva `QuickEditor` per la gestione massiva dei record.
 - Implementato sistema di ordinamento dati multi-chiave (lato client).
 - Integrata UI di ritaglio olografica tramite `react-easy-crop` (standard 16:9).
-- Configurato upload diretto su Supabase Storage con conversione automatica in WebP ad alta qualità.
+- Configurato upload directo su Supabase Storage con conversione automatica in WebP ad alta qualità.
 - Salvataggio Git: `Giorno 15: completato Quick Editor con ordinamento client-side e WebP crop inline`.
 
 **Data:** Giorno 16
@@ -213,3 +213,18 @@
 - Creato componente standalone `<SearchAutocomplete>` per la Homepage, con dropdown predittivo e intercettazione parametri URL.
 - Ottimizzato layout Grid a 3 colonne su schermi larghi (1600px) per ospitare le card senza distorsioni visive.
 - Salvataggio Git: `Giorno 17: completata Fase 7 con Radar Centrale, filtri live e motore predittivo olografico`.
+
+**Data:** Giorno 18
+**Fase Attuale:** AI Data Enrichment & Automated Image Sourcing (Fase 8).
+
+## Decisioni Prese:
+- Motore AI di Crociera: Stabilizzato l'arricchimento descrittivo di massa su `gemini-2.5-flash` tramite il nuovo SDK `@google/genai` per bypassare i blocchi regionali e la deprecazione silente dei vecchi modelli (404/429 su versioni legacy e lite).
+- Strategia di Batching: Elaborazione strutturata a lotti condizionali (`.is('description', null)`) per consentire la ripartenza istantanea e indolore dello script in caso di saturazione delle quote gratuite.
+- Architettura Fotografica: Scelta strategica di popolare in blocco la colonna `house_livery_url` tramite *hotlinking* diretto in alta risoluzione (1000px) estratti dalle API native di Wikipedia (`generator=search`), tutelando lo spazio del bucket Supabase e garantendo l'assoluta compatibilità con l'override manuale del Quick Editor.
+- Protocollo Anti-Singhiozzo: Implementato un ciclo ferreo di "Insistenza a 15 tentativi" per singolo record per abbattere i falsi negativi causati dai timeout temporanei dei server Wikimedia.
+
+## Attività Completate:
+- Sviluppato lo script Node `scripts/enrichAircraft.mjs` con modulo di raffreddamento d'emergenza automatico a 60 secondi per assorbire i colli di bottiglia dell'API di Google.
+- Sviluppato lo script Node `scripts/fetchImages.mjs` (Generazione 3) con autenticazione via `User-Agent` per superare i firewall di Wikipedia e telemetria live in tempo reale sul terminale (`[Index/Total]`).
+- Completata con successo la copertura visiva e testuale della quasi totalità della flotta storica del database, isolando i modelli ultra-rari tramite flag `NOT_FOUND_WIKI` per la rifinitura e il crop manuale.
+- Salvataggio Git: `feat(database): completato arricchimento flotta e integrazione immagini` eseguito con successo per blindare il backend.

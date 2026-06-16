@@ -21,5 +21,10 @@ export interface AircraftModel {
   rarity?: RarityTier;
   house_livery_url?: string;
   launch_customer_livery_url?: string;
-  manufacturers?: Manufacturer; 
+  manufacturers?: Manufacturer;
+  era?: string;
+  description?: string;
+  trivia?: string[];
+  extended_stats?: any;
+   
 }
