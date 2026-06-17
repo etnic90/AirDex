@@ -274,3 +274,20 @@ Risoluzione Bug: Correzione firme asincrone (params: Promise<{...}>) su Layout e
 Salvataggio Git: Giorno 20: completata fase 9, routing stabile, SEO programmatico implementato e build di produzione verificata.
 
 Il sistema è ora pronto e ottimizzato. Abbiamo una base solida, performante e pronta per l'indicizzazione.
+
+
+**Data:** Giorno 21
+**Fase Attuale:** Nuove Pagine Core & Data Discovery (Fase 10 - Completata).
+
+## Decisioni Prese:
+- Libreria Grafica: Adozione di `recharts` per la renderizzazione fluida e reattiva dei grafici olografici (Radar, Bar, Pie) integrati nell'ecosistema Next.js.
+- UX Ricerca: Abbandonati i classici `<select>` nativi nell'Hangar di Comparazione in favore di un componente custom `AircraftAutocomplete` con ricerca predittiva in tempo reale, per gestire agilmente oltre 450 record.
+- Architettura Layout: Refactoring della `Navbar` globale, passata da un contenitore rigido a un layout fluido (`w-full`) per allinearsi perfettamente alle interfacce espansive del Radar e della Telemetria.
+- Gamification Audio: Sospesa l'implementazione dei micro-suoni UI per il web, rimandando la feature a un futuro porting mobile (app nativa) per evitare blocchi autoplay dei browser e frizioni UX.
+
+## Attività Completate:
+- Installazione libreria `recharts`.
+- Sviluppata la rotta `src/app/[lang]/compare/page.tsx` (Hangar di Comparazione) con Radar Chart a ragnatela normalizzato su base 100 e tabella tecnica di confronto.
+- Sviluppata la rotta `src/app/[lang]/stats/page.tsx` (Global Telemetry) con calcolo aggregato lato client (`useMemo`) di KPI globali, distribuzioni storiche e dominance dei costruttori.
+- Aggiornato `src/components/Navbar.tsx` con logo a gradiente metallico, nuovi link di navigazione e margini fluidi sincronizzati.
+- Salvataggio Git: `Giorno 21: completata fase 10 con compare, stats e navbar fluida`.

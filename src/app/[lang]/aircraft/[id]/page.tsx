@@ -3,10 +3,12 @@ import { AircraftModel } from "@/types";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from "next";
+import Link from "next/link";
+// Importiamo il nuovo componente schermato contro i crash
+import AirlineLogo from "@/components/AirlineLogo";
 
 /**
  * 1. SEO - GENERATE METADATA
- * Genera dinamicamente il titolo e la descrizione della pagina per i motori di ricerca.
  */
 export async function generateMetadata({ 
   params 
@@ -26,9 +28,7 @@ export async function generateMetadata({
   }
 
   const aircraftName = aircraft.model_name;
-  // Forziamo la lettura in modo sicuro ignorando il tipo 'never'
   const manufacturer = (aircraft.manufacturers as any)?.name || 'Aviation';
-
 
   return {
     title: `${aircraftName} | ${manufacturer} | AirDex Hangar`,
@@ -42,7 +42,6 @@ export async function generateMetadata({
 
 /**
  * 2. PROGRAMMATIC SEO - GENERATE STATIC PARAMS
- * Comunica a Next.js tutti gli ID degli aerei esistenti per pre-generare le pagine HTML.
  */
 export async function generateStaticParams() {
   const { data: aircrafts } = await supabase
@@ -53,7 +52,6 @@ export async function generateStaticParams() {
 
   const locales = ['en', 'it', 'es', 'fr'];
   
-  // Crea combinazioni [lang]/[id] per ogni aereo e ogni lingua
   return aircrafts.flatMap((aircraft) =>
     locales.map((lang) => ({
       lang: lang,
@@ -64,7 +62,6 @@ export async function generateStaticParams() {
 
 /**
  * 3. PAGE COMPONENT
- * Il componente principale che renderizza la scheda tecnica dell'aereo.
  */
 export default async function AircraftPage({ 
   params 
@@ -76,7 +73,7 @@ export default async function AircraftPage({
   // Abilita il rendering statico per next-intl
   setRequestLocale(lang);
 
-  // Query: prendiamo il modello specifico E i dati del suo costruttore
+  // Query 1: Modello + Costruttore
   const { data, error } = await supabase
     .from('aircraft_models')
     .select('*, manufacturers(*)') 
@@ -88,6 +85,18 @@ export default async function AircraftPage({
   }
 
   const aircraft = data as unknown as AircraftModel;
+
+  // Query 2: Join Compagnie per Navigazione Circolare
+  const { data: fleetData } = await supabase
+    .from('airline_fleet')
+    .select(`
+      qty,
+      status,
+      airlines ( id, name, iata_code, website, logo_url )
+    `)
+    .eq('aircraft_model_id', id);
+
+  const operators = (fleetData || []) as any[];
 
   // Strategia Immagini: Fallback gerarchico
   const imageUrl = aircraft.house_livery_url || aircraft.launch_customer_livery_url;
@@ -192,7 +201,7 @@ export default async function AircraftPage({
           </div>
         )}
 
-        {/* Griglia Dati Tecnici Avanzata */}
+        {/* Griglia Dati Tecnici */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           <div className="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-cyan-800/50 transition-colors">
             <span className="block text-[10px] text-cyan-500 font-mono uppercase tracking-widest mb-1.5">Capienza Max</span>
@@ -217,6 +226,63 @@ export default async function AircraftPage({
               {aircraft.range_km && <span className="text-cyan-600 font-bold mb-1">km</span>}
             </div>
           </div>
+        </div>
+
+        {/* COMPONENTE OPERATORI REATTIVO E AGGANCIATO ALLA NAVIGAZIONE CIRCOLARE */}
+<div className="w-full border-t border-slate-800/60 mt-20 pt-10 clear-both block">
+  <h3 className="text-purple-400 font-mono text-sm uppercase tracking-[0.3em] mb-6 flex items-center gap-3 font-black">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    </svg>
+    Vettori di Linea Rilevati (Flotta Attiva)
+  </h3>
+          {operators.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {operators.map((item, idx) => {
+                const airline = item.airlines;
+                if (!airline) return null;
+
+                const logoSrc = airline.logo_url 
+                  ? airline.logo_url 
+                  : (airline.website ? `https://logo.clearbit.com/${airline.website}` : null);
+
+                return (
+                  <Link 
+                    key={`${airline.id}-${idx}`}
+                    href={`/${lang}/airlines/${airline.id}`}
+                    className="bg-slate-950/40 border border-slate-800 hover:border-purple-500/50 p-4 rounded-xl flex items-center gap-4 transition-all duration-300 hover:bg-slate-900/60 group shadow-md hover:-translate-y-0.5 relative overflow-hidden"
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-transparent group-hover:bg-purple-500 transition-colors"></div>
+
+                    <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center p-1.5 border border-slate-800 shadow-sm flex-shrink-0 overflow-hidden relative z-10">
+                      {/* INOCULAZIONE DEL NUOVO CLIENT LOGO RIGENERATO E IMMUNE AI CRASH */}
+                      <AirlineLogo 
+                        src={logoSrc} 
+                        alt={airline.name} 
+                        airlineName={airline.name} 
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0 font-mono">
+                      <span className="text-[9px] text-purple-400 uppercase tracking-widest block font-black">
+                        CODE: {airline.iata_code || "—"}
+                      </span>
+                      <h4 className="text-white font-black text-xs group-hover:text-purple-400 transition-colors truncate font-sans mt-0.5">
+                        {airline.name}
+                      </h4>
+                      <span className="text-slate-500 text-[10px] block mt-1">
+                        In Registro: <strong className="text-slate-300">x{item.qty} u.</strong>
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="border border-dashed border-slate-800 bg-slate-950/20 rounded-xl p-8 text-center text-slate-500 font-mono text-xs">
+              Nessun operatore commerciale ha attualmente configurato questo modulo nel proprio registro flotta attivo.
+            </div>
+          )}
         </div>
         
       </div>
