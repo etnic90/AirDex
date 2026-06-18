@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useParams } from "next/navigation";
 
@@ -46,8 +46,8 @@ export default function AdminAircraftsManager() {
   const [totalCount, setTotalCount] = useState(0);
   const pageSize = 15;
 
-  // Modale Stati
-  const [isOpen, setIsOpen] = useState(false);
+  // View state: "list" o "edit"
+  const [view, setView] = useState<"list" | "edit">("list");
   const [editingAircraft, setEditingAircraft] = useState<AircraftModel | null>(null);
 
   // Form Stati
@@ -68,6 +68,9 @@ export default function AdminAircraftsManager() {
   const [houseLiveryUrl, setHouseLiveryUrl] = useState("");
   const [launchCustomerLiveryUrl, setLaunchCustomerLiveryUrl] = useState("");
 
+  const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const triviaTextareaRef = useRef<HTMLTextAreaElement>(null);
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -82,10 +85,13 @@ export default function AdminAircraftsManager() {
         .order("name", { ascending: true });
       if (data) {
         setManufacturers(data);
+        if (data.length > 0 && !manufacturerId) {
+          setManufacturerId(data[0].id);
+        }
       }
     };
     fetchManufacturers();
-  }, [supabase]);
+  }, [supabase, manufacturerId]);
 
   // Carica i velivoli paginati
   const fetchAircrafts = useCallback(async () => {
@@ -145,7 +151,7 @@ export default function AdminAircraftsManager() {
     setEra("JET_AGE");
     setHouseLiveryUrl("");
     setLaunchCustomerLiveryUrl("");
-    setIsOpen(true);
+    setView("edit");
   };
 
   const handleOpenEdit = (aircraft: AircraftModel) => {
@@ -166,7 +172,7 @@ export default function AdminAircraftsManager() {
     setEra(aircraft.era || "JET_AGE");
     setHouseLiveryUrl(aircraft.house_livery_url || "");
     setLaunchCustomerLiveryUrl(aircraft.launch_customer_livery_url || "");
-    setIsOpen(true);
+    setView("edit");
   };
 
   const handleDelete = async (id: string) => {
@@ -219,7 +225,7 @@ export default function AdminAircraftsManager() {
       if (error) {
         alert("Errore durante il salvataggio: " + error.message);
       } else {
-        setIsOpen(false);
+        setView("list");
         fetchAircrafts();
       }
     } else {
@@ -230,13 +236,426 @@ export default function AdminAircraftsManager() {
       if (error) {
         alert("Errore durante l'inserimento: " + error.message);
       } else {
-        setIsOpen(false);
+        setView("list");
         fetchAircrafts();
       }
     }
   };
 
+  const insertFormatting = (
+    ref: React.RefObject<HTMLTextAreaElement | null>,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+    before: string,
+    after: string = ""
+  ) => {
+    const textarea = ref.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selected = text.substring(start, end);
+    const replacement = before + (selected || "testo") + after;
+
+    setter(text.substring(0, start) + replacement + text.substring(end));
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + before.length, start + before.length + (selected || "testo").length);
+    }, 50);
+  };
+
   const totalPages = Math.ceil(totalCount / pageSize);
+
+  if (view === "edit") {
+    return (
+      <div className="space-y-6 text-slate-100 font-sans">
+        
+        {/* Editor TopBar */}
+        <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setView("list")}
+              className="bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-850 px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer"
+            >
+              &larr; Torna alla lista
+            </button>
+            <div>
+              <h1 className="text-xl font-black text-white font-mono uppercase tracking-wider">
+                {editingAircraft ? "Modifica Velivolo" : "Nuovo Velivolo"}
+              </h1>
+              <span className="text-[10px] text-slate-500 font-mono">WordPress-style Editor Engine v2.0</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView("list")}
+              className="bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-850 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+            >
+              Annulla
+            </button>
+            <button
+              onClick={(e) => handleSubmit(e)}
+              className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-5 py-2.5 rounded-lg text-xs font-black transition-all cursor-pointer shadow-lg hover:shadow-cyan-500/10"
+            >
+              Salva Modello
+            </button>
+          </div>
+        </div>
+
+        {/* Form Grid */}
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* COLONNA SINISTRA: EDITOR PRINCIPALE */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Input Nome Modello */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+              <label className="block text-slate-400 uppercase font-mono text-xs font-bold">Nome Modello Aeromobile</label>
+              <input
+                type="text"
+                required
+                value={modelName}
+                onChange={(e) => setModelName(e.target.value)}
+                placeholder="Esempio: Boeing 777-300ER"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:outline-none p-4 rounded-xl text-lg font-bold text-white font-sans"
+              />
+            </div>
+
+            {/* Descrizione Tecnica & Curiosità */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+              <div className="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+                <span className="text-white font-mono text-xs font-black uppercase tracking-wider">
+                  📝 Contenuto Editoriale
+                </span>
+                <span className="text-[9px] font-mono text-slate-500">FORMATTAZIONE RICCA / HTML DISPONIBILE</span>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                
+                {/* Descrizione Tecnica */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-slate-400 font-mono text-xs font-bold uppercase">Descrizione Tecnica</label>
+                    {/* Toolbar per Descrizione */}
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting(descriptionTextareaRef, setDescription, "**", "**")}
+                        className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-slate-400 font-bold rounded text-[10px]"
+                        title="Grassetto"
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting(descriptionTextareaRef, setDescription, "*", "*")}
+                        className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-slate-400 italic rounded text-[10px]"
+                        title="Corsivo"
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting(descriptionTextareaRef, setDescription, "## ", "")}
+                        className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-slate-400 font-mono rounded text-[10px]"
+                        title="Intestazione 2"
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting(descriptionTextareaRef, setDescription, "[link](", ")")}
+                        className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-slate-400 rounded text-[9px] uppercase font-bold"
+                        title="Inserisci Link"
+                      >
+                        Link
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    ref={descriptionTextareaRef}
+                    rows={6}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 p-4 rounded-xl focus:border-cyan-500 focus:outline-none text-white text-xs font-sans leading-relaxed"
+                    placeholder="Inserisci la scheda descrittiva, le note di sviluppo ed i dettagli storici dell'aereo..."
+                  />
+                </div>
+
+                {/* Curiosità / Trivia */}
+                <div className="space-y-2 pt-4 border-t border-slate-850">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-slate-400 font-mono text-xs font-bold uppercase">Aneddoti / Curiosità</label>
+                    {/* Toolbar per Trivia */}
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting(triviaTextareaRef, setTrivia, "**", "**")}
+                        className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-slate-400 font-bold rounded text-[10px]"
+                        title="Grassetto"
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting(triviaTextareaRef, setTrivia, "*", "*")}
+                        className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-slate-400 italic rounded text-[10px]"
+                        title="Corsivo"
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertFormatting(triviaTextareaRef, setTrivia, "[link](", ")")}
+                        className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-slate-400 rounded text-[9px] uppercase font-bold"
+                        title="Inserisci Link"
+                      >
+                        Link
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    ref={triviaTextareaRef}
+                    rows={3}
+                    value={trivia}
+                    onChange={(e) => setTrivia(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 p-4 rounded-xl focus:border-cyan-500 focus:outline-none text-white text-xs font-sans leading-relaxed"
+                    placeholder="Inserisci pillole di curiosità ideali per i quiz e per la tessere informative degli avvistamenti..."
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            {/* Dati Tecnici / Performance */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 font-mono text-xs">
+              <h3 className="text-white text-xs font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>📊</span> Specifiche di Volo & Performance
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Gruppo Motopropulsore (Engines)</label>
+                  <input
+                    type="text"
+                    value={engines}
+                    onChange={(e) => setEngines(e.target.value)}
+                    placeholder="Es. 2x General Electric GE90-115B"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Capacità Passeggeri Max</label>
+                  <input
+                    type="number"
+                    value={maxPassengers}
+                    onChange={(e) => setMaxPassengers(e.target.value)}
+                    placeholder="Es. 396"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Autonomia Massima (Km)</label>
+                  <input
+                    type="number"
+                    value={rangeKm}
+                    onChange={(e) => setRangeKm(e.target.value)}
+                    placeholder="Es. 13649"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Anno Primo Volo</label>
+                  <input
+                    type="number"
+                    value={firstFlightYear}
+                    onChange={(e) => setFirstFlightYear(e.target.value)}
+                    placeholder="Es. 1994"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* COLONNA DESTRA: METADATI E SIDEBAR */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Widget 1: Pubblicazione / Salvataggio */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+              <h3 className="text-white font-mono text-xs font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>💾</span> Registrazione Modello
+              </h3>
+              <div className="text-xs font-mono text-slate-400 leading-relaxed font-sans">
+                Stato di caricamento: <strong className="text-cyan-400">Database Live</strong>. Qualsiasi aggiornamento si ripercuoterà in tempo reale sulle schede taccuino degli spotter e sui quiz.
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono text-xs font-black uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-md"
+              >
+                Salva Velivolo
+              </button>
+            </div>
+
+            {/* Widget 2: Produttore & Classificazione */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 font-mono text-xs">
+              <h3 className="text-white font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>🛸</span> Classificazione
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Costruttore / Brand</label>
+                  <select
+                    required
+                    value={manufacturerId}
+                    onChange={(e) => setManufacturerId(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white"
+                  >
+                    <option value="" disabled>Seleziona produttore...</option>
+                    {manufacturers.map((m) => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Tipologia Velivolo</label>
+                  <input
+                    type="text"
+                    required
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    placeholder="Es. Wide-Body Jet"
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white font-sans"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Widget 3: Indici Avionici */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 font-mono text-xs">
+              <h3 className="text-white font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>📟</span> Codici Avionici
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Codice IATA (3 Car.)</label>
+                  <input
+                    type="text"
+                    maxLength={3}
+                    value={iataCode}
+                    onChange={(e) => setIataCode(e.target.value.toUpperCase())}
+                    placeholder="77W"
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg text-white font-mono focus:border-cyan-500 focus:outline-none text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Codice ICAO (4 Car.)</label>
+                  <input
+                    type="text"
+                    maxLength={4}
+                    value={icaoCode}
+                    onChange={(e) => setIcaoCode(e.target.value.toUpperCase())}
+                    placeholder="B77W"
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg text-white font-mono focus:border-cyan-500 focus:outline-none text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Widget 4: AirDex Gamification */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 font-mono text-xs">
+              <h3 className="text-white font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>✨</span> Parametri AirDex
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Rarità Pokedex</label>
+                  <select
+                    value={rarity}
+                    onChange={(e) => setRarity(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white"
+                  >
+                    <option value="COMMON">COMMON (Comune)</option>
+                    <option value="UNCOMMON">UNCOMMON (Non comune)</option>
+                    <option value="RARE">RARE (Raro)</option>
+                    <option value="EPIC">EPIC (Epico)</option>
+                    <option value="LEGENDARY">LEGENDARY (Leggendario)</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Epoca Storica (Era)</label>
+                  <select
+                    value={era}
+                    onChange={(e) => setEra(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white"
+                  >
+                    <option value="PIONEERS_OF_FLIGHT">PIONEERS OF FLIGHT (1910-1930)</option>
+                    <option value="GOLDEN_AGE">GOLDEN AGE (1930-1950)</option>
+                    <option value="JET_AGE">JET AGE (1950-1990)</option>
+                    <option value="MODERN_ERA">MODERN ERA (1990-Presente)</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Stato Operativo</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white"
+                  >
+                    <option value="ACTIVE">ACTIVE (Attivo)</option>
+                    <option value="HISTORIC">HISTORIC (Fuori servizio/Storico)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Widget 5: Livree & Foto */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 font-mono text-xs">
+              <h3 className="text-white font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>🖼️</span> Immagini e Livree
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">URL Foto Livrea Standard (House)</label>
+                  <input
+                    type="text"
+                    value={houseLiveryUrl}
+                    onChange={(e) => setHouseLiveryUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white"
+                  />
+                  {houseLiveryUrl.trim() !== "" && (
+                    <div className="mt-2 h-24 w-full rounded-lg overflow-hidden bg-slate-950 border border-slate-850">
+                      <img src={houseLiveryUrl} alt="House Livery" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-1.5 pt-2 border-t border-slate-850">
+                  <label className="block text-slate-500 uppercase font-bold">URL Foto Livrea di Lancio (Launch Customer)</label>
+                  <input
+                    type="text"
+                    value={launchCustomerLiveryUrl}
+                    onChange={(e) => setLaunchCustomerLiveryUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white"
+                  />
+                  {launchCustomerLiveryUrl.trim() !== "" && (
+                    <div className="mt-2 h-24 w-full rounded-lg overflow-hidden bg-slate-950 border border-slate-850">
+                      <img src={launchCustomerLiveryUrl} alt="Launch Livery" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 text-slate-100 font-sans">
@@ -392,237 +811,6 @@ export default function AdminAircraftsManager() {
       ) : (
         <div className="border border-dashed border-slate-800 bg-slate-950/10 text-center py-12 text-slate-500 font-mono text-xs rounded-xl">
           Nessun aeromobile registrato corrisponde ai filtri impostati.
-        </div>
-      )}
-
-      {/* Modale Creazione / Modifica */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 md:p-8 relative shadow-2xl overflow-y-auto max-h-[90vh]">
-            
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 text-slate-500 hover:text-white text-lg font-mono"
-            >
-              ✕
-            </button>
-
-            <h3 className="text-lg font-bold text-white uppercase tracking-wider font-mono mb-6 pb-2 border-b border-slate-850">
-              {editingAircraft ? "Modifica Modello Aereo" : "Nuovo Modello Aereo"}
-            </h3>
-
-            <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs text-slate-300">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Nome Modello</label>
-                  <input
-                    type="text"
-                    required
-                    value={modelName}
-                    onChange={(e) => setModelName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans font-bold"
-                    placeholder="Esempio: Boeing 777-350ER"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Costruttore</label>
-                  <select
-                    required
-                    value={manufacturerId}
-                    onChange={(e) => setManufacturerId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                  >
-                    {manufacturers.map((m) => (
-                      <option key={m.id} value={m.id}>{m.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Tipologia Velivolo</label>
-                  <input
-                    type="text"
-                    required
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
-                    placeholder="Narrow-Body Jet"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Codice IATA (4 Car.)</label>
-                  <input
-                    type="text"
-                    maxLength={4}
-                    value={iataCode}
-                    onChange={(e) => setIataCode(e.target.value.toUpperCase())}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="77W"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Codice ICAO (4 Car.)</label>
-                  <input
-                    type="text"
-                    maxLength={4}
-                    value={icaoCode}
-                    onChange={(e) => setIcaoCode(e.target.value.toUpperCase())}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="B77W"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5 font-sans">Rarità AirDex</label>
-                  <select
-                    value={rarity}
-                    onChange={(e) => setRarity(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                  >
-                    <option value="COMMON">COMMON</option>
-                    <option value="UNCOMMON">UNCOMMON</option>
-                    <option value="RARE">RARE</option>
-                    <option value="EPIC">EPIC</option>
-                    <option value="LEGENDARY">LEGENDARY</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5 font-sans">Era Storica</label>
-                  <select
-                    value={era}
-                    onChange={(e) => setEra(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                  >
-                    <option value="PIONEERS_OF_FLIGHT">PIONEERS OF FLIGHT (1910-1930)</option>
-                    <option value="GOLDEN_AGE">GOLDEN AGE (1930-1950)</option>
-                    <option value="JET_AGE">JET AGE (1950-1990)</option>
-                    <option value="MODERN_ERA">MODERN ERA (1990-Presente)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5 font-sans">Stato Operativo</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                  >
-                    <option value="ACTIVE">ACTIVE (Attivo)</option>
-                    <option value="HISTORIC">HISTORIC (Storico)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Motori / Eliche</label>
-                  <input
-                    type="text"
-                    value={engines}
-                    onChange={(e) => setEngines(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="2x General Electric GE90-115B"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Max Passeggeri</label>
-                  <input
-                    type="number"
-                    value={maxPassengers}
-                    onChange={(e) => setMaxPassengers(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="396"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Primo Volo (Anno)</label>
-                  <input
-                    type="number"
-                    value={firstFlightYear}
-                    onChange={(e) => setFirstFlightYear(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="1994"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Autonomia (Km)</label>
-                  <input
-                    type="number"
-                    value={rangeKm}
-                    onChange={(e) => setRangeKm(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="13649"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">URL Livery House</label>
-                  <input
-                    type="text"
-                    value={houseLiveryUrl}
-                    onChange={(e) => setHouseLiveryUrl(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="https://..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">URL Launch Customer Livery</label>
-                  <input
-                    type="text"
-                    value={launchCustomerLiveryUrl}
-                    onChange={(e) => setLaunchCustomerLiveryUrl(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="https://..."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-500 uppercase font-bold mb-1.5">Descrizione Tecnica</label>
-                <textarea
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
-                  placeholder="Inserisci la descrizione storica o tecnica dell'aereo..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-500 uppercase font-bold mb-1.5">Curiosità / Trivia</label>
-                <textarea
-                  rows={2}
-                  value={trivia}
-                  onChange={(e) => setTrivia(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
-                  placeholder="Inserisci una curiosità o un aneddoto per gli appassionati..."
-                />
-              </div>
-
-              <div className="pt-4 border-t border-slate-850 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-850 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
-                >
-                  Annulla
-                </button>
-                <button
-                  type="submit"
-                  className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-5 py-2.5 rounded-lg text-xs font-black transition-all cursor-pointer shadow-md"
-                >
-                  Salva Modello
-                </button>
-              </div>
-
-            </form>
-          </div>
         </div>
       )}
 

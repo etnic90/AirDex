@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { supabase } from "../../../lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { useParams } from "next/navigation";
@@ -92,6 +92,27 @@ export default function ProfilePage() {
   const [showProBlockModal, setShowProBlockModal] = useState(false);
   const [playsToday, setPlaysToday] = useState(0);
 
+  // Stati Autenticazione Integrata
+  const [authMode, setAuthMode] = useState<"signin" | "signup" | "recovery">("signin");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authCallsign, setAuthCallsign] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const [authMessageType, setAuthMessageType] = useState<"info" | "success" | "error">("info");
+  const [authPrivacyChecked, setAuthPrivacyChecked] = useState(false);
+  const [authNewsletterChecked, setAuthNewsletterChecked] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const action = params.get("action");
+      if (action === "signup") {
+        setAuthMode("signup");
+      }
+    }
+  }, []);
+
   // Stati Dashboard
   const [activeTab, setActiveTab] = useState<"teca" | "airlines" | "quiz" | "settings">("teca");
   const [tecaShowAll, setTecaShowAll] = useState(true);
@@ -125,121 +146,240 @@ export default function ProfilePage() {
   const quizTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 1. Caricamento Iniziale Dati
-  useEffect(() => {
-    const initializeProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session || !session.user) {
-        setLoading(false);
-        return;
-      }
-      setUser(session.user);
-      const email = session.user.email || "";
-      setIsAdmin(["admin@airdex.com", "mirkogalantucci@gmail.com"].includes(email));
+  const initializeProfile = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || !session.user) {
+      setLoading(false);
+      setUser(null);
+      setProfile(null);
+      return;
+    }
+    setUser(session.user);
+    const email = session.user.email || "";
+    setIsAdmin(["admin@airdex.com", "mirkogalantucci@gmail.com"].includes(email));
 
-      // Carica Profilo
-      let { data: profileData } = await supabase
+    // Carica Profilo
+    let { data: profileData } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!profileData) {
+      // Se non esiste (es. utente creato prima del trigger), crealo
+      const { data: newProfile } = await supabase
         .from("user_profiles")
-        .select("*")
-        .eq("id", session.user.id)
+        .insert({ id: session.user.id, onboarding_completed: false })
+        .select()
         .single();
+      profileData = newProfile;
+    }
+    setProfile(profileData);
 
-      if (!profileData) {
-        // Se non esiste (es. utente creato prima del trigger), crealo
-        const { data: newProfile } = await supabase
-          .from("user_profiles")
-          .insert({ id: session.user.id, onboarding_completed: false })
-          .select()
-          .single();
-        profileData = newProfile;
+    // Carica Catture
+    const { data: capturesData } = await supabase
+      .from("user_captures")
+      .select("id, type, target_id, status")
+      .eq("user_id", session.user.id);
+    setCaptures(capturesData || []);
+
+    // Carica Dettagli Compagnie Catturate
+    const airlineIds = (capturesData || [])
+      .filter(c => c.type === "AIRLINE")
+      .map(c => c.target_id);
+    
+    if (airlineIds.length > 0) {
+      const { data: airlinesDetails } = await supabase
+        .from("airlines")
+        .select("id, name, logo_url, iata_code, website")
+        .in("id", airlineIds);
+      setCapturedAirlines(airlinesDetails || []);
+    }
+
+    // Carica Aerei (per Teca e Domande Quiz)
+    const { data: modelsData } = await supabase
+      .from("aircraft_models")
+      .select("id, model_name, type, rarity, max_passengers, range_km, first_flight_year, manufacturers(name)")
+      .order("model_name");
+    setAircraftModels((modelsData || []) as unknown as AircraftModel[]);
+
+    // Carica Aeroporti (per onboarding)
+    const { data: airportsData } = await supabase
+      .from("airports")
+      .select("id, name, iata_code")
+      .order("name");
+    setAirports(airportsData || []);
+
+    // Recupera High Score dal DB (con fallback su localStorage)
+    const dbHighScore = (profileData as any)?.quiz_high_score || 0;
+    const savedScore = localStorage.getItem(`airdex_quiz_highscore_${session.user.id}`);
+    const localHighScore = savedScore ? parseInt(savedScore, 10) : 0;
+    const maxHighScore = Math.max(dbHighScore, localHighScore);
+    setQuizHighScore(maxHighScore);
+
+    // Sincronizza locale e database se necessario
+    if (localHighScore > dbHighScore) {
+      await supabase
+        .from("user_profiles")
+        .update({ quiz_high_score: localHighScore })
+        .eq("id", session.user.id);
+    }
+
+    // Carica Leaderboard
+    const { data: leaderboardData } = await supabase
+      .from("user_profiles")
+      .select("pilot_callsign, quiz_high_score")
+      .order("quiz_high_score", { ascending: false })
+      .limit(5);
+    setLeaderboard(leaderboardData || []);
+
+    if (profileData) {
+      if (profileData.pilot_callsign) {
+        setPilotCallsign(profileData.pilot_callsign);
+        setEditCallsign(profileData.pilot_callsign);
       }
-      setProfile(profileData);
+      setEditAirport(profileData.home_airport || "");
+      setEditDecade(profileData.favorite_decade || "");
+      setEditNewsletter(profileData.newsletter_subscribed || false);
+      if (profileData.favorite_airline) {
+        setEditSelectedAirline({
+          id: "",
+          name: profileData.favorite_airline,
+          iata_code: null,
+          logo_url: null
+        });
+      }
+    }
 
-      // Carica Catture
-      const { data: capturesData } = await supabase
-        .from("user_captures")
-        .select("id, type, target_id, status")
-        .eq("user_id", session.user.id);
-      setCaptures(capturesData || []);
+    // Inizializza playsToday
+    const todayStr = new Date().toISOString().split("T")[0];
+    const storageKey = `airdex_quiz_plays_${session.user.id}_${todayStr}`;
+    const plays = parseInt(localStorage.getItem(storageKey) || "0", 10);
+    setPlaysToday(plays);
 
-      // Carica Dettagli Compagnie Catturate
-      const airlineIds = (capturesData || [])
-        .filter(c => c.type === "AIRLINE")
-        .map(c => c.target_id);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    initializeProfile();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setLoading(true);
+        await initializeProfile();
+      } else {
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [initializeProfile]);
+
+  // Gestori Autenticazione Integrata
+  const handleAuthSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail || !authPassword) return;
+    setAuthLoading(true);
+    setAuthMessage("Inizializzazione decrittazione firma radar...");
+    setAuthMessageType("info");
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+
+    if (error) {
+      setAuthMessage("Errore di autorizzazione: " + error.message);
+      setAuthMessageType("error");
+      setAuthLoading(false);
+    } else {
+      setAuthMessage("Firma digitale autenticata! Caricamento hangar...");
+      setAuthMessageType("success");
+    }
+  };
+
+  const handleAuthSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail || !authPassword) return;
+    if (!authPrivacyChecked) {
+      setAuthMessage("Devi accettare l'Informativa sulla Privacy per registrarti.");
+      setAuthMessageType("error");
+      return;
+    }
+    setAuthLoading(true);
+    setAuthMessage("Registrazione credenziali nel database radar...");
+    setAuthMessageType("info");
+
+    const { data, error } = await supabase.auth.signUp({
+      email: authEmail,
+      password: authPassword,
+      options: {
+        emailRedirectTo: `${window.location.origin}/${lang}/profile`
+      }
+    });
+
+    if (error) {
+      setAuthMessage("Errore di registrazione: " + error.message);
+      setAuthMessageType("error");
+      setAuthLoading(false);
+    } else {
+      setAuthMessage("Firma radar salvata! Controlla la tua casella di posta per confermare la licenza.");
+      setAuthMessageType("success");
+      setAuthLoading(false);
       
-      if (airlineIds.length > 0) {
-        const { data: airlinesDetails } = await supabase
-          .from("airlines")
-          .select("id, name, logo_url, iata_code, website")
-          .in("id", airlineIds);
-        setCapturedAirlines(airlinesDetails || []);
-      }
-
-      // Carica Aerei (per Teca e Domande Quiz)
-      const { data: modelsData } = await supabase
-        .from("aircraft_models")
-        .select("id, model_name, type, rarity, max_passengers, range_km, first_flight_year, manufacturers(name)")
-        .order("model_name");
-      setAircraftModels((modelsData || []) as unknown as AircraftModel[]);
-
-      // Carica Aeroporti (per onboarding)
-      const { data: airportsData } = await supabase
-        .from("airports")
-        .select("id, name, iata_code")
-        .order("name");
-      setAirports(airportsData || []);
-
-      // Recupera High Score dal DB (con fallback su localStorage)
-      const dbHighScore = (profileData as any)?.quiz_high_score || 0;
-      const savedScore = localStorage.getItem(`airdex_quiz_highscore_${session.user.id}`);
-      const localHighScore = savedScore ? parseInt(savedScore, 10) : 0;
-      const maxHighScore = Math.max(dbHighScore, localHighScore);
-      setQuizHighScore(maxHighScore);
-
-      // Sincronizza locale e database se necessario
-      if (localHighScore > dbHighScore) {
+      if (data.user) {
+        const profileUpdates: any = {
+          privacy_accepted: true,
+          newsletter_subscribed: authNewsletterChecked,
+          onboarding_completed: false
+        };
+        if (authCallsign.trim()) {
+          profileUpdates.pilot_callsign = authCallsign.toUpperCase();
+        }
         await supabase
           .from("user_profiles")
-          .update({ quiz_high_score: localHighScore })
-          .eq("id", session.user.id);
+          .update(profileUpdates)
+          .eq("id", data.user.id);
       }
+    }
+  };
 
-      // Carica Leaderboard
-      const { data: leaderboardData } = await supabase
-        .from("user_profiles")
-        .select("pilot_callsign, quiz_high_score")
-        .order("quiz_high_score", { ascending: false })
-        .limit(5);
-      setLeaderboard(leaderboardData || []);
+  const handleAuthRecovery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail) return;
+    setAuthLoading(true);
+    setAuthMessage("Invio link di reset della chiave radar...");
+    setAuthMessageType("info");
 
-      if (profileData) {
-        if (profileData.pilot_callsign) {
-          setPilotCallsign(profileData.pilot_callsign);
-          setEditCallsign(profileData.pilot_callsign);
-        }
-        setEditAirport(profileData.home_airport || "");
-        setEditDecade(profileData.favorite_decade || "");
-        setEditNewsletter(profileData.newsletter_subscribed || false);
-        if (profileData.favorite_airline) {
-          setEditSelectedAirline({
-            id: "",
-            name: profileData.favorite_airline,
-            iata_code: null,
-            logo_url: null
-          });
-        }
+    const { error } = await supabase.auth.resetPasswordForEmail(authEmail, {
+      redirectTo: `${window.location.origin}/${lang}/profile`
+    });
+
+    if (error) {
+      setAuthMessage("Errore invio email: " + error.message);
+      setAuthMessageType("error");
+    } else {
+      setAuthMessage("Link di ripristino inviato! Controlla la posta elettronica.");
+      setAuthMessageType("success");
+    }
+    setAuthLoading(false);
+  };
+
+  const handleAuthGoogleSignIn = async () => {
+    setAuthMessage("Collegamento con il database di sicurezza Google...");
+    setAuthMessageType("info");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/${lang}/profile`
       }
-
-      // Inizializza playsToday
-      const todayStr = new Date().toISOString().split("T")[0];
-      const storageKey = `airdex_quiz_plays_${session.user.id}_${todayStr}`;
-      const plays = parseInt(localStorage.getItem(storageKey) || "0", 10);
-      setPlaysToday(plays);
-
-      setLoading(false);
-    };
-
-    initializeProfile();
-  }, []);
+    });
+    if (error) {
+      setAuthMessage("Errore OAuth: " + error.message);
+      setAuthMessageType("error");
+    }
+  };
 
   const fetchLeaderboard = async () => {
     setLoadingLeaderboard(true);
@@ -763,25 +903,192 @@ export default function ProfilePage() {
     );
   }
 
-  // Accesso Negato
+  // Accesso Negato: Schermata di Login e Registrazione integrata
   if (!user || !profile) {
     return (
-      <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(220,38,38,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(220,38,38,0.03)_1px,transparent_1px)] bg-[size:30px_30px]" />
-        <div className="bg-slate-900/80 backdrop-blur-md p-10 rounded-2xl border border-red-900/50 max-w-md text-center shadow-[0_0_40px_rgba(220,38,38,0.1)] relative z-10">
-          <div className="text-red-500 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Sfondo Griglia Radar */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="w-full max-w-md bg-slate-900/60 border border-slate-800 rounded-3xl p-8 backdrop-blur-xl relative z-10 shadow-2xl">
+          {/* Header Terminale */}
+          <div className="text-center mb-8 font-mono">
+            <div className="text-cyan-400 text-xs font-black uppercase tracking-[0.3em] mb-2 flex items-center justify-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+              Aviation AirDex Terminal
+            </div>
+            <h1 className="text-3xl font-black text-white uppercase tracking-tight">
+              Accesso Hangar
+            </h1>
           </div>
-          <h2 className="text-2xl font-black text-white mb-2 tracking-widest uppercase">Segnale Criptato</h2>
-          <p className="text-slate-400 font-mono text-sm mb-8">EFFETTUA IL LOGIN PER COLLEGARTI ALL'HANGAR CLASSIFICATO.</p>
-          <Link 
-            href={`/${lang}/login`} 
-            className="inline-block bg-cyan-950 border border-cyan-800 px-8 py-3 rounded-sm font-mono text-cyan-400 hover:bg-cyan-900 hover:text-cyan-300 transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)] uppercase tracking-widest text-sm"
+
+          {/* Tab Selector */}
+          <div className="flex bg-slate-950 p-1.5 rounded-xl border border-slate-900 mb-6 font-mono text-[10px] tracking-widest uppercase">
+            <button
+              onClick={() => { setAuthMode("signin"); setAuthMessage(""); }}
+              className={`flex-1 py-2 rounded-lg transition-all font-bold ${
+                authMode === "signin" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              Accedi
+            </button>
+            <button
+              onClick={() => { setAuthMode("signup"); setAuthMessage(""); }}
+              className={`flex-1 py-2 rounded-lg transition-all font-bold ${
+                authMode === "signup" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              Registrati
+            </button>
+            <button
+              onClick={() => { setAuthMode("recovery"); setAuthMessage(""); }}
+              className={`flex-1 py-2 rounded-lg transition-all font-bold ${
+                authMode === "recovery" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Feedback log */}
+          {authMessage && (
+            <div className={`mb-6 p-4 rounded-xl border font-mono text-xs text-center transition-all ${
+              authMessageType === "error" ? "bg-red-500/10 border-red-500/20 text-red-400" :
+              authMessageType === "success" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
+              "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 animate-pulse"
+            }`}>
+              {authMessage}
+            </div>
+          )}
+
+          <form onSubmit={authMode === "signin" ? handleAuthSignIn : authMode === "signup" ? handleAuthSignUp : handleAuthRecovery} className="space-y-4 font-mono">
+            <div>
+              <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Canale Email</label>
+              <input 
+                type="email" 
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                placeholder="pilota@airdex.com"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-850"
+                required
+              />
+            </div>
+            
+            {authMode !== "recovery" && (
+              <div>
+                <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Chiave Accesso (Password)</label>
+                <input 
+                  type="password" 
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-850"
+                  required
+                />
+              </div>
+            )}
+
+            {authMode === "signup" && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Callsign Pilota (Opzionale)</label>
+                  <input 
+                    type="text" 
+                    value={authCallsign}
+                    onChange={(e) => setAuthCallsign(e.target.value)}
+                    placeholder="ES. I-MAVERICK"
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-850"
+                  />
+                  <p className="text-[8px] text-slate-600 mt-1 leading-snug">Configura la tua firma radio per le trasmissioni.</p>
+                </div>
+
+                {/* Privacy Consent */}
+                <div className="flex items-start gap-3 mt-4 text-[10px] text-slate-400 select-none">
+                  <input
+                    type="checkbox"
+                    id="authPrivacyChecked"
+                    checked={authPrivacyChecked}
+                    onChange={(e) => setAuthPrivacyChecked(e.target.checked)}
+                    className="mt-0.5 rounded border-slate-850 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                    required
+                  />
+                  <label htmlFor="authPrivacyChecked" className="leading-snug cursor-pointer">
+                    Accetto l'Informativa sulla Privacy ed acconsento al trattamento dei dati. <span className="text-red-500 font-bold">*</span>
+                  </label>
+                </div>
+
+                {/* Newsletter Consent */}
+                <div className="flex items-start gap-3 text-[10px] text-slate-400 select-none">
+                  <input
+                    type="checkbox"
+                    id="authNewsletterChecked"
+                    checked={authNewsletterChecked}
+                    onChange={(e) => setAuthNewsletterChecked(e.target.checked)}
+                    className="mt-0.5 rounded border-slate-850 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                  />
+                  <label htmlFor="authNewsletterChecked" className="leading-snug cursor-pointer">
+                    Desidero iscrivermi alla newsletter AvGeek per ricevere segnali radar e info travel hacks.
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <button 
+              type="submit" 
+              disabled={authLoading}
+              className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black py-3.5 rounded-xl transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-cyan-500/10 cursor-pointer"
+            >
+              {authLoading && <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>}
+              <span>
+                {authMode === "signin" ? "Autentica Licenza" : authMode === "signup" ? "Registra Nuova Licenza" : "Richiedi Ripristino"}
+              </span>
+            </button>
+          </form>
+
+          {/* Divisore per Social Logins */}
+          <div className="relative my-8 font-mono">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-800"></div>
+            </div>
+            <div className="relative flex justify-center text-[9px] uppercase tracking-wider">
+              <span className="bg-slate-950 px-3 text-slate-500">Oppure firma con</span>
+            </div>
+          </div>
+
+          {/* Bottone Google OAuth */}
+          <button
+            type="button"
+            onClick={handleAuthGoogleSignIn}
+            className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/40 text-slate-300 font-mono py-3 rounded-xl transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-inner cursor-pointer"
           >
-            Inizializza Terminale Login
-          </Link>
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+              />
+            </svg>
+            Google Cloud Network
+          </button>
+
+          {/* Back Link */}
+          <div className="text-center mt-8 font-mono text-[9px] uppercase tracking-widest">
+            <Link href={`/${lang}`} className="text-slate-500 hover:text-cyan-400 transition-colors">
+              &larr; Ritorna alla Hangar Homepage
+            </Link>
+          </div>
         </div>
       </main>
     );

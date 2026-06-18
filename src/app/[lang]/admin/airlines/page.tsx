@@ -33,8 +33,8 @@ export default function AdminAirlinesManager() {
   const [totalCount, setTotalCount] = useState(0);
   const pageSize = 15;
 
-  // Modale Stati
-  const [isOpen, setIsOpen] = useState(false);
+  // View state: "list" o "edit"
+  const [view, setView] = useState<"list" | "edit">("list");
   const [editingAirline, setEditingAirline] = useState<Airline | null>(null);
 
   // Form Stati
@@ -109,7 +109,7 @@ export default function AdminAirlinesManager() {
     setAlliance("");
     setMainHub("");
     setSlogan("");
-    setIsOpen(true);
+    setView("edit");
   };
 
   const handleOpenEdit = (airline: Airline) => {
@@ -126,7 +126,7 @@ export default function AdminAirlinesManager() {
     setAlliance(airline.alliance || "");
     setMainHub(airline.main_hub || "");
     setSlogan(airline.slogan || "");
-    setIsOpen(true);
+    setView("edit");
   };
 
   const handleDelete = async (id: string) => {
@@ -175,7 +175,7 @@ export default function AdminAirlinesManager() {
       if (error) {
         alert("Errore durante il salvataggio: " + error.message);
       } else {
-        setIsOpen(false);
+        setView("list");
         fetchAirlines();
       }
     } else {
@@ -186,13 +186,253 @@ export default function AdminAirlinesManager() {
       if (error) {
         alert("Errore durante l'inserimento: " + error.message);
       } else {
-        setIsOpen(false);
+        setView("list");
         fetchAirlines();
       }
     }
   };
 
   const totalPages = Math.ceil(totalCount / pageSize);
+
+  if (view === "edit") {
+    return (
+      <div className="space-y-6 text-slate-100 font-sans">
+        
+        {/* Editor TopBar */}
+        <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setView("list")}
+              className="bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-850 px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer"
+            >
+              &larr; Torna alla lista
+            </button>
+            <div>
+              <h1 className="text-xl font-black text-white font-mono uppercase tracking-wider">
+                {editingAirline ? "Modifica Compagnia" : "Nuova Compagnia"}
+              </h1>
+              <span className="text-[10px] text-slate-500 font-mono">WordPress-style Editor Engine v2.0</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView("list")}
+              className="bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-850 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+            >
+              Annulla
+            </button>
+            <button
+              onClick={(e) => handleSubmit(e)}
+              className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-5 py-2.5 rounded-lg text-xs font-black transition-all cursor-pointer shadow-lg hover:shadow-cyan-500/10"
+            >
+              Salva Compagnia
+            </button>
+          </div>
+        </div>
+
+        {/* Form Grid */}
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* COLONNA SINISTRA: EDITOR PRINCIPALE */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Input Nome Compagnia */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+              <label className="block text-slate-400 uppercase font-mono text-xs font-bold">Nome Vettore</label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Esempio: ITA Airways"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:outline-none p-4 rounded-xl text-lg font-bold text-white font-sans"
+              />
+            </div>
+
+            {/* Dati Operativi e Storici */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 font-mono text-xs">
+              <h3 className="text-white text-xs font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>📋</span> Specifiche Operative
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Nazione</label>
+                  <input
+                    type="text"
+                    required
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    placeholder="Esempio: Italia"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Alleanza Globale</label>
+                  <input
+                    type="text"
+                    value={alliance}
+                    onChange={(e) => setAlliance(e.target.value)}
+                    placeholder="SkyTeam, Star Alliance, OneWorld..."
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Anno di Fondazione</label>
+                  <input
+                    type="number"
+                    required
+                    value={foundedYear}
+                    onChange={(e) => setFoundedYear(Number(e.target.value))}
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Anno di Chiusura (Opzionale)</label>
+                  <input
+                    type="number"
+                    value={closedYear}
+                    onChange={(e) => setClosedYear(e.target.value)}
+                    placeholder="Lascia vuoto se attiva"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 pt-4 border-t border-slate-850">
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Hub Principale / Base Operativa</label>
+                  <input
+                    type="text"
+                    value={mainHub}
+                    onChange={(e) => setMainHub(e.target.value)}
+                    placeholder="Aeroporto di Roma-Fiumicino (FCO)"
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-slate-400 uppercase font-bold">Motto / Slogan</label>
+                  <input
+                    type="text"
+                    value={slogan}
+                    onChange={(e) => setSlogan(e.target.value)}
+                    placeholder="Slogan della compagnia..."
+                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* COLONNA DESTRA: METADATI E LOGO */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Widget 1: Pubblicazione / Salvataggio */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+              <h3 className="text-white font-mono text-xs font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>💾</span> Registrazione Vettore
+              </h3>
+              <div className="text-xs font-mono text-slate-400 leading-relaxed font-sans">
+                Stato di caricamento: <strong className="text-cyan-400">Database Live</strong>. Qualsiasi aggiornamento si ripercuoterà in tempo reale sulle schede flotta, statistiche e radar.
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono text-xs font-black uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-md"
+              >
+                Salva Vettore
+              </button>
+            </div>
+
+            {/* Widget 2: Codici Identificativi */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 font-mono text-xs">
+              <h3 className="text-white font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>📟</span> Codici Avionici
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Codice IATA (2 Car.)</label>
+                  <input
+                    type="text"
+                    maxLength={2}
+                    value={iataCode}
+                    onChange={(e) => setIataCode(e.target.value.toUpperCase())}
+                    placeholder="AZ"
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg text-white font-mono focus:border-cyan-500 focus:outline-none text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Codice ICAO (3 Car.)</label>
+                  <input
+                    type="text"
+                    maxLength={3}
+                    value={icaoCode}
+                    onChange={(e) => setIcaoCode(e.target.value.toUpperCase())}
+                    placeholder="ITY"
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg text-white font-mono focus:border-cyan-500 focus:outline-none text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Callsign Radio</label>
+                  <input
+                    type="text"
+                    value={callsign}
+                    onChange={(e) => setCallsign(e.target.value.toUpperCase())}
+                    placeholder="ITARROW"
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg text-white font-mono focus:border-cyan-500 focus:outline-none text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Widget 3: Logo ed Elementi Web */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 font-mono text-xs">
+              <h3 className="text-white font-black uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+                <span>🖼️</span> Logo & Media
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">Sito Web Compagnia</label>
+                  <input
+                    type="text"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-slate-500 uppercase font-bold">URL Logo Vettore</label>
+                  <input
+                    type="text"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-slate-950 border border-slate-850 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-xs text-white"
+                  />
+                </div>
+                {logoUrl.trim() !== "" ? (
+                  <div className="h-32 w-full rounded-xl bg-white border border-slate-850 relative p-4 flex items-center justify-center">
+                    <img 
+                      src={logoUrl} 
+                      alt="Logo Preview" 
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-28 w-full border border-dashed border-slate-850 bg-slate-950/40 rounded-xl flex items-center justify-center text-slate-600 text-[10px] text-center px-4">
+                    Nessun logo associato
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 text-slate-100 font-sans">
@@ -260,7 +500,7 @@ export default function AdminAirlinesManager() {
                           </div>
                         )}
                       </td>
-                      <td className="p-4 font-sans max-w-xs">
+                      <td className="p-4 font-sans max-w-xs font-medium">
                         <span className="text-white font-bold block">{airline.name}</span>
                         {airline.website && (
                           <a 
@@ -353,186 +593,6 @@ export default function AdminAirlinesManager() {
       ) : (
         <div className="border border-dashed border-slate-800 bg-slate-950/10 text-center py-12 text-slate-500 font-mono text-xs rounded-xl">
           Nessuna compagnia trovata corrispondente ai parametri inseriti.
-        </div>
-      )}
-
-      {/* Modale Creazione / Modifica */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 md:p-8 relative shadow-2xl overflow-y-auto max-h-[90vh]">
-            
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 text-slate-500 hover:text-white text-lg font-mono"
-            >
-              ✕
-            </button>
-
-            <h3 className="text-lg font-bold text-white uppercase tracking-wider font-mono mb-6 pb-2 border-b border-slate-850">
-              {editingAirline ? "Modifica Compagnia" : "Nuova Compagnia Aerea"}
-            </h3>
-
-            <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs text-slate-300">
-              
-              <div>
-                <label className="block text-slate-500 uppercase font-bold mb-1.5">Nome Vettore</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs font-sans"
-                  placeholder="Esempio: ITA Airways"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Codice IATA (2 Caratteri)</label>
-                  <input
-                    type="text"
-                    maxLength={2}
-                    value={iataCode}
-                    onChange={(e) => setIataCode(e.target.value.toUpperCase())}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="AZ"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Codice ICAO (3 Caratteri)</label>
-                  <input
-                    type="text"
-                    maxLength={3}
-                    value={icaoCode}
-                    onChange={(e) => setIcaoCode(e.target.value.toUpperCase())}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="ITY"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Callsign Radio</label>
-                  <input
-                    type="text"
-                    value={callsign}
-                    onChange={(e) => setCallsign(e.target.value.toUpperCase())}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="ITARROW"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Nazione</label>
-                  <input
-                    type="text"
-                    required
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="Italia"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Alleanza (Star Alliance, SkyTeam...)</label>
-                  <input
-                    type="text"
-                    value={alliance}
-                    onChange={(e) => setAlliance(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="SkyTeam"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Anno di Fondazione</label>
-                  <input
-                    type="number"
-                    required
-                    value={foundedYear}
-                    onChange={(e) => setFoundedYear(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="2021"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Anno di Chiusura (Bozza/Storico)</label>
-                  <input
-                    type="number"
-                    value={closedYear}
-                    onChange={(e) => setClosedYear(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="Lascia vuoto se attiva"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Sito Web Ufficiale</label>
-                  <input
-                    type="text"
-                    value={website}
-                    onChange={(e) => setWebsite(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="https://www.ita-airways.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">URL Logo</label>
-                  <input
-                    type="text"
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="https://logo.clearbit.com/..."
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Hub Principale</label>
-                  <input
-                    type="text"
-                    value={mainHub}
-                    onChange={(e) => setMainHub(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="Aeroporto di Roma-Fiumicino"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-500 uppercase font-bold mb-1.5">Motto / Slogan</label>
-                  <input
-                    type="text"
-                    value={slogan}
-                    onChange={(e) => setSlogan(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 p-3 rounded-lg focus:border-cyan-500 focus:outline-none text-white text-xs"
-                    placeholder="La compagnia di bandiera italiana"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-850 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-850 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
-                >
-                  Annulla
-                </button>
-                <button
-                  type="submit"
-                  className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-5 py-2.5 rounded-lg text-xs font-black transition-all cursor-pointer shadow-md"
-                >
-                  Salva Compagnia
-                </button>
-              </div>
-
-            </form>
-          </div>
         </div>
       )}
 

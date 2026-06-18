@@ -186,35 +186,9 @@ export default async function ArticlePage({
               </div>
             )}
 
-            {/* Contenuto dinamico strutturato in box per paragrafo */}
-            <div className="space-y-6">
-              {paragraphs.map((p: string, idx: number) => {
-                // Riconoscimento titoli inseriti nel testo o elenchi puntati
-                const isBulletList = p.startsWith("*");
-                
-                if (isBulletList) {
-                  const items = p.split("\n").map((item: string) => item.replace(/^\*\s*/, "").trim());
-                  return (
-                    <div key={idx} className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 font-mono text-xs space-y-2.5">
-                      {items.map((item: string, itemIdx: number) => (
-                        <div key={itemIdx} className="flex gap-3 text-slate-300">
-                          <span className="text-cyan-500 font-bold font-sans">-</span>
-                          <span>{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                }
-
-                return (
-                  <div 
-                    key={idx} 
-                    className="bg-slate-950/20 hover:border-slate-800/65 rounded-2xl p-6 border border-slate-900/60 hover:bg-slate-900/10 transition-all duration-300 leading-relaxed font-sans text-base md:text-lg text-slate-300"
-                  >
-                    {p}
-                  </div>
-                );
-              })}
+            {/* Contenuto dinamico strutturato con intestazioni ed elenchi puntati */}
+            <div className="space-y-6 text-slate-300 font-sans selection:bg-cyan-800/30">
+              {paragraphs.map((p: string, idx: number) => parseParagraphContent(p, idx))}
             </div>
 
           </article>
@@ -267,4 +241,94 @@ export default async function ArticlePage({
       </div>
     </main>
   );
+}
+
+// Helpers per il parsing editoriale nativo (in stile WordPress) del Markdown
+function parseParagraphContent(p: string, idx: number) {
+  const text = p.trim();
+
+  if (text.startsWith("#### ")) {
+    return (
+      <h4 key={idx} className="text-lg font-black text-white font-mono uppercase mt-8 mb-4 border-l-2 border-cyan-500 pl-3">
+        {text.replace(/^####\s*/, "")}
+      </h4>
+    );
+  }
+
+  if (text.startsWith("### ")) {
+    return (
+      <h3 key={idx} className="text-xl font-extrabold text-white font-mono uppercase mt-10 mb-4 border-l-4 border-cyan-500 pl-4">
+        {text.replace(/^###\s*/, "")}
+      </h3>
+    );
+  }
+
+  if (text.startsWith("## ")) {
+    return (
+      <h2 key={idx} className="text-2xl font-black text-white font-mono uppercase mt-12 mb-6 border-b border-slate-800 pb-3">
+        {text.replace(/^##\s*/, "")}
+      </h2>
+    );
+  }
+
+  if (text.startsWith("*") || text.startsWith("-")) {
+    const items = text.split("\n").map((item) => item.replace(/^[\*\-]\s*/, "").trim());
+    return (
+      <ul key={idx} className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 font-sans text-sm space-y-2.5 my-6 list-disc list-inside text-slate-300">
+        {items.map((item, itemIdx) => (
+          <li key={itemIdx} className="leading-relaxed">
+            {parseInlineMarkup(item)}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (text.startsWith("```")) {
+    const lines = text.split("\n");
+    const codeLines = lines.slice(1, lines.length - 1).join("\n");
+    return (
+      <pre key={idx} className="bg-slate-950 p-6 rounded-2xl border border-slate-900 overflow-x-auto text-xs text-cyan-400 font-mono my-6 shadow-inner">
+        <code>{codeLines}</code>
+      </pre>
+    );
+  }
+
+  // Paragrafo Standard (renderizzato come paragrafo editoriale)
+  return (
+    <p key={idx} className="leading-relaxed font-sans text-base md:text-lg text-slate-300 my-5">
+      {parseInlineMarkup(text)}
+    </p>
+  );
+}
+
+function parseInlineMarkup(text: string) {
+  // Supporto base per grassetto (**testo**) e collegamenti ([testo](link))
+  const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={index} className="text-white font-extrabold">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    
+    const linkMatch = part.match(/\[([^\]]+)\]\(([^)]+)\)/);
+    if (linkMatch) {
+      return (
+        <a
+          key={index}
+          href={linkMatch[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-cyan-400 hover:text-cyan-300 underline font-semibold transition-colors"
+        >
+          {linkMatch[1]}
+        </a>
+      );
+    }
+
+    return part;
+  });
 }
