@@ -80,26 +80,26 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         <h1 className="text-5xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-500 tracking-tight mb-6 uppercase">
           AirDex Main Core
         </h1>
-        <p className="text-slate-400 font-mono text-sm max-w-2xl mx-auto uppercase tracking-wider mb-12">
-          L'Enciclopedia Definitiva e Registro di Telemetria per l'Aviazione Civile Mondiale.
+        <p className="text-slate-300 font-sans text-lg md:text-xl max-w-2xl mx-auto tracking-wide mb-12 leading-relaxed">
+          L'enciclopedia definitiva e il registro di telemetria per l'aviazione civile mondiale.
         </p>
         
         {/* BARRA DI RICERCA PREDITTIVA */}
         <SearchAutocomplete lang={lang} searchIndex={searchIndex} />
 
         {/* TELEMETRIA DASHBOARD (STATISTICHE AVANZATE) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl relative">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-5xl relative">
           {[
-            { label: "Vettori in Archivio", value: totale, sub: "OPERA OMNIA", color: "text-white", border: "border-slate-800" },
-            { label: "Servizio di Linea Attivo", value: attivi, sub: "IN AIRSPACE NOW", color: "text-emerald-400", border: "border-emerald-950/50 bg-emerald-950/5" },
-            { label: "Flotta Storica Ritirata", value: storici, sub: "CHRONO REPOSITORY", color: "text-amber-500", border: "border-amber-950/50 bg-amber-950/5" },
-            { label: "Classe Leggendaria", value: legendaryCount || 0, color: "text-purple-400", sub: "MAX RARITY TIER", border: "border-purple-950/50 bg-purple-950/5" }
+            { label: "Vettori in Archivio", value: totale, sub: "OPERA OMNIA", color: "text-white", border: "border-slate-800 bg-slate-900/90" },
+            { label: "Servizio di Linea Attivo", value: attivi, sub: "IN AIRSPACE NOW", color: "text-emerald-400", border: "border-slate-800 bg-slate-900/90" },
+            { label: "Flotta Storica Ritirata", value: storici, sub: "CHRONO REPOSITORY", color: "text-amber-500", border: "border-slate-800 bg-slate-900/90" },
+            { label: "Classe Leggendaria", value: legendaryCount || 0, color: "text-purple-400", sub: "MAX RARITY TIER", border: "border-slate-800 bg-slate-900/90" }
           ].map((stat, i) => (
-            <div key={i} className={`border rounded-xl p-5 backdrop-blur-md hover:border-slate-600 transition-all group/stat relative overflow-hidden ${stat.border}`}>
-              <div className="absolute top-0 left-0 w-1 h-full bg-slate-800 group-hover/stat:bg-cyan-500 transition-colors"></div>
+            <div key={i} className={`border rounded-2xl p-7 md:p-8 backdrop-blur-xl hover:border-cyan-500/70 hover:shadow-[0_0_25px_rgba(6,182,212,0.15)] transition-all group/stat relative overflow-hidden shadow-lg ${stat.border}`}>
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800 group-hover/stat:bg-cyan-500 transition-colors"></div>
               <span className={`text-4xl font-black font-mono block tracking-tight ${stat.color}`}>{stat.value.toLocaleString()}</span>
-              <span className="text-slate-300 text-xs font-bold block mt-2 uppercase tracking-wide">{stat.label}</span>
-              <span className="text-[9px] font-mono text-slate-500 tracking-widest block mt-1">{stat.sub}</span>
+              <span className="text-slate-300 text-sm font-extrabold block mt-2.5 uppercase tracking-wide font-sans">{stat.label}</span>
+              <span className="text-xs font-mono text-slate-500 tracking-wider block mt-1">{stat.sub}</span>
             </div>
           ))}
         </div>
@@ -107,8 +107,8 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
       {/* ------------------ SEZIONE: AEREO DEL GIORNO ------------------ */}
       {aereoDelGiorno && (
-        <section className="relative z-10 px-4 max-w-7xl mx-auto py-16">
-          <div className="bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-slate-800 rounded-3xl p-6 md:p-10 backdrop-blur-xl shadow-[0_0_5px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+        <section className="relative z-10 px-4 max-w-7xl mx-auto py-16 animate-fade-in">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 md:p-12 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
             {/* Corner Indicators stile HUD aeronautico */}
             <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-cyan-500/40"></div>
             <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-cyan-500/40"></div>
@@ -120,7 +120,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
               {/* Testo dell'aereo del giorno */}
               <div className="lg:col-span-5 space-y-6">
                 <div>
-                  <span className="text-cyan-500 font-mono text-xs uppercase tracking-[0.3em] font-black block mb-2">
+                  <span className="text-cyan-550 font-sans text-xs uppercase tracking-[0.25em] font-black block mb-2">
                     // DAILY FLIGHT PLAN FEATURED
                   </span>
                   <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight uppercase">
@@ -131,16 +131,16 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
                   </p>
                 </div>
 
-                <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl font-mono text-xs space-y-2 text-slate-400">
-                  <div className="flex justify-between"><span className="text-slate-500">PROPULSIONE:</span> <span className="text-white font-bold">{aereoDelGiorno.engines}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">STATUS OPERATIVO:</span> <span className={aereoDelGiorno.status === 'ACTIVE' ? 'text-emerald-400' : 'text-amber-500'}>{aereoDelGiorno.status}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">INDICE DI RARITÀ:</span> <span className="text-purple-400 font-black">{aereoDelGiorno.rarity}</span></div>
+                <div className="p-6 bg-slate-950/90 border border-slate-850 rounded-2xl font-sans text-sm space-y-3.5 text-slate-300 font-semibold shadow-inner">
+                  <div className="flex justify-between"><span className="text-slate-450 uppercase text-xs font-bold tracking-wider">Propulsione</span> <span className="text-white font-black font-mono">{aereoDelGiorno.engines}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-450 uppercase text-xs font-bold tracking-wider">Status Operativo</span> <span className={aereoDelGiorno.status === 'ACTIVE' ? 'text-emerald-400 font-extrabold font-mono text-xs' : 'text-amber-500 font-extrabold font-mono text-xs'}>{aereoDelGiorno.status}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-450 uppercase text-xs font-bold tracking-wider">Indice di Rarità</span> <span className="text-purple-400 font-black font-mono text-xs">{aereoDelGiorno.rarity}</span></div>
                 </div>
 
                 {/* Grafici statistici live per gli appassionati */}
                 <div className="space-y-4">
                   <div>
-                    <div className="flex justify-between text-xs font-mono text-slate-400 mb-1">
+                    <div className="flex justify-between text-sm font-mono text-slate-350 mb-1 font-bold">
                       <span>RAGGIO D'AZIONE MASSIMO</span>
                       <span className="text-cyan-400 font-bold">{aereoDelGiorno.range_km?.toLocaleString()} KM</span>
                     </div>
@@ -179,14 +179,14 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
                     className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-700 font-mono text-sm tracking-widest bg-[linear-gradient(rgba(6,182,212,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:30px_30px]">
-                    <svg className="w-12 h-12 text-slate-800 mb-2 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 font-mono text-sm tracking-widest bg-[linear-gradient(rgba(6,182,212,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:30px_30px] font-bold">
+                    <svg className="w-12 h-12 text-slate-700 mb-2 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11.543V10a5 5 0 00-5-5H3.581m0 0a23.99 23.99 0 0113.179-1.247M6 11h.01M9 16H5.113a2 2 0 00-1.997 1.851l-.112 1.343" />
                     </svg>
                     FOTO SATELLITARE ATTESA UPGRADE
                   </div>
                 )}
-                <div className="absolute top-4 right-4 bg-slate-900/90 backdrop-blur-md border border-slate-700 font-mono text-[10px] text-cyan-400 px-3 py-1 rounded-md tracking-widest uppercase">
+                <div className="absolute top-4 right-4 bg-slate-900/95 backdrop-blur-md border border-slate-700 font-mono text-xs text-cyan-400 px-3 py-1.5 rounded-md tracking-wider uppercase font-bold shadow-md">
                   FIRST FLIGHT: {aereoDelGiorno.first_flight_year || 'N/D'}
                 </div>
               </div>
@@ -195,18 +195,17 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
           </div>
         </section>
       )}
-
       {/* ------------------ SEZIONE: NAVIGATORE ERE STORICHE ------------------ */}
-      <section className="relative z-10 px-4 max-w-7xl mx-auto py-12">
+      <section className="relative z-10 px-4 max-w-7xl mx-auto py-16">
         <div className="mb-8">
-          <h2 className="text-xl font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-            <span className="w-1 h-5 bg-cyan-500 rounded"></span>
+          <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+            <span className="w-1.5 h-6 bg-cyan-500 rounded"></span>
             Cronologia Vettori per Epoca
           </h2>
-          <p className="text-slate-400 font-mono text-xs mt-1">Esplorazione filtrata attraverso le grandi rivoluzioni dell'ingegneria aeronautica civili.</p>
+          <p className="text-slate-450 font-mono text-xs mt-1 uppercase tracking-wider">Esplorazione filtrata attraverso le grandi rivoluzioni dell'ingegneria aeronautica civili.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { title: "I Pionieri & Elica", era: "1910 - 1945", desc: "Dagli albori in legno e tela ai motori radiali della Seconda Guerra Mondiale.", query: "era=pioneers", badge: "HISTORIC" },
             { title: "L'Età dell'Oro a Pistoni", era: "1946 - 1957", desc: "I giganti transoceanici commerciali a pistoni come il DC-6 e il Constellation.", query: "era=golden", badge: "HISTORIC" },
@@ -216,17 +215,17 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             <Link 
               href={`/${lang}/radar?${epoch.query}`} 
               key={i} 
-              className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-5 hover:border-cyan-500/40 hover:bg-slate-900/80 transition-all group flex flex-col justify-between"
+              className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 hover:border-cyan-500/60 hover:bg-slate-900/95 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all duration-300 group flex flex-col justify-between backdrop-blur-xl shadow-lg"
             >
               <div>
-                <div className="flex justify-between items-start mb-3">
-                  <span className="text-cyan-500 font-mono text-xs font-bold tracking-wider">{epoch.era}</span>
-                  <span className="text-[9px] font-mono border border-slate-700 text-slate-400 px-1.5 py-0.5 rounded uppercase">{epoch.badge}</span>
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-cyan-505 font-mono text-sm font-black tracking-wider">{epoch.era}</span>
+                  <span className="text-xs font-mono border border-slate-700 text-slate-400 px-2.5 py-0.5 rounded-full uppercase font-bold">{epoch.badge}</span>
                 </div>
-                <h3 className="text-base font-bold text-white uppercase tracking-wide mb-2 group-hover:text-cyan-400 transition-colors">{epoch.title}</h3>
-                <p className="text-slate-400 text-xs font-normal leading-relaxed">{epoch.desc}</p>
+                <h3 className="text-base font-extrabold text-white uppercase tracking-wide mb-3 group-hover:text-cyan-400 transition-colors font-mono">{epoch.title}</h3>
+                <p className="text-slate-350 text-sm font-normal leading-relaxed">{epoch.desc}</p>
               </div>
-              <div className="text-cyan-500 font-mono text-[11px] uppercase tracking-wider mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="text-cyan-400 font-mono text-xs uppercase tracking-widest mt-6 opacity-0 group-hover:opacity-100 transition-opacity font-bold">
                 Inizializza Scansione &rarr;
               </div>
             </Link>
@@ -235,57 +234,57 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
       </section>
 
       {/* ------------------ SEZIONE: ECOSISTEMA GLOBALE (COMPAGNIE & AEROPORTI) ------------------ */}
-      <section className="relative z-10 px-4 max-w-7xl mx-auto py-12">
+      <section className="relative z-10 px-4 max-w-7xl mx-auto py-16">
         <div className="mb-8">
-          <h2 className="text-xl font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-            <span className="w-1 h-5 bg-cyan-500 rounded"></span>
+          <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+            <span className="w-1.5 h-6 bg-cyan-500 rounded"></span>
             Ecosistema Aeronautico Globale
           </h2>
-          <p className="text-slate-400 font-mono text-xs mt-1">
+          <p className="text-slate-450 font-mono text-xs mt-1 uppercase tracking-wider">
             Navigazione circolare tra i registri flotta delle compagnie aeree e le telemetrie degli aeroporti mondiali.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Card Compagnie */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-md relative overflow-hidden group flex flex-col justify-between hover:border-purple-500/40 transition-all duration-300 shadow-xl">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 md:p-10 backdrop-blur-xl relative overflow-hidden group flex flex-col justify-between hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300 shadow-2xl">
             <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800 group-hover:bg-purple-500 transition-colors"></div>
             <div>
-              <span className="text-purple-400 font-mono text-xs uppercase tracking-widest font-black block mb-2">
+              <span className="text-purple-400 font-mono text-xs uppercase tracking-widest font-black block mb-3">
                 // REGISTRO OPERATORI DI LINEA
               </span>
-              <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-4 group-hover:text-purple-400 transition-colors">
+              <h3 className="text-3xl font-black text-white uppercase tracking-wider mb-4 group-hover:text-purple-450 transition-colors font-mono">
                 Compagnie Aeree
               </h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-sans mb-6">
+              <p className="text-slate-350 text-sm leading-relaxed font-sans mb-6">
                 Esplora le schede di dettaglio dei vettori commerciali globali, le statistiche sulle flotte attive e storiche, le rotte coperte e gli specifici modelli di aeromobili operati in tutto il mondo.
               </p>
             </div>
             <Link
               href={`/${lang}/airlines`}
-              className="inline-flex items-center justify-center bg-purple-950/20 hover:bg-purple-900/30 border border-purple-900/40 text-purple-400 hover:text-purple-300 font-mono text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition-all cursor-pointer w-full md:w-auto text-center"
+              className="inline-flex items-center justify-center bg-purple-950/30 hover:bg-purple-900/40 border border-purple-900/40 text-purple-400 hover:text-purple-300 font-mono text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all cursor-pointer w-full md:w-auto text-center font-bold"
             >
               Apri Registro Compagnie &rarr;
             </Link>
           </div>
 
           {/* Card Aeroporti */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-md relative overflow-hidden group flex flex-col justify-between hover:border-cyan-500/40 transition-all duration-300 shadow-xl">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 md:p-10 backdrop-blur-xl relative overflow-hidden group flex flex-col justify-between hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all duration-300 shadow-2xl">
             <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800 group-hover:bg-cyan-500 transition-colors"></div>
             <div>
-              <span className="text-cyan-400 font-mono text-xs uppercase tracking-widest font-black block mb-2">
+              <span className="text-cyan-400 font-mono text-xs uppercase tracking-widest font-black block mb-3">
                 // INFRASTRUTTURE & HUB INTERNAZIONALI
               </span>
-              <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-4 group-hover:text-cyan-400 transition-colors">
+              <h3 className="text-3xl font-black text-white uppercase tracking-wider mb-4 group-hover:text-cyan-405 transition-colors font-mono">
                 Aeroporti Globali
               </h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-sans mb-6">
+              <p className="text-slate-355 text-sm leading-relaxed font-sans mb-6">
                 Analizza le telemetrie infrastrutturali degli aeroporti civili: piste attive, coordinate satellitari, orientamento magnetico, radiofrequenze ATIS/TOWER e bollettini meteo avionici (METAR) live.
               </p>
             </div>
             <Link
               href={`/${lang}/airports`}
-              className="inline-flex items-center justify-center bg-cyan-950/20 hover:bg-cyan-900/30 border border-cyan-900/40 text-cyan-400 hover:text-cyan-300 font-mono text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition-all cursor-pointer w-full md:w-auto text-center"
+              className="inline-flex items-center justify-center bg-cyan-950/30 hover:bg-cyan-900/40 border border-cyan-900/40 text-cyan-400 hover:text-cyan-300 font-mono text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl transition-all cursor-pointer w-full md:w-auto text-center font-bold"
             >
               Accedi al Radar Aeroporti &rarr;
             </Link>
@@ -309,13 +308,13 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         </div>
 
         {/* Griglia che ospita le AircraftCard del team */}
-        <div className="flex gap-8 flex-wrap justify-center lg:justify-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {flottaRecente.length > 0 ? (
             flottaRecente.map((aircraft) => (
               <AircraftCard key={aircraft.id} aircraft={aircraft} lang={lang} />
             ))
           ) : (
-            <p className="text-slate-500 font-mono text-xs animate-pulse tracking-widest py-10">
+            <p className="text-slate-500 font-mono text-xs animate-pulse tracking-widest py-10 col-span-full text-center">
               &gt; NESSUN VETTORE REGISTRATO NELLE ULTIME 24 ORE. SYSTEM IDLE.
             </p>
           )}
@@ -323,7 +322,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
       </section>
 
       {/* FOOTER SYSTEM INDICATOR */}
-      <div className="text-center mt-20 text-[10px] font-mono text-slate-600 tracking-[0.3em] uppercase relative z-10">
+      <div className="text-center mt-24 text-xs font-mono text-slate-500 tracking-[0.25em] uppercase relative z-10 border-t border-slate-900/60 pt-8 max-w-7xl mx-auto">
         AirDex OS v4.2.1 // Supabase Relational Cluster Connected // Node Environment Active
       </div>
 

@@ -201,7 +201,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
         </div>
 
         {/* HEADER PLANCIA */}
-        <div className="bg-slate-900/20 border border-slate-900 rounded-3xl p-6 md:p-8 backdrop-blur-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-2xl">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 md:p-8 backdrop-blur-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
           
           <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
@@ -228,7 +228,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
               <div className="flex flex-col md:flex-row md:items-center gap-3 mb-1.5">
                 <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white">{airline.name}</h1>
                 <div className="flex items-center gap-2 justify-center md:justify-start">
-                  <span className={`text-[10px] font-mono uppercase font-black tracking-widest px-2.5 py-0.5 rounded border self-center ${
+                  <span className={`text-xs font-mono uppercase font-black tracking-widest px-3 py-1 rounded border self-center ${
                     airline.closed_year ? 'border-amber-500/30 text-amber-500 bg-amber-950/20' : 'border-emerald-500/30 text-emerald-400 bg-emerald-950/20'
                   }`}>
                     {airline.closed_year ? 'Historical' : 'Active'}
@@ -244,24 +244,24 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
                       />
                     </div>
                     {/* Tooltip CSS */}
-                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-slate-900 border border-slate-800 text-[10px] uppercase font-mono tracking-widest text-slate-200 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 shadow-2xl">
+                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-slate-900 border border-slate-800 text-xs uppercase font-mono tracking-widest text-slate-200 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 shadow-2xl">
                       Stato: {airline.country}
                     </span>
                   </div>
                 </div>
               </div>
-              {airline.slogan && <p className="text-cyan-400/70 italic text-xs font-mono">“{airline.slogan}”</p>}
-              <p className="text-slate-500 font-mono text-xs mt-1">{airline.headquarters || airline.country}</p>
+              {airline.slogan && <p className="text-cyan-400/80 italic text-sm font-mono">“{airline.slogan}”</p>}
+              <p className="text-slate-400 font-mono text-sm mt-1">{airline.headquarters || airline.country}</p>
             </div>
           </div>
 
-          <div className="flex gap-4 bg-slate-950 p-3 rounded-xl border border-slate-900 font-mono text-center shadow-inner">
+          <div className="flex gap-4 bg-slate-950 p-4 rounded-xl border border-slate-850 font-mono text-center shadow-inner">
             <div className="px-3 border-r border-slate-900">
-              <span className="text-slate-600 block text-[9px] uppercase tracking-wider">IATA</span>
+              <span className="text-slate-500 block text-xs uppercase tracking-wider font-bold mb-0.5">IATA</span>
               <span className="text-cyan-400 font-black text-base">{airline.iata_code || "—"}</span>
             </div>
             <div className="px-3">
-              <span className="text-slate-600 block text-[9px] uppercase tracking-wider">ICAO</span>
+              <span className="text-slate-500 block text-xs uppercase tracking-wider font-bold mb-0.5">ICAO</span>
               <span className="text-purple-400 font-black text-base">{airline.icao_code || "—"}</span>
             </div>
           </div>
@@ -273,7 +273,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
         </div>
 
         {/* BARRA DEI COMANDI INTERATTIVI */}
-        <div className="flex border-b border-slate-900 gap-2 mb-8 overflow-x-auto font-mono text-xs tracking-widest uppercase">
+        <div className="flex border-b border-slate-900 gap-2 mb-8 overflow-x-auto font-mono text-sm tracking-widest uppercase">
           <button 
             onClick={() => setActiveTab("overview")}
             className={`pb-4 px-4 border-b-2 font-bold transition-all ${
@@ -305,38 +305,38 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
           {/* TAB 1: OVERVIEW & PROGRESS BARS */}
           {activeTab === "overview" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 flex flex-col gap-5 shadow-lg">
-                <h3 className="text-slate-400 font-mono text-xs uppercase tracking-widest border-b border-slate-900 pb-2 font-black">
+              <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 flex flex-col gap-5 shadow-lg">
+                <h3 className="text-slate-400 font-mono text-xs uppercase tracking-widest border-b border-slate-800 pb-2 font-black">
                   Specifiche Profilo
                 </h3>
-                <div className="flex flex-col gap-4 font-mono text-xs">
-                  <div className="flex justify-between py-1 border-b border-slate-900/50">
-                    <span className="text-slate-500">CALLSIGN RADIO</span>
-                    <span className="text-cyan-400 font-bold tracking-widest">{airline.callsign || "UNSPECIFIED"}</span>
+                <div className="flex flex-col gap-4 font-mono text-sm">
+                  <div className="flex justify-between py-2 border-b border-slate-800/60">
+                    <span className="text-slate-500 font-bold">CALLSIGN RADIO</span>
+                    <span className="text-cyan-400 font-black tracking-widest">{airline.callsign || "UNSPECIFIED"}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-900/50">
-                    <span className="text-slate-500">ALLEANZA</span>
-                    <span className="text-purple-400 font-bold">{airline.alliance || "Indipendente"}</span>
+                  <div className="flex justify-between py-2 border-b border-slate-800/60">
+                    <span className="text-slate-500 font-bold">ALLEANZA</span>
+                    <span className="text-purple-400 font-black">{airline.alliance || "Indipendente"}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-900/50">
-                    <span className="text-slate-500">ANNO APERTURA</span>
-                    <span className="text-white font-bold">{airline.founded_year}</span>
+                  <div className="flex justify-between py-2 border-b border-slate-800/60">
+                    <span className="text-slate-500 font-bold">ANNO APERTURA</span>
+                    <span className="text-white font-black">{airline.founded_year}</span>
                   </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-slate-500">HUB CENTRALE</span>
-                    <span className="text-emerald-400 font-bold truncate max-w-[180px]">{airline.main_hub || "—"}</span>
+                  <div className="flex justify-between py-2">
+                    <span className="text-slate-500 font-bold">HUB CENTRALE</span>
+                    <span className="text-emerald-400 font-black truncate max-w-[180px]">{airline.main_hub || "—"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-slate-900/40 border border-slate-900 rounded-2xl p-6 lg:col-span-2 flex flex-col gap-6 shadow-lg">
-                <h3 className="text-slate-400 font-mono text-xs uppercase tracking-widest border-b border-slate-900 pb-2 font-black">
+              <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 lg:col-span-2 flex flex-col gap-6 shadow-lg">
+                <h3 className="text-slate-400 font-mono text-xs uppercase tracking-widest border-b border-slate-800 pb-2 font-black">
                   Analisi Forzata di Mercato (Livello Rete)
                 </h3>
                 
                 <div>
-                  <div className="flex justify-between font-mono text-xs mb-2">
-                    <span className="text-slate-400">Volume Ricavi Annui (USD)</span>
+                  <div className="flex justify-between font-mono text-sm mb-2">
+                    <span className="text-slate-400 font-bold">Volume Ricavi Annui (USD)</span>
                     <span className="text-purple-400 font-black">{airline.revenue_usd_billion ? `$ ${airline.revenue_usd_billion} Mld` : "N/A"}</span>
                   </div>
                   <div className="w-full bg-slate-950 h-3 rounded-full border border-slate-900 overflow-hidden p-0.5 shadow-inner">
@@ -345,8 +345,8 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
                 </div>
 
                 <div>
-                  <div className="flex justify-between font-mono text-xs mb-2">
-                    <span className="text-slate-400">Passeggeri Trasportati / Anno</span>
+                  <div className="flex justify-between font-mono text-sm mb-2">
+                    <span className="text-slate-400 font-bold">Passeggeri Trasportati / Anno</span>
                     <span className="text-emerald-400 font-black">{airline.annual_passengers_mio ? `${airline.annual_passengers_mio} Mln` : "N/A"}</span>
                   </div>
                   <div className="w-full bg-slate-950 h-3 rounded-full border border-slate-900 overflow-hidden p-0.5 shadow-inner">
@@ -374,19 +374,19 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
                 renderLinkedHistoryParagraphs.map((paragraph) => (
                   <div 
                     key={paragraph.index}
-                    className="bg-slate-900/20 border border-slate-900 hover:border-cyan-500/20 rounded-2xl p-6 backdrop-blur-sm transition-all duration-300 shadow-md relative overflow-hidden"
+                    className="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/35 rounded-3xl p-8 backdrop-blur-sm transition-all duration-300 shadow-md relative overflow-hidden"
                   >
-                    <div className="flex items-center gap-2 mb-3 font-mono text-[9px] uppercase tracking-widest text-slate-500 font-bold">
+                    <div className="flex items-center gap-2 mb-3.5 font-mono text-xs uppercase tracking-wider text-slate-400 font-bold">
                       <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/70"></span>
                       Registro Storico // Sezione {String(paragraph.index + 1).padStart(2, "0")}
                     </div>
-                    <div className="text-slate-350 text-sm md:text-base leading-relaxed text-justify whitespace-pre-line">
+                    <div className="text-slate-100 text-base md:text-lg leading-relaxed text-left whitespace-pre-line">
                       {paragraph.nodes}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="bg-slate-900/20 border border-slate-900 rounded-3xl p-8 text-center text-slate-500 font-mono text-xs shadow-inner">
+                <div className="bg-slate-900/60 border border-slate-850 rounded-3xl p-8 text-center text-slate-500 font-mono text-xs shadow-inner">
                   Nessun registro storico registrato per questo vettore.
                 </div>
               )}
@@ -396,7 +396,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
           {/* TAB 3: MATRIX FLOTTA (NAVIGAZIONE CIRCOLARE) */}
           {activeTab === "fleet" && (
             <div>
-              <div className="bg-slate-950 border border-slate-900 rounded-xl p-4 mb-6 flex justify-between items-center font-mono text-xs text-slate-500 shadow-inner">
+              <div className="bg-slate-950 border border-slate-850 rounded-xl p-4.5 mb-6 flex justify-between items-center font-mono text-xs text-slate-400 shadow-inner">
                 <span>VETTORI IN DATABASE: <strong>{fleet.length} MODELLI</strong></span>
                 <span>UNITÀ TOTALI REGISTRATE: <strong>{fleetAirdexTotal} VELIVOLI</strong></span>
               </div>
@@ -409,18 +409,18 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
                       <Link 
                         key={model.id}
                         href={`/${lang}/aircraft/${model.id}`}
-                        className="bg-slate-900/30 border border-slate-900 hover:border-cyan-500/50 p-5 rounded-2xl flex items-center justify-between transition-all duration-300 hover:bg-slate-900/80 group shadow-md hover:shadow-[0_0_25px_rgba(6,182,212,0.1)] hover:-translate-y-1 relative overflow-hidden"
+                        className="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/65 p-6 rounded-2xl flex items-center justify-between transition-all duration-300 hover:bg-slate-900/80 group shadow-md hover:shadow-[0_0_25px_rgba(6,182,212,0.15)] hover:-translate-y-1 relative overflow-hidden"
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-gradient-to-b group-hover:from-cyan-500 group-hover:to-purple-500 transition-colors"></div>
                         
                         <div>
-                          <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block">
+                          <span className="text-xs font-mono text-slate-400 uppercase tracking-wider block">
                             {model.manufacturers?.name}
                           </span>
-                          <span className="text-white font-black text-sm group-hover:text-cyan-400 transition-colors block mt-0.5">
+                          <span className="text-white font-extrabold text-base group-hover:text-cyan-400 transition-colors block mt-0.5">
                             {model.model_name}
                           </span>
-                          <span className="text-slate-500 text-[10px] font-mono block mt-2 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-900 w-max">
+                          <span className="text-slate-350 text-xs font-mono block mt-2 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-850 w-max">
                             {model.type || "Commercial Jet"}
                           </span>
                         </div>
@@ -429,7 +429,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
                           <span className="text-xs font-black text-cyan-400 bg-slate-950 border border-slate-900 px-3 py-1.5 rounded-xl shadow-inner">
                             x{item.qty}
                           </span>
-                          <span className="text-[8px] uppercase font-bold text-purple-400 tracking-widest mt-4 bg-purple-950/20 border border-purple-900/30 px-1.5 py-0.5 rounded">
+                          <span className="text-xs uppercase font-extrabold text-purple-400 tracking-wider mt-4 bg-purple-950/30 border border-purple-900/40 px-2.5 py-1 rounded-full">
                             {model.rarity}
                           </span>
                         </div>
@@ -438,7 +438,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
                   })}
                 </div>
               ) : (
-                <div className="border border-dashed border-slate-900 bg-slate-900/10 rounded-2xl p-16 text-center text-slate-600 font-mono text-sm shadow-inner">
+                <div className="border border-dashed border-slate-800 bg-slate-900/20 rounded-2xl p-16 text-center text-slate-500 font-mono text-sm shadow-inner">
                   ❌ Nessun aeromobile attualmente collegato alla firma radar di questo vettore.
                 </div>
               )}

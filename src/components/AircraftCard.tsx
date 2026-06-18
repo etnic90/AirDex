@@ -44,26 +44,26 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
     : 'text-emerald-500/80 border-emerald-900/50 bg-emerald-950/30';
 
   return (
-    <Link href={`/${lang}/aircraft/${aircraft.id}`} className="block transition-transform hover:scale-[1.02]">
-      <div className={`relative bg-slate-900/30 backdrop-blur-md rounded-2xl p-6 w-96 border transition-all duration-300 overflow-hidden group ${cardBorderAndGlow}`}>
+    <Link href={`/${lang}/aircraft/${aircraft.id}`} className="block transition-transform hover:scale-[1.03] w-full max-w-md">
+      <div className={`relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border transition-all duration-300 overflow-hidden group ${cardBorderAndGlow}`}>
         {/* Spot sfumato olografico per rarità */}
-        <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl transition-all duration-500 pointer-events-none z-0 ${raritySpotClass}`}></div>
+        <div className={`absolute -right-8 -top-8 w-28 h-28 rounded-full blur-2xl transition-all duration-500 pointer-events-none z-0 ${raritySpotClass}`}></div>
 
-        <div className="flex justify-between items-start mb-6 relative z-10">
+        <div className="flex justify-between items-start mb-8 relative z-10">
           <div>
-            <h2 className="text-2xl font-semibold text-white truncate max-w-[220px]" title={aircraft.model_name}>
+            <h2 className="text-3xl font-extrabold text-white truncate max-w-[260px] tracking-tight" title={aircraft.model_name}>
               {aircraft.model_name}
             </h2>
-            <p className="text-cyan-400 text-sm font-bold uppercase tracking-wider mt-1">
+            <p className="text-cyan-400 text-base font-extrabold uppercase tracking-wider mt-1.5 font-sans">
               {manufacturerName}
             </p>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <span className="text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border bg-slate-800/80 border-slate-600 text-slate-300">
+          <div className="flex flex-col items-end gap-2.5">
+            <span className="text-xs font-black px-3.5 py-1.5 rounded-full uppercase tracking-wider border bg-slate-800 border-slate-700 text-slate-200 font-sans shadow-sm">
               {aircraft.type || 'N/A'}
             </span>
             {(aircraft.status) && (
-              <span className={`text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest border ${statusColor}`}>
+              <span className={`text-xs font-black px-3 py-1 rounded uppercase tracking-wider border font-sans shadow-sm ${statusColor}`}>
                 {aircraft.status}
               </span>
             )}
@@ -71,29 +71,29 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
         </div>
         
         {/* Immagine con Fallback Olografico Sci-Fi */}
-        <div className="w-full h-48 bg-cyan-950/10 rounded-xl mb-6 flex flex-col items-center justify-center border border-cyan-900/40 relative overflow-hidden shadow-[inset_0_0_30px_rgba(6,182,212,0.1)]">
+        <div className="w-full h-56 bg-cyan-950/15 rounded-2xl mb-8 flex flex-col items-center justify-center border border-cyan-900/40 relative overflow-hidden shadow-[inset_0_0_35px_rgba(6,182,212,0.15)] z-10">
           {imageUrl ? (
             <img 
               src={imageUrl} 
               alt={`Livrea ${aircraft.model_name}`} 
-              className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300 z-10"
+              className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-300 z-10"
             />
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90">
               {/* Griglia olografica di base */}
               <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.08)_1px,transparent_1px)] bg-[size:15px_15px] opacity-60" />
               
               {/* Icona Radar / Sensore */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-cyan-600/70 mb-3 animate-pulse z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-cyan-500/70 mb-3 animate-pulse z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
 
               {/* Testo sci-fi */}
               <div className="z-10 flex flex-col items-center text-center">
-                <span className="text-cyan-400 font-mono text-xs font-bold tracking-[0.2em] bg-slate-900/50 px-2 py-0.5 rounded">
+                <span className="text-cyan-400 font-sans text-xs font-bold tracking-widest bg-slate-900/80 px-3 py-1 rounded border border-cyan-500/20">
                   NO VISUAL DATA
                 </span>
-                <span className="text-cyan-600/70 font-mono text-[9px] tracking-widest mt-1.5 uppercase animate-pulse">
+                <span className="text-cyan-600/70 font-mono text-xs tracking-widest mt-2 uppercase animate-pulse">
                   Acquisizione in corso...
                 </span>
               </div>
@@ -104,22 +104,22 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
           )}
         </div>
 
-        <div className="space-y-3 font-mono text-sm text-cyan-100/70 relative z-10">
-          <div className="flex justify-between border-b border-slate-700/60 pb-1.5">
-            <span className="text-cyan-600 font-bold uppercase">Motori</span>
-            <span className="text-white text-right truncate max-w-[160px]">{aircraft.engines || 'N/A'}</span>
+        <div className="space-y-4 text-cyan-100 relative z-10">
+          <div className="flex justify-between border-b border-slate-800/80 pb-3.5 items-center">
+            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">Motori</span>
+            <span className="text-white text-right font-black font-mono truncate max-w-[200px] text-sm md:text-base">{aircraft.engines || 'N/A'}</span>
           </div>
-          <div className="flex justify-between border-b border-slate-700/60 pb-1.5">
-            <span className="text-cyan-600 font-bold uppercase">Capienza Max</span>
-            <span className="text-white text-right">{aircraft.max_passengers ? `${aircraft.max_passengers} PAX` : 'N/A'}</span>
+          <div className="flex justify-between border-b border-slate-800/80 pb-3.5 items-center">
+            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">Capienza Max</span>
+            <span className="text-white text-right font-black font-mono text-sm md:text-base">{aircraft.max_passengers ? `${aircraft.max_passengers} PAX` : 'N/A'}</span>
           </div>
-          <div className="flex justify-between border-b border-slate-700/60 pb-1.5">
-            <span className="text-cyan-600 font-bold uppercase">Autonomia</span>
-            <span className="text-white text-right">{aircraft.range_km ? `${aircraft.range_km.toLocaleString()} km` : 'N/A'}</span>
+          <div className="flex justify-between border-b border-slate-800/80 pb-3.5 items-center">
+            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">Autonomia</span>
+            <span className="text-white text-right font-black font-mono text-sm md:text-base">{aircraft.range_km ? `${aircraft.range_km.toLocaleString()} km` : 'N/A'}</span>
           </div>
-          <div className="flex justify-between pb-1">
-            <span className="text-cyan-600 font-bold uppercase">Primo Volo</span>
-            <span className="text-white text-right">{aircraft.first_flight_year || 'N/A'}</span>
+          <div className="flex justify-between pb-1.5 items-center">
+            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">Primo Volo</span>
+            <span className="text-white text-right font-black font-mono text-sm md:text-base">{aircraft.first_flight_year || 'N/A'}</span>
           </div>
         </div>
         

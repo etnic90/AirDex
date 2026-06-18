@@ -182,31 +182,31 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
 
     if (allianceLower.includes("star")) {
       return (
-        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-yellow-500/30 bg-yellow-500/10 text-yellow-400">
+        <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400">
           Star Alliance
         </span>
       );
     } else if (allianceLower.includes("skyteam")) {
       return (
-        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
+        <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
           SkyTeam
         </span>
       );
     } else if (allianceLower.includes("oneworld") || allianceLower.includes("one world")) {
       return (
-        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-blue-500/30 bg-blue-500/10 text-blue-400">
+        <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400">
           Oneworld
         </span>
       );
     } else if (allianceLower.includes("nessuna") || allianceLower.includes("none")) {
       return (
-        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-700/60 bg-slate-800/40 text-slate-400">
+        <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-slate-700 bg-slate-800/40 text-slate-400 font-sans">
           Indipendente
         </span>
       );
     }
     return (
-      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-700/60 bg-slate-800/40 text-slate-300">
+      <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-slate-700 bg-slate-800/40 text-slate-300 font-sans">
         {alliance}
       </span>
     );
@@ -257,39 +257,39 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
 
         {/* Dashboard Statistiche per AvGeeks */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-slate-900/20 border border-slate-900 rounded-2xl p-4 backdrop-blur-sm shadow-sm relative overflow-hidden group hover:border-emerald-500/25 transition-colors">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm shadow-sm relative overflow-hidden group hover:border-emerald-500/35 transition-colors">
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/2 rounded-full blur-xl"></div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Operatori Totali</span>
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-widest block mb-1.5 font-bold">Operatori Totali</span>
             <span className="text-3xl font-black text-white font-mono block">{stats.total}</span>
-            <span className="text-[9px] text-slate-600 font-mono block mt-1">Database globale di sempre</span>
+            <span className="text-xs text-slate-500 font-mono block mt-1">Database globale di sempre</span>
           </div>
 
-          <div className="bg-slate-900/20 border border-slate-900 rounded-2xl p-4 backdrop-blur-sm shadow-sm relative overflow-hidden group hover:border-emerald-500/25 transition-colors">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm shadow-sm relative overflow-hidden group hover:border-emerald-500/35 transition-colors">
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/2 rounded-full blur-xl"></div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Vettori Attivi</span>
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-widest block mb-1.5 font-bold">Vettori Attivi</span>
             <span className="text-3xl font-black text-emerald-400 font-mono block">{stats.active}</span>
-            <span className="text-[9px] text-emerald-500/50 font-mono block mt-1">{Math.round((stats.active/stats.total)*100)}% del totale operanti</span>
+            <span className="text-xs text-emerald-500/70 font-mono block mt-1">{Math.round((stats.active/stats.total)*100)}% del totale operanti</span>
           </div>
 
-          <div className="bg-slate-900/20 border border-slate-900 rounded-2xl p-4 backdrop-blur-sm shadow-sm relative overflow-hidden group hover:border-emerald-500/25 transition-colors">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm shadow-sm relative overflow-hidden group hover:border-emerald-500/35 transition-colors">
             <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/2 rounded-full blur-xl"></div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Marchi Storici</span>
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-widest block mb-1.5 font-bold">Marchi Storici</span>
             <span className="text-3xl font-black text-amber-500 font-mono block">{stats.defunct}</span>
-            <span className="text-[9px] text-amber-600/50 font-mono block mt-1">{stats.defunct} compagnie confluite o chiuse</span>
+            <span className="text-xs text-amber-600/70 font-mono block mt-1">{stats.defunct} compagnie confluite o chiuse</span>
           </div>
 
-          <div className="bg-slate-900/20 border border-slate-900 rounded-2xl p-4 backdrop-blur-sm shadow-sm relative overflow-hidden group hover:border-emerald-500/25 transition-colors">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm shadow-sm relative overflow-hidden group hover:border-emerald-500/35 transition-colors">
             <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/2 rounded-full blur-xl"></div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Membri Alleanze</span>
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-widest block mb-1.5 font-bold">Membri Alleanze</span>
             <span className="text-3xl font-black text-cyan-400 font-mono block">
               {stats.star + stats.skyteam + stats.oneworld}
             </span>
-            <span className="text-[9px] text-cyan-500/50 font-mono block mt-1">Star: {stats.star} | Sky: {stats.skyteam} | One: {stats.oneworld}</span>
+            <span className="text-xs text-cyan-500/70 font-mono block mt-1">Star: {stats.star} | Sky: {stats.skyteam} | One: {stats.oneworld}</span>
           </div>
         </div>
 
         {/* Pannello di Controllo Filtri */}
-        <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-6 mb-8 backdrop-blur-md relative overflow-hidden shadow-inner">
+        <div className="bg-slate-900/60 border border-slate-805 rounded-3xl p-6 mb-8 backdrop-blur-md relative overflow-hidden shadow-inner">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
             
             {/* Input Cerca */}
@@ -315,19 +315,19 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
               <div className="grid grid-cols-3 bg-slate-950/80 p-1 rounded-2xl border border-slate-900 font-mono text-xs">
                 <button 
                   onClick={() => setStatusFilter("all")}
-                  className={`py-2 rounded-xl transition-all ${statusFilter === "all" ? "bg-slate-900 text-white font-bold" : "text-slate-500 hover:text-slate-300"}`}
+                  className={`py-2 rounded-xl transition-all ${statusFilter === "all" ? "bg-slate-900 text-white font-bold" : "text-slate-500 hover:text-slate-350"}`}
                 >
                   Tutti
                 </button>
                 <button 
                   onClick={() => setStatusFilter("active")}
-                  className={`py-2 rounded-xl transition-all ${statusFilter === "active" ? "bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20" : "text-slate-500 hover:text-slate-300"}`}
+                  className={`py-2 rounded-xl transition-all ${statusFilter === "active" ? "bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20" : "text-slate-500 hover:text-slate-350"}`}
                 >
                   Attivi
                 </button>
                 <button 
                   onClick={() => setStatusFilter("defunct")}
-                  className={`py-2 rounded-xl transition-all ${statusFilter === "defunct" ? "bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20" : "text-slate-500 hover:text-slate-300"}`}
+                  className={`py-2 rounded-xl transition-all ${statusFilter === "defunct" ? "bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20" : "text-slate-500 hover:text-slate-355"}`}
                 >
                   Storici
                 </button>
@@ -397,27 +397,27 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
 
         {/* Griglia Principale delle Compagnie */}
         {paginatedAirlines.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
             {paginatedAirlines.map((airline) => {
               const isDefunct = !!airline.closed_year;
 
               return (
                 <div 
                   key={airline.id} 
-                  className={`bg-slate-900/30 border rounded-3xl p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group ${
+                  className={`bg-slate-900/65 border rounded-3xl p-8 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group ${
                     isDefunct 
-                      ? 'border-slate-800/80 hover:border-amber-600/40 hover:shadow-amber-950/10' 
-                      : 'border-slate-800/80 hover:border-emerald-500/40 hover:shadow-emerald-950/10'
+                      ? 'border-slate-800/80 hover:border-amber-600/50 hover:shadow-amber-950/15' 
+                      : 'border-slate-800/80 hover:border-emerald-500/65 hover:shadow-emerald-950/15'
                   }`}
                 >
                   {/* Spot sfumato olografico (arancio per storico, verde per attivo) */}
-                  <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl transition-all duration-500 pointer-events-none z-0 ${
+                  <div className={`absolute -right-8 -top-8 w-28 h-28 rounded-full blur-2xl transition-all duration-500 pointer-events-none z-0 ${
                     isDefunct 
                       ? 'bg-amber-500/10 group-hover:bg-amber-500/20' 
                       : 'bg-emerald-500/10 group-hover:bg-emerald-500/20'
                   }`}></div>
                   {/* Badge Stato (Angolo alto-destra) */}
-                  <div className="absolute top-4 right-4 font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 rounded border border-slate-900 bg-slate-950 z-20">
+                  <div className="absolute top-4 right-4 font-mono text-xs uppercase tracking-widest px-3 py-1 rounded border border-slate-900 bg-slate-950 z-20 shadow-inner">
                     {isDefunct ? (
                       <span className="text-amber-500 font-bold">Storico ({airline.founded_year}-{airline.closed_year})</span>
                     ) : (
@@ -426,8 +426,8 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
                   </div>
 
                   {/* Info Principali (Logo Centrato e Ampio + Nome) */}
-                  <div className="flex flex-col gap-4 mb-5">
-                    <div className="w-full h-[100px] rounded-2xl bg-white/95 flex items-center justify-center p-3 border border-slate-900/80 shadow-md relative overflow-hidden shrink-0">
+                  <div className="flex flex-col gap-5 mb-6 relative z-10">
+                    <div className="w-full h-[120px] rounded-2xl bg-white/95 flex items-center justify-center p-3 border border-slate-900/80 shadow-md relative overflow-hidden shrink-0">
                       <div className="w-full h-[56px] max-w-[180px] flex items-center justify-center">
                         <AirlineLogo 
                           src={airline.logo_url || (airline.website ? `https://logo.clearbit.com/${airline.website.replace('https://','').replace('http://','').replace('www.','').split('/')[0]}` : null)} 
@@ -441,41 +441,41 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
                     </div>
 
                     <div className="min-w-0">
-                      <h2 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors truncate uppercase leading-tight font-mono">
+                      <h2 className="text-xl font-extrabold text-white group-hover:text-emerald-400 transition-colors truncate uppercase leading-tight font-mono">
                         {airline.name}
                       </h2>
-                      <span className="text-slate-400 text-xs font-semibold block mt-1">{airline.country}</span>
+                      <span className="text-slate-400 text-sm font-semibold block mt-1">{airline.country}</span>
                     </div>
                   </div>
 
                   {/* Pannello Dati Tecnici per appassionati */}
-                  <div className="grid grid-cols-3 gap-2 bg-slate-950/60 p-3 rounded-2xl border border-slate-900 font-mono text-xs mb-4">
+                  <div className="grid grid-cols-3 gap-4 bg-slate-950/85 p-4.5 rounded-2xl border border-slate-900 font-mono text-xs mb-5 relative z-10 shadow-inner">
                     <div>
-                      <span className="text-slate-600 block text-[9px] uppercase tracking-wider">IATA</span>
-                      <span className="text-emerald-400 font-bold text-sm">{airline.iata_code || "—"}</span>
+                      <span className="text-slate-400 block text-xs font-bold uppercase tracking-wider mb-0.5">IATA</span>
+                      <span className="text-emerald-400 font-bold text-base">{airline.iata_code || "—"}</span>
                     </div>
                     <div>
-                      <span className="text-slate-600 block text-[9px] uppercase tracking-wider">ICAO</span>
-                      <span className="text-purple-400 font-bold text-sm">{airline.icao_code || "—"}</span>
+                      <span className="text-slate-400 block text-xs font-bold uppercase tracking-wider mb-0.5">ICAO</span>
+                      <span className="text-purple-400 font-bold text-base">{airline.icao_code || "—"}</span>
                     </div>
                     <div>
-                      <span className="text-slate-600 block text-[9px] uppercase tracking-wider">Callsign</span>
-                      <span className="text-blue-400 font-bold text-[10px] truncate block" title={airline.callsign || undefined}>
+                      <span className="text-slate-400 block text-xs font-bold uppercase tracking-wider mb-0.5">Callsign</span>
+                      <span className="text-blue-400 font-bold text-sm truncate block" title={airline.callsign || undefined}>
                         {airline.callsign || "—"}
                       </span>
                     </div>
                   </div>
 
                   {/* Informazioni Logistiche Secondarie */}
-                  <div className="space-y-1.5 font-mono text-[11px] text-slate-400 mb-5 border-t border-slate-900/40 pt-4">
+                  <div className="space-y-3 font-mono text-xs text-slate-400 mb-6 border-t border-slate-900/40 pt-5 relative z-10">
                     <div className="flex justify-between">
-                      <span className="text-slate-600 uppercase">Hub Principale:</span>
-                      <span className="text-slate-300 truncate max-w-[170px]" title={airline.main_hub || undefined}>
+                      <span className="text-slate-500 uppercase text-xs font-bold">Hub Principale:</span>
+                      <span className="text-slate-200 font-bold truncate max-w-[170px]" title={airline.main_hub || undefined}>
                         {airline.main_hub || "Non inserito"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600 uppercase">Alleanza:</span>
+                      <span className="text-slate-500 uppercase text-xs font-bold">Alleanza:</span>
                       <span>{renderAllianceBadge(airline.alliance)}</span>
                     </div>
                   </div>
@@ -483,11 +483,11 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
                   {/* Bottone Ispeziona Flotta */}
                   <Link 
                     href={`/${lang}/airlines/${airline.id}`}
-                    className="w-full py-3 rounded-2xl bg-slate-950 border border-slate-900 hover:border-emerald-500/30 hover:bg-slate-900/40 text-slate-400 hover:text-white font-mono text-xs uppercase tracking-wider transition-all flex justify-center items-center gap-2 group/btn"
+                    className="w-full py-3.5 rounded-3xl bg-slate-950 border border-slate-900 hover:border-emerald-500/35 hover:bg-slate-900/40 text-slate-400 hover:text-white font-mono text-xs uppercase tracking-widest font-black transition-all flex justify-center items-center gap-2 group/btn relative z-10 shadow-inner"
                   >
                     Visualizza Dettagli
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 group-hover/btn:translate-x-1.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </Link>
 
@@ -496,7 +496,7 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
             })}
           </div>
         ) : (
-          <div className="bg-slate-900/10 border border-dashed border-slate-900 rounded-3xl p-16 text-center font-mono text-slate-600 mb-10">
+          <div className="bg-slate-900/10 border border-dashed border-slate-800 rounded-3xl p-16 text-center font-mono text-slate-600 mb-10">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-slate-800 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>

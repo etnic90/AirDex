@@ -246,14 +246,14 @@ export default async function AircraftPage({
         
         {/* Descrizione Storica AI */}
         {aircraft.description && (
-          <div className="mb-10 bg-slate-950/50 rounded-xl p-6 md:p-8 border border-slate-800/80 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
-            <h3 className="text-cyan-500 font-mono text-sm uppercase tracking-[0.3em] mb-4 border-b border-slate-800 pb-2 flex items-center gap-2">
+          <div className="mb-10 bg-slate-900/60 rounded-3xl p-8 border border-slate-800 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+            <h3 className="text-cyan-500 font-mono text-xs uppercase tracking-[0.3em] mb-4 border-b border-slate-800 pb-2 flex items-center gap-2 font-bold">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Archivio Storico Classificato
             </h3>
-            <p className="text-slate-300 leading-relaxed font-sans text-lg whitespace-pre-wrap">
+            <p className="text-slate-100 leading-relaxed font-sans text-lg md:text-xl whitespace-pre-wrap">
               {aircraft.description}
             </p>
           </div>
@@ -261,24 +261,24 @@ export default async function AircraftPage({
 
         {/* Griglia Dati Tecnici */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          <div className="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-cyan-800/50 transition-colors">
-            <span className="block text-[10px] text-cyan-500 font-mono uppercase tracking-widest mb-1.5">Capienza Max</span>
-            <span className="text-xl font-bold text-white">{aircraft.max_passengers ? `${aircraft.max_passengers} PAX` : 'N/A'}</span>
+          <div className="bg-slate-850/80 p-6 rounded-2xl border border-slate-800 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.08)] transition-all">
+            <span className="block text-xs text-cyan-500 font-mono uppercase tracking-widest mb-1.5 font-bold">Capienza Max</span>
+            <span className="text-2xl font-black text-white">{aircraft.max_passengers ? `${aircraft.max_passengers} PAX` : 'N/A'}</span>
           </div>
           
-          <div className="bg-slate-800/50 p-5 rounded-xl border border-slate-700 hover:border-cyan-800/50 transition-colors">
-            <span className="block text-[10px] text-cyan-500 font-mono uppercase tracking-widest mb-1.5">Primo Volo</span>
-            <span className="text-xl font-bold text-white">{aircraft.first_flight_year || 'N/A'}</span>
+          <div className="bg-slate-850/80 p-6 rounded-2xl border border-slate-800 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.08)] transition-all">
+            <span className="block text-xs text-cyan-500 font-mono uppercase tracking-widest mb-1.5 font-bold">Primo Volo</span>
+            <span className="text-2xl font-black text-white">{aircraft.first_flight_year || 'N/A'}</span>
           </div>
           
-          <div className="bg-slate-800/50 p-5 rounded-xl border border-slate-700 col-span-2 hover:border-cyan-800/50 transition-colors">
-            <span className="block text-[10px] text-cyan-500 font-mono uppercase tracking-widest mb-1.5">Motori / Propulsione</span>
-            <span className="text-lg font-bold text-white">{aircraft.engines || 'N/A'}</span>
+          <div className="bg-slate-850/80 p-6 rounded-2xl border border-slate-800 col-span-2 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.08)] transition-all">
+            <span className="block text-xs text-cyan-500 font-mono uppercase tracking-widest mb-1.5 font-bold">Motori / Propulsione</span>
+            <span className="text-xl font-black text-white">{aircraft.engines || 'N/A'}</span>
           </div>
           
-          <div className="bg-slate-800/50 p-5 rounded-xl border border-slate-700 col-span-2 md:col-span-4 relative overflow-hidden group hover:border-cyan-500/50 transition-colors">
+          <div className="bg-slate-850/80 p-6 rounded-2xl border border-slate-800 col-span-2 md:col-span-4 relative overflow-hidden group hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.08)] transition-all">
             <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-cyan-900/20 to-transparent pointer-events-none group-hover:from-cyan-900/40 transition-colors" />
-            <span className="block text-[10px] text-cyan-500 font-mono uppercase tracking-widest mb-1.5">Autonomia Operativa (Range)</span>
+            <span className="block text-xs text-cyan-500 font-mono uppercase tracking-widest mb-1.5 font-bold">Autonomia Operativa (Range)</span>
             <div className="flex items-end gap-3">
               <span className="text-3xl font-black text-cyan-300">{aircraft.range_km ? `${aircraft.range_km.toLocaleString()}` : 'N/A'}</span>
               {aircraft.range_km && <span className="text-cyan-600 font-bold mb-1">km</span>}
@@ -333,14 +333,14 @@ export default async function AircraftPage({
                     </div>
 
                     <div className="flex-1 min-w-0 font-mono">
-                      <span className="text-[9px] text-purple-400 uppercase tracking-widest block font-black">
+                      <span className="text-xs text-purple-400 uppercase tracking-wider block font-bold">
                         CODE: {airline.iata_code || "—"}
                       </span>
-                      <h4 className="text-white font-black text-xs group-hover:text-purple-400 transition-colors truncate font-sans mt-0.5">
+                      <h4 className="text-white font-black text-sm group-hover:text-purple-400 transition-colors truncate font-sans mt-0.5">
                         {airline.name}
                       </h4>
-                      <span className="text-slate-500 text-[10px] block mt-1">
-                        In Registro: <strong className="text-slate-300">x{item.qty} u.</strong>
+                      <span className="text-slate-400 text-xs block mt-1">
+                        In Registro: <strong className="text-slate-200 font-bold">x{item.qty} u.</strong>
                       </span>
                     </div>
                   </Link>

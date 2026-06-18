@@ -71,7 +71,7 @@ function AircraftAutocomplete({
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <label className={`block text-xs font-bold mb-3 uppercase tracking-wider ${labelColor}`}>
+      <label className={`block text-sm font-extrabold mb-3 uppercase tracking-wider ${labelColor}`}>
         {label}
       </label>
       
@@ -85,11 +85,11 @@ function AircraftAutocomplete({
         }}
         onFocus={() => setIsOpen(true)}
         placeholder="Digita per scansionare i registri..."
-        className={`w-full p-3 rounded bg-slate-950 text-white border border-slate-700 font-mono text-sm transition-colors focus:outline-none ${focusBorder}`}
+        className={`w-full p-4 rounded-xl bg-slate-950 text-white border border-slate-800 font-mono text-sm transition-all focus:outline-none ${focusBorder}`}
       />
 
       {isOpen && (
-        <ul className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-slate-950 border border-slate-700 rounded shadow-[0_10px_30px_rgba(0,0,0,0.8)] custom-scrollbar">
+        <ul className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] custom-scrollbar">
           {filtered.length > 0 ? (
             filtered.map((a) => (
               <li 
@@ -98,10 +98,10 @@ function AircraftAutocomplete({
                   onSelect(a.id);
                   setIsOpen(false);
                 }}
-                className={`p-3 cursor-pointer border-b border-slate-800 transition-colors ${hoverBg}`}
+                className={`p-3.5 cursor-pointer border-b border-slate-900 transition-colors ${hoverBg}`}
               >
                 <div className="text-slate-400 text-xs font-mono">{a.manufacturers?.name || "Sconosciuto"}</div>
-                <div className="text-white font-bold">{a.model_name}</div>
+                <div className="text-white font-extrabold text-sm mt-0.5">{a.model_name}</div>
               </li>
             ))
           ) : (
@@ -195,11 +195,9 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
           <p className="text-cyan-500 font-mono text-sm uppercase tracking-widest">
             Analisi Telemetrica Incrociata
           </p>
-        </div>
-
-        {/* Selettori Autocomplete Vettori */}
+        </div>        {/* Selettori Autocomplete Vettori */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 relative z-20">
-          <div className="bg-slate-900/50 p-6 rounded-xl border-t-4 border-cyan-500 shadow-lg">
+          <div className="bg-slate-900/90 p-8 rounded-3xl border-t-4 border-cyan-500 shadow-xl border border-slate-800 backdrop-blur-xl">
             <AircraftAutocomplete 
               label="Vettore Alpha" 
               theme="cyan" 
@@ -209,7 +207,7 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
             />
           </div>
 
-          <div className="bg-slate-900/50 p-6 rounded-xl border-t-4 border-purple-500 shadow-lg">
+          <div className="bg-slate-900/90 p-8 rounded-3xl border-t-4 border-purple-500 shadow-xl border border-slate-800 backdrop-blur-xl">
             <AircraftAutocomplete 
               label="Vettore Bravo" 
               theme="purple" 
@@ -222,14 +220,14 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
 
         {/* Area Dati */}
         {(planeA || planeB) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 bg-slate-900/30 p-6 rounded-2xl border border-slate-800 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 bg-slate-900/90 p-8 rounded-3xl border border-slate-800 relative z-10 backdrop-blur-xl shadow-2xl">
             
             {/* Ologramma Radar Chart */}
-            <div className="h-[400px] w-full flex items-center justify-center bg-slate-950/50 rounded-xl border border-slate-800 shadow-[inset_0_0_40px_rgba(0,0,0,0.5)]">
+            <div className="h-[400px] w-full flex items-center justify-center bg-slate-950 rounded-2xl border border-slate-850 shadow-[inset_0_0_40px_rgba(0,0,0,0.6)]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                  <PolarGrid stroke="#1e293b" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 12, fontFamily: 'monospace' }} />
+                  <PolarGrid stroke="#334155" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#e2e8f0', fontSize: 13, fontFamily: 'sans-serif', fontWeight: 'bold' }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', color: '#fff', fontFamily: 'monospace' }}
@@ -242,45 +240,45 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
                   {planeB && (
                     <Radar name={planeB.model_name} dataKey="B" stroke="#a855f7" fill="#a855f7" fillOpacity={0.4} />
                   )}
-                  <Legend wrapperStyle={{ fontFamily: 'monospace', fontSize: '12px', color: '#94a3b8' }} />
+                  <Legend wrapperStyle={{ fontFamily: 'sans-serif', fontSize: '13px', color: '#94a3b8', fontWeight: 'bold' }} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
 
             {/* Tabella Dati Grezzi */}
             <div className="flex flex-col justify-center gap-4">
-              <div className="grid grid-cols-3 gap-4 border-b border-slate-800 pb-4 text-xs font-mono font-bold text-slate-500 uppercase tracking-widest text-center">
-                <div className="text-cyan-500">{planeA?.model_name || "---"}</div>
-                <div>Parametro</div>
-                <div className="text-purple-400">{planeB?.model_name || "---"}</div>
+              <div className="grid grid-cols-3 gap-4 border-b border-slate-805 pb-4 text-xs font-mono font-bold text-slate-500 uppercase tracking-widest text-center">
+                <div className="text-cyan-400 text-sm font-extrabold">{planeA?.model_name || "—"}</div>
+                <div className="font-sans uppercase text-slate-400 font-bold">Parametro</div>
+                <div className="text-purple-400 text-sm font-extrabold">{planeB?.model_name || "—"}</div>
               </div>
 
               {/* Riga: Autonomia */}
-              <div className="grid grid-cols-3 gap-4 py-3 text-center items-center bg-slate-800/20 rounded">
-                <div className="text-white font-bold text-lg">{planeA?.range_km ? `${planeA.range_km} km` : "N/A"}</div>
-                <div className="text-slate-400 text-xs font-mono uppercase">Autonomia</div>
-                <div className="text-white font-bold text-lg">{planeB?.range_km ? `${planeB.range_km} km` : "N/A"}</div>
+              <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner">
+                <div className="text-white font-extrabold text-xl">{planeA?.range_km ? `${planeA.range_km.toLocaleString()} km` : "—"}</div>
+                <div className="text-slate-400 text-sm font-sans uppercase font-bold">Autonomia</div>
+                <div className="text-white font-extrabold text-xl">{planeB?.range_km ? `${planeB.range_km.toLocaleString()} km` : "—"}</div>
               </div>
 
               {/* Riga: Passeggeri */}
-              <div className="grid grid-cols-3 gap-4 py-3 text-center items-center bg-slate-800/20 rounded">
-                <div className="text-white font-bold text-lg">{planeA?.max_passengers || "N/A"}</div>
-                <div className="text-slate-400 text-xs font-mono uppercase">Capienza Max</div>
-                <div className="text-white font-bold text-lg">{planeB?.max_passengers || "N/A"}</div>
+              <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner">
+                <div className="text-white font-extrabold text-xl">{planeA?.max_passengers ? `${planeA.max_passengers} PAX` : "—"}</div>
+                <div className="text-slate-400 text-sm font-sans uppercase font-bold">Capienza Max</div>
+                <div className="text-white font-extrabold text-xl">{planeB?.max_passengers ? `${planeB.max_passengers} PAX` : "—"}</div>
               </div>
 
               {/* Riga: Anno */}
-              <div className="grid grid-cols-3 gap-4 py-3 text-center items-center bg-slate-800/20 rounded">
-                <div className="text-white font-bold text-lg">{planeA?.first_flight_year || "N/A"}</div>
-                <div className="text-slate-400 text-xs font-mono uppercase">Primo Volo</div>
-                <div className="text-white font-bold text-lg">{planeB?.first_flight_year || "N/A"}</div>
+              <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner">
+                <div className="text-white font-extrabold text-xl">{planeA?.first_flight_year || "—"}</div>
+                <div className="text-slate-400 text-sm font-sans uppercase font-bold">Primo Volo</div>
+                <div className="text-white font-extrabold text-xl">{planeB?.first_flight_year || "—"}</div>
               </div>
 
               {/* Riga: Rarità */}
-              <div className="grid grid-cols-3 gap-4 py-3 text-center items-center bg-slate-800/20 rounded">
-                <div className="text-cyan-400 text-xs font-black uppercase tracking-widest">{planeA?.rarity || "N/A"}</div>
-                <div className="text-slate-400 text-xs font-mono uppercase">Rarità</div>
-                <div className="text-purple-400 text-xs font-black uppercase tracking-widest">{planeB?.rarity || "N/A"}</div>
+              <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner">
+                <div className="text-cyan-405 text-sm font-black uppercase tracking-wider">{planeA?.rarity || "—"}</div>
+                <div className="text-slate-400 text-sm font-sans uppercase font-bold">Rarità</div>
+                <div className="text-purple-405 text-sm font-black uppercase tracking-wider">{planeB?.rarity || "—"}</div>
               </div>
 
             </div>

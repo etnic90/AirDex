@@ -132,18 +132,18 @@ export default function StatsDashboard() {
         </div>
 
         {/* KPI Olografici (Cards superiori) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 border-b-4 border-b-cyan-500 shadow-[inset_0_0_20px_rgba(6,182,212,0.1)]">
-            <h3 className="text-slate-400 font-mono text-xs uppercase tracking-widest mb-2">Vettori Archiviati</h3>
-            <p className="text-4xl font-black text-white">{stats.totalAircraft}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 font-sans">
+          <div className="bg-slate-900/90 p-8 rounded-3xl border border-slate-800 border-b-4 border-b-cyan-500 shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <h3 className="text-slate-450 font-mono text-xs uppercase tracking-widest mb-2 font-bold">Vettori Archiviati</h3>
+            <p className="text-4xl font-extrabold text-white tracking-tight">{stats.totalAircraft}</p>
           </div>
-          <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 border-b-4 border-b-purple-500 shadow-[inset_0_0_20px_rgba(168,85,247,0.1)]">
-            <h3 className="text-slate-400 font-mono text-xs uppercase tracking-widest mb-2">Autonomia Media</h3>
-            <p className="text-4xl font-black text-white">{stats.avgRange.toLocaleString()} <span className="text-lg text-purple-400">km</span></p>
+          <div className="bg-slate-900/90 p-8 rounded-3xl border border-slate-800 border-b-4 border-b-purple-500 shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <h3 className="text-slate-450 font-mono text-xs uppercase tracking-widest mb-2 font-bold">Autonomia Media</h3>
+            <p className="text-4xl font-extrabold text-white tracking-tight">{stats.avgRange.toLocaleString()} <span className="text-lg text-purple-400 font-sans font-bold">km</span></p>
           </div>
-          <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 border-b-4 border-b-emerald-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]">
-            <h3 className="text-slate-400 font-mono text-xs uppercase tracking-widest mb-2">Capienza Media</h3>
-            <p className="text-4xl font-black text-white">{stats.avgPax} <span className="text-lg text-emerald-400">PAX</span></p>
+          <div className="bg-slate-900/90 p-8 rounded-3xl border border-slate-800 border-b-4 border-b-emerald-500 shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <h3 className="text-slate-455 font-mono text-xs uppercase tracking-widest mb-2 font-bold">Capienza Media</h3>
+            <p className="text-4xl font-extrabold text-white tracking-tight">{stats.avgPax} <span className="text-lg text-emerald-400 font-sans font-bold">PAX</span></p>
           </div>
         </div>
 
@@ -151,15 +151,15 @@ export default function StatsDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Grafico: Era Storica (BarChart) */}
-          <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
-            <h3 className="text-cyan-500 font-mono text-sm uppercase tracking-widest font-bold mb-6 flex items-center gap-2">
+          <div className="bg-slate-900/90 p-8 rounded-3xl border border-slate-800 shadow-xl backdrop-blur-xl">
+            <h3 className="text-cyan-400 font-mono text-xs uppercase tracking-widest font-bold mb-6 flex items-center gap-2">
               Distribuzione Temporale
             </h3>
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.eraData}>
-                  <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 10, fontFamily: 'monospace' }} />
-                  <YAxis stroke="#64748b" tick={{ fontSize: 10, fontFamily: 'monospace' }} />
+                  <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 11, fontFamily: 'sans-serif', fontWeight: 'bold' }} />
+                  <YAxis stroke="#94a3b8" tick={{ fontSize: 11, fontFamily: 'sans-serif', fontWeight: 'bold' }} />
                   <Tooltip 
                     cursor={{ fill: '#0f172a' }} 
                     contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', color: '#06b6d4', fontFamily: 'monospace' }} 
@@ -171,8 +171,8 @@ export default function StatsDashboard() {
           </div>
 
           {/* Grafico: Status Operativo (Donut Chart) */}
-          <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
-            <h3 className="text-purple-400 font-mono text-sm uppercase tracking-widest font-bold mb-6 flex items-center gap-2">
+          <div className="bg-slate-900/90 p-8 rounded-3xl border border-slate-800 shadow-xl backdrop-blur-xl">
+            <h3 className="text-purple-400 font-mono text-xs uppercase tracking-widest font-bold mb-6 flex items-center gap-2">
               Stato Operativo Flotta
             </h3>
             <div className="h-72 w-full flex items-center justify-center">
@@ -197,21 +197,21 @@ export default function StatsDashboard() {
             </div>
             {/* Legenda Custom per la Donut */}
             <div className="flex justify-center gap-6 mt-4 font-mono text-xs">
-              <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-500"></span> Attivi</div>
-              <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-500"></span> Storici (Ritirati)</div>
+              <div className="flex items-center gap-2 text-slate-300"><span className="w-3 h-3 rounded-full bg-emerald-500"></span> Attivi</div>
+              <div className="flex items-center gap-2 text-slate-300"><span className="w-3 h-3 rounded-full bg-amber-500"></span> Storici (Ritirati)</div>
             </div>
           </div>
 
           {/* Grafico: Top 5 Costruttori */}
-          <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800 lg:col-span-2">
-            <h3 className="text-blue-400 font-mono text-sm uppercase tracking-widest font-bold mb-6 flex items-center gap-2">
+          <div className="bg-slate-900/90 p-8 rounded-3xl border border-slate-800 lg:col-span-2 shadow-xl backdrop-blur-xl">
+            <h3 className="text-blue-450 font-mono text-xs uppercase tracking-widest font-bold mb-6 flex items-center gap-2">
               Egemonia Costruttori (Top 5)
             </h3>
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.topManufacturers} layout="vertical" margin={{ left: 40 }}>
-                  <XAxis type="number" stroke="#64748b" tick={{ fontSize: 10, fontFamily: 'monospace' }} />
-                  <YAxis dataKey="name" type="category" stroke="#94a3b8" tick={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 'bold' }} width={100} />
+                  <XAxis type="number" stroke="#94a3b8" tick={{ fontSize: 11, fontFamily: 'sans-serif', fontWeight: 'bold' }} />
+                  <YAxis dataKey="name" type="category" stroke="#94a3b8" tick={{ fontSize: 11, fontFamily: 'sans-serif', fontWeight: 'bold' }} width={100} />
                   <Tooltip 
                     cursor={{ fill: '#0f172a' }} 
                     contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', color: '#3b82f6', fontFamily: 'monospace' }} 
