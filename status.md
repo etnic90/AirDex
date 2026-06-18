@@ -395,3 +395,18 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
 - **Navbar**: Aggiornato [src/components/Navbar.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/Navbar.tsx) per integrare il link "Timeline" con indicatori di rotta attivi.
 - **Roadmap**: Aggiornato [roadmap.md](file:///C:/wamp64/www/aviation-pokedex/roadmap.md) segnando la Fase 10 come completata.
 - **Test Build**: Eseguita compilazione Next.js con successo, confermando l'integrità del routing multilingua per la rotta `/timeline`.
+
+**Data:** Giorno 54
+**Fase Attuale:** Espansione Aeroporti & Telemetria di Scalo (Fase 11 - Completata).
+
+## Decisioni Prese:
+- **Espansione Aeroporti Globale**: Popolamento massivo della tabella `airports` tramite Wikidata SPARQL importando tutti gli aeroporti civili commerciali passeggeri al mondo aventi sia un codice IATA che ICAO (raggiungendo quota 2.058 aeroporti).
+- **Deduplica di Chiavi rigidamente in-memory**: Per evitare blocchi di transazione Postgres dovuti a collisioni IATA/ICAO provenienti da record Wikidata sporchi, il batch inserisce solo record verificati unici in-memory.
+- **Dettagli per Appassionati (AvGeek Specs)**: Introduzione di piste dettagliate con orientamento magnetico, dimensioni (m/ft) e livelli ILS (CAT IIIb per atterraggi automatici in nebbia densa), frequenze radio COM e suggerimenti spotter specifici per scalo.
+- **Lazy Paging e Filtri in Home Aeroporti**: Aggiunta di filtri avanzati per Nazione (dropdown ricavato live) e Piste operative, con lazy loading a blocchi da 12 elementi per massimizzare la velocità di rendering.
+
+## Attività Completate:
+- **Database Importation**: Creato ed eseguito lo script `scripts/importAllAirportsFromWikidata.mjs` inserendo con successo altri 851 aeroporti internazionali.
+- **Index UI**: Riscritto [src/app/[lang]/airports/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/page.tsx) integrando filtri avanzati, sorting dinamico e lazy pagination.
+- **Details UI**: Riscritto [src/app/[lang]/airports/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/[id]/page.tsx) con piste dettagliate, servizi di terra, coordinate DMS e spotter corner.
+- **Test Build**: Eseguito `npm run build` con esito positivo (nessun errore di tipi TypeScript o Next.js).
