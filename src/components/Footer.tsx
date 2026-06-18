@@ -19,7 +19,7 @@ export default function Footer({ lang }: { lang: string }) {
         {/* TOP LAYOUT: FEATURED TELEMETRY WIDGET & LINKS INDEX */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-12 border-b border-slate-900">
           
-          {/* LEFT AREA: BRAND & FEATURED TELEMETRY CONSOLE (4 columns) */}
+          {/* LEFT AREA: BRAND & DESCRIPTION (5 columns) */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div>
               <span className="text-3xl font-black tracking-widest bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent uppercase font-mono">
@@ -27,37 +27,14 @@ export default function Footer({ lang }: { lang: string }) {
               </span>
               <p className="text-slate-400 text-sm mt-3.5 leading-relaxed max-w-md">
                 {isIt 
-                  ? "L'enciclopedia e registro di navigazione dell'aviazione civile. Telemetrie, piste magnetizzate e flotte commerciali."
-                  : "The civil aviation encyclopedia and flight registry. Operational telemetry, magnetized runways, and fleet statistics."}
+                  ? "L'enciclopedia e registro di navigazione dell'aviazione civile. Telemetrie, piste magnetizzate e flotte commerciali. AirDex offre un archivio esaustivo di velivoli storici e moderni, rotte, hub e dettagli sulle compagnie aeree globali per spotter ed appassionati di aviazione."
+                  : "The civil aviation encyclopedia and flight registry. Operational telemetry, magnetized runways, and fleet statistics. AirDex offers an exhaustive archive of historical and modern aircraft, routes, hubs, and global airline details built for plane spotters and aviation enthusiasts."}
               </p>
-            </div>
-
-            {/* Featured Telemetria Widget Block */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 relative overflow-hidden group shadow-inner">
-              <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-all"></div>
-              
-              <div className="flex flex-col gap-3.5 relative z-10">
-                <div>
-                  <span className="text-cyan-400 font-mono text-[10px] font-black uppercase tracking-widest block mb-1">
-                    System Telemetry Module
-                  </span>
-                  <h5 className="text-white font-extrabold text-sm uppercase">
-                    {isIt ? "Consolle Analisi di Rete" : "Global Fleet Statistics"}
-                  </h5>
-                  <p className="text-slate-450 text-xs mt-1.5 leading-relaxed">
-                    {isIt 
-                      ? "Statistiche della flotta globale, quote tangenziali medie, ripartizione motori e indice di rarità."
-                      : "Analyze global flight stats, average flight ceilings, engine ratios, and rarity metrics."}
-                  </p>
-                </div>
-                
-                <Link 
-                  href={`/${lang}/stats`} 
-                  className="w-max px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-cyan-500/40 text-cyan-400 hover:text-white font-mono text-[10px] uppercase tracking-wider transition-all shadow-sm"
-                >
-                  {isIt ? "Apri Telemetria Globale" : "Access Live Telemetry"}
-                </Link>
-              </div>
+              <p className="text-slate-500 text-xs mt-4 leading-relaxed max-w-md font-mono">
+                {isIt 
+                  ? "Esplora, confronta ed analizza le schede dei velivoli e i flussi radar costantemente aggiornati sul traffico aereo mondiale."
+                  : "Explore, compare, and analyze aircraft configurations and live radar feeds updated dynamically for global aviation telemetry."}
+              </p>
             </div>
           </div>
 
@@ -145,9 +122,13 @@ export default function Footer({ lang }: { lang: string }) {
           <div>
             © {new Date().getFullYear()} AirDex OS. {isIt ? "Tutti i diritti riservati." : "All systems secured."}
           </div>
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
             <Link href={`/${lang}/pro`} className="text-amber-500/80 hover:text-amber-400 font-bold uppercase transition-all">
               AirDex PRO
+            </Link>
+            <span>|</span>
+            <Link href={`/${lang}/stats`} className="text-slate-600 hover:text-cyan-400 transition-colors uppercase">
+              {isIt ? "Telemetria" : "Telemetry"}
             </Link>
             <span>|</span>
             <span className="text-slate-600">
