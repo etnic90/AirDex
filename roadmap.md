@@ -34,7 +34,7 @@ Filtri di Ricerca Avanzati: Inserimento nel Radar di slider numerici per filtrar
 
 Audio Feedback (Toggle): Micro-suoni sci-fi attivabili al click dei filtri e all'apertura delle card.
 
-FASE 11: Espansione dell'Ecosistema (Giorni 39-48)
+FASE 11: Espansione dell'Ecosistema (Giorni 39-48 - Completata)
 
 Modulo Compagnie Aeree (Airlines):
 

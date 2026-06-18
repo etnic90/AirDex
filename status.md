@@ -410,3 +410,24 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
 - **Index UI**: Riscritto [src/app/[lang]/airports/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/page.tsx) integrando filtri avanzati, sorting dinamico e lazy pagination.
 - **Details UI**: Riscritto [src/app/[lang]/airports/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/[id]/page.tsx) con piste dettagliate, servizi di terra, coordinate DMS e spotter corner.
 - **Test Build**: Eseguito `npm run build` con esito positivo (nessun errore di tipi TypeScript o Next.js).
+
+**Data:** Giorno 55
+**Fase Attuale:** Immagini Aeroporti, Loghi Compagnie e Layout Narrazioni (Fase 11+ - Completata).
+
+## Decisioni Prese:
+- **Espansione Paginazione Aeroporti**: Aggiornata la query Supabase per scorrere sequenzialmente i record in intervalli da 1.000 elementi, sbloccando la visualizzazione di tutti i 2.058 aeroporti della tabella (invece di fermarsi al limite di default di 1.000).
+- **Asset di Copertura Aeroportuali**: Aggiunta la colonna `image_url` alla tabella `airports` per caricare un asset di anteprima visivo per ogni hub.
+- **Scraper Immagini Wikipedia**: Implementato e avviato lo script `scripts/fetchAirportImages.mjs` che esegue query consecutive sul motore API di Wikipedia in modo rate-limited (1.2s di pausa) per associare e salvare gli URL diretti di anteprima a ciascun aeroporto.
+- **Visual Improvement Loghi**: Allargato il layout delle logo card nell'archivio delle compagnie aeree trasformandolo in rettangoli orizzontali ad ampie dimensioni (`w-full h-20 bg-white/95`) per dare risalto e leggibilità ai loghi testuali estesi. Introdotto il caricamento automatico di riserva via Clearbit API se il campo `logo_url` del DB è vuoto ma è presente un sito web.
+- **Dettagli in Sezioni Narrative**: Riorganizzata la storia di aeroporti e compagnie aeree dividendo i testi lunghi in singoli box o paragrafi classificati (es. "Sezione 01", "Sezione 02") in caratteri ad alta leggibilità `font-sans` (Inter).
+- **Miglioramento Tipografia**: Mappato il font sans-serif di Tailwind a **Inter** a livello globale tramite `@theme` in `globals.css` per ottimizzare la leggibilità dei testi e dei piccoli titoli, mantenendo **JetBrains Mono** solo per i parametri HUD di plancia.
+- **Bandiera e Tooltip Compagnie**: Inserita la bandiera dello stato nel terminale di ogni compagnia aerea con un tooltip nativo in CSS visualizzato al passaggio del mouse.
+
+## Attività Completate:
+- **Database Schema**: Creata ed eseguita la migrazione `scripts/migration_airport_images.mjs` aggiungendo la colonna `image_url` alla tabella `airports`.
+- **Wikipedia Importer**: Creato ed eseguito `scripts/fetchAirportImages.mjs` per associare le foto a tutti gli aeroporti.
+- **Index Aeroporti**: Modificato [src/app/[lang]/airports/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/page.tsx) per caricare tutti i 2.058 record e mostrare le immagini nelle card.
+- **Details Aeroporto**: Modificato [src/app/[lang]/airports/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/[id]/page.tsx) per esibire la foto hero in testata e le sezioni cronologiche divise in box leggibili.
+- **Index Compagnie**: Modificato [src/app/[lang]/airlines/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airlines/page.tsx) per allargare le logo slot e iniettare la logica Clearbit API fallback.
+- **Details Compagnia**: Modificato [src/app/[lang]/airlines/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airlines/[id]/page.tsx) per inserire la bandiera nazionale olografica con tooltip CSS e la cronologia strutturata a paragrafi boxati.
+- **Tipografia**: Configurato `globals.css` per impostare Inter come font-sans predefinito ed eliminati i tag `font-mono` generici nei percorsi principali.

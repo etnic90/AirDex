@@ -5,6 +5,50 @@ import { createBrowserClient } from "@supabase/ssr";
 import Link from "next/link";
 import CaptureButtons from "@/components/CaptureButtons";
 
+function getCountryIsoCode(country: string): string {
+  if (!country) return "un";
+  const normalized = country.toLowerCase().trim();
+  const map: Record<string, string> = {
+    "united states": "us", "usa": "us", "united states of america": "us",
+    "germany": "de",
+    "united arab emirates": "ae", "uae": "ae",
+    "italy": "it", "italia": "it",
+    "france": "fr",
+    "united kingdom": "gb", "uk": "gb",
+    "spain": "es",
+    "japan": "jp",
+    "china": "cn",
+    "canada": "ca",
+    "australia": "au",
+    "brazil": "br",
+    "india": "in",
+    "netherlands": "nl",
+    "switzerland": "ch",
+    "singapore": "sg",
+    "qatar": "qa",
+    "turkey": "tr", "turkiye": "tr",
+    "south korea": "kr", "korea": "kr",
+    "ireland": "ie",
+    "finland": "fi",
+    "sweden": "se",
+    "norway": "no",
+    "denmark": "dk",
+    "belgium": "be",
+    "austria": "at",
+    "portugal": "pt",
+    "malaysia": "my",
+    "thailand": "th",
+    "hong kong": "hk",
+    "vietnam": "vn",
+    "philippines": "ph",
+    "new zealand": "nz",
+    "egypt": "eg",
+    "south africa": "za",
+    "mexico": "mx"
+  };
+  return map[normalized] || "un"; 
+}
+
 interface AirlineDetail {
   id: string;
   name: string;
@@ -80,38 +124,51 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
     fetchDeepData();
   }, [supabase, id]);
 
-  // MOTORE DI PARSING AUTOMATICO DEL TESTO PER INTEGRARCI CON LA NAVIGAZIONE CIRCOLARE
-  const renderLinkedHistory = useMemo(() => {
-    if (!airline?.history || allModels.length === 0) return airline?.history;
+  // MOTORE DI PARSING AUTOMATICO DEL TESTO PER PARAGRAFI E NAVIGAZIONE CIRCOLARE
+  const renderLinkedHistoryParagraphs = useMemo(() => {
+    if (!airline?.history || allModels.length === 0) {
+      return airline?.history 
+        ? airline.history.split(/\n\s*\n/).map((p, idx) => ({ index: idx, nodes: [p.trim()] }))
+        : [];
+    }
 
-    let text = airline.history;
+    const paragraphs = airline.history.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
     const sortedModels = [...allModels].sort((a, b) => b.model_name.length - a.model_name.length);
-    const replacements: { placeholder: string; component: React.ReactNode }[] = [];
 
-    sortedModels.forEach((model, index) => {
-      const regex = new RegExp(`\\b${model.model_name}\\b`, "gi");
-      if (regex.test(text)) {
-        const placeholder = `___PLANE_REF_${index}___`;
-        text = text.replace(regex, placeholder);
-        replacements.push({
-          placeholder,
-          component: (
-            <Link 
-              key={placeholder}
-              href={`/${lang}/aircraft/${model.id}`}
-              className="text-cyan-400 font-bold border-b border-dashed border-cyan-500/50 hover:border-cyan-400 hover:bg-cyan-500/10 px-1.5 py-0.5 rounded transition-all font-mono inline-block shadow-[0_0_10px_rgba(6,182,212,0.05)] animate-pulse"
-            >
-              {model.model_name}
-            </Link>
-          )
-        });
-      }
-    });
+    return paragraphs.map((paragraphText, pIdx) => {
+      let text = paragraphText;
+      const replacements: { placeholder: string; component: React.ReactNode }[] = [];
 
-    const parts = text.split(/(___PLANE_REF_\d+___)/g);
-    return parts.map((part) => {
-      const found = replacements.find(r => r.placeholder === part);
-      return found ? found.component : part;
+      sortedModels.forEach((model, index) => {
+        const regex = new RegExp(`\\b${model.model_name}\\b`, "gi");
+        if (regex.test(text)) {
+          const placeholder = `___PLANE_REF_${pIdx}_${index}___`;
+          text = text.replace(regex, placeholder);
+          replacements.push({
+            placeholder,
+            component: (
+              <Link 
+                key={placeholder}
+                href={`/${lang}/aircraft/${model.id}`}
+                className="text-cyan-400 font-bold border-b border-dashed border-cyan-500/50 hover:border-cyan-400 hover:bg-cyan-500/10 px-1.5 py-0.5 rounded transition-all font-mono inline-block shadow-[0_0_10px_rgba(6,182,212,0.05)] animate-pulse"
+              >
+                {model.model_name}
+              </Link>
+            )
+          });
+        }
+      });
+
+      const parts = text.split(/(___PLANE_REF_\d+_\d+___)/g);
+      const nodes = parts.map((part) => {
+        const found = replacements.find(r => r.placeholder === part);
+        return found ? found.component : part;
+      });
+
+      return {
+        index: pIdx,
+        nodes
+      };
     });
   }, [airline, allModels, lang]);
 
@@ -170,11 +227,28 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
             <div className="text-center md:text-left">
               <div className="flex flex-col md:flex-row md:items-center gap-3 mb-1.5">
                 <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white">{airline.name}</h1>
-                <span className={`text-[10px] font-mono uppercase font-black tracking-widest px-2.5 py-0.5 rounded border self-center ${
-                  airline.closed_year ? 'border-amber-500/30 text-amber-500 bg-amber-950/20' : 'border-emerald-500/30 text-emerald-400 bg-emerald-950/20'
-                }`}>
-                  {airline.closed_year ? 'Historical' : 'Active'}
-                </span>
+                <div className="flex items-center gap-2 justify-center md:justify-start">
+                  <span className={`text-[10px] font-mono uppercase font-black tracking-widest px-2.5 py-0.5 rounded border self-center ${
+                    airline.closed_year ? 'border-amber-500/30 text-amber-500 bg-amber-950/20' : 'border-emerald-500/30 text-emerald-400 bg-emerald-950/20'
+                  }`}>
+                    {airline.closed_year ? 'Historical' : 'Active'}
+                  </span>
+                  
+                  {/* Bandiera Nazione Interattiva con Tooltip */}
+                  <div className="relative group inline-flex items-center self-center">
+                    <div className="w-7 h-4.5 rounded shadow-sm border border-slate-800 overflow-hidden bg-slate-950 flex items-center justify-center cursor-help">
+                      <img 
+                        src={`https://flagcdn.com/${getCountryIsoCode(airline.country)}.svg`} 
+                        alt={airline.country}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {/* Tooltip CSS */}
+                    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-slate-900 border border-slate-800 text-[10px] uppercase font-mono tracking-widest text-slate-200 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 shadow-2xl">
+                      Stato: {airline.country}
+                    </span>
+                  </div>
+                </div>
               </div>
               {airline.slogan && <p className="text-cyan-400/70 italic text-xs font-mono">“{airline.slogan}”</p>}
               <p className="text-slate-500 font-mono text-xs mt-1">{airline.headquarters || airline.country}</p>
@@ -293,16 +367,29 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
             </div>
           )}
 
-          {/* TAB 2: REGISTRO STORICO CON LINK PARSATI */}
+          {/* TAB 2: REGISTRO STORICO CON LINK PARSATI IN BOX DEDICATI */}
           {activeTab === "history" && (
-            <div className="bg-slate-900/20 border border-slate-900 rounded-2xl p-6 md:p-8 shadow-xl">
-              <h3 className="text-cyan-500 font-mono text-xs uppercase tracking-widest font-black mb-4 border-b border-slate-900 pb-2 flex justify-between items-center">
-                <span>Registri Cronologici Decrittati</span>
-                <span className="text-[10px] text-slate-500 font-normal">I velivoli evidenziati in ciano sono moduli AirDex cliccabili</span>
-              </h3>
-              <div className="text-slate-300 leading-relaxed font-sans text-sm md:text-base whitespace-pre-line text-justify tracking-wide selection:bg-cyan-500/40">
-                {renderLinkedHistory}
-              </div>
+            <div className="flex flex-col gap-6 w-full font-sans">
+              {renderLinkedHistoryParagraphs.length > 0 ? (
+                renderLinkedHistoryParagraphs.map((paragraph) => (
+                  <div 
+                    key={paragraph.index}
+                    className="bg-slate-900/20 border border-slate-900 hover:border-cyan-500/20 rounded-2xl p-6 backdrop-blur-sm transition-all duration-300 shadow-md relative overflow-hidden"
+                  >
+                    <div className="flex items-center gap-2 mb-3 font-mono text-[9px] uppercase tracking-widest text-slate-500 font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/70"></span>
+                      Registro Storico // Sezione {String(paragraph.index + 1).padStart(2, "0")}
+                    </div>
+                    <div className="text-slate-350 text-sm md:text-base leading-relaxed text-justify whitespace-pre-line">
+                      {paragraph.nodes}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="bg-slate-900/20 border border-slate-900 rounded-3xl p-8 text-center text-slate-500 font-mono text-xs shadow-inner">
+                  Nessun registro storico registrato per questo vettore.
+                </div>
+              )}
             </div>
           )}
 

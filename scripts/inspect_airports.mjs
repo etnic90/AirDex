@@ -1,34 +1,24 @@
-import pg from 'pg';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-const { Client } = pg;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: resolve(__dirname, '../.env.local') });
 
-const client = new Client({
-  connectionString: "postgresql://postgres.acowoegaamsjhykzwzyh:Yx%25Acx3%26%2Bi4ezU%2C@aws-0-eu-west-1.pooler.supabase.com:6543/postgres",
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
-async function main() {
-  try {
-    await client.connect();
-    const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name='airports'
-    `);
-    console.log("Columns of airports:");
-    res.rows.forEach(row => {
-      console.log(`- ${row.column_name}: ${row.data_type}`);
-    });
-
-    const sample = await client.query(`SELECT * FROM airports LIMIT 1`);
-    console.log("Sample row:", sample.rows[0]);
-  } catch (err) {
-    console.error("Failed to query airports schema:", err.message);
-  } finally {
-    await client.end();
+async function inspect() {
+  const { data, error } = await supabase
+    .from('airports')
+    .select('*')
+    .limit(1);
+  if (error) {
+    console.error(error);
+  } else {
+    console.log("Columns in airports:", Object.keys(data[0] || {}));
+    console.log("Full sample record:", data[0]);
   }
 }
 
-main();
+inspect();

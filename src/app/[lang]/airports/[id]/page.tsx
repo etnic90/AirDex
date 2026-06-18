@@ -164,6 +164,7 @@ interface AirportDetail {
     catering_hubs?: number;
     de_icing_stations?: number;
   } | null;
+  image_url: string | null;
 }
 
 interface HubAirline {
@@ -241,7 +242,7 @@ export default function AirportDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-300 font-mono selection:bg-emerald-500/30 pb-20 relative overflow-hidden">
+    <main className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-emerald-500/30 pb-20 relative overflow-hidden">
       {/* Sfondo Radiale & Griglia */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-0 left-0 w-full h-[500px] bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(16,185,129,0.04),transparent)] pointer-events-none z-0"></div>
@@ -249,7 +250,7 @@ export default function AirportDetailPage() {
       {/* 1. TOP BAR */}
       <div className="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <Link href={`/${lang}/airports`} className="text-xs font-bold text-slate-500 hover:text-emerald-400 transition-colors uppercase tracking-widest flex items-center gap-2 w-max">
+          <Link href={`/${lang}/airports`} className="text-xs font-bold text-slate-550 hover:text-emerald-400 transition-colors uppercase tracking-widest flex items-center gap-2 w-max font-mono">
             &larr; Ritorna al Radar Aeroporti
           </Link>
         </div>
@@ -258,19 +259,19 @@ export default function AirportDetailPage() {
       <div className="max-w-7xl mx-auto px-6 pt-10 relative z-10">
         
         {/* 2. HEADER ACCATTIVANTE */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12 border-b border-slate-900 pb-10">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 border-b border-slate-900 pb-10">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span className="text-emerald-500 font-black text-[10px] uppercase tracking-widest">Radar Terminal Node</span>
+              <span className="text-emerald-500 font-black text-[10px] uppercase tracking-widest font-mono">Radar Terminal Node</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2 uppercase leading-none">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2 uppercase leading-none font-mono">
               {airport.name}
             </h1>
-            <div className="text-slate-400 text-xs flex flex-wrap items-center gap-3 font-medium uppercase mt-3">
+            <div className="text-slate-400 text-xs flex flex-wrap items-center gap-3 font-semibold uppercase mt-3">
               <span>📍 {airport.city}, {airport.country}</span>
               <span className="text-slate-700 hidden sm:inline">|</span>
-              <span>📡 DMS: {decimalToDMS(airport.latitude, true)}, {decimalToDMS(airport.longitude, false)}</span>
+              <span className="font-mono">📡 DMS: {decimalToDMS(airport.latitude, true)}, {decimalToDMS(airport.longitude, false)}</span>
             </div>
           </div>
 
@@ -278,7 +279,7 @@ export default function AirportDetailPage() {
           <div className="flex gap-3 shrink-0">
             {/* Country flag */}
             <div className="bg-slate-900/40 border border-slate-900 rounded-2xl px-5 py-3.5 flex flex-col items-center justify-center shadow-lg relative group">
-              <span className="text-[8px] text-slate-500 uppercase font-black block mb-1">Nazione</span>
+              <span className="text-[8px] text-slate-500 uppercase font-black block mb-1 font-mono">Nazione</span>
               <div className="w-9 h-6 rounded shadow-sm border border-slate-800 overflow-hidden bg-slate-950 flex items-center justify-center">
                 <img 
                   src={`https://flagcdn.com/${getCountryIsoCode(airport.country)}.svg`} 
@@ -290,15 +291,42 @@ export default function AirportDetailPage() {
 
             {/* Badge IATA */}
             <div className="bg-slate-900/45 border border-slate-900 rounded-2xl px-6 py-3.5 text-center shadow-lg min-w-[80px]">
-              <span className="text-[8px] text-slate-500 uppercase font-black block mb-1">IATA</span>
-              <span className="text-emerald-400 font-black text-2xl tracking-wider block leading-none">{airport.iata_code}</span>
+              <span className="text-[8px] text-slate-500 uppercase font-black block mb-1 font-mono">IATA</span>
+              <span className="text-emerald-400 font-black text-2xl tracking-wider block leading-none font-mono">{airport.iata_code}</span>
             </div>
             
             {/* Badge ICAO */}
             <div className="bg-slate-900/45 border border-slate-900 rounded-2xl px-6 py-3.5 text-center shadow-lg min-w-[90px]">
-              <span className="text-[8px] text-slate-500 uppercase font-black block mb-1">ICAO</span>
-              <span className="text-slate-400 font-black text-2xl tracking-wider block leading-none">{airport.icao_code}</span>
+              <span className="text-[8px] text-slate-500 uppercase font-black block mb-1 font-mono">ICAO</span>
+              <span className="text-slate-400 font-black text-2xl tracking-wider block leading-none font-mono">{airport.icao_code}</span>
             </div>
+          </div>
+        </div>
+
+        {/* HERO IMAGE BANNERS */}
+        <div className="w-full h-80 md:h-[450px] bg-slate-950 rounded-3xl border border-slate-900 overflow-hidden relative mb-10 shadow-2xl group">
+          {airport.image_url && airport.image_url !== 'NOT_FOUND' ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={airport.image_url}
+              alt={airport.name}
+              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-1000"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-slate-900/40 to-slate-950/60 flex flex-col items-center justify-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-slate-700 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span className="text-[10px] text-slate-650 tracking-[0.2em] font-mono uppercase font-black">Nessun Rilevamento Fotografico Disponibile</span>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent"></div>
+          
+          {/* Tagline / ICAO sovrapposto in basso a sinistra */}
+          <div className="absolute bottom-6 left-6 z-10 hidden md:block font-mono">
+            <span className="bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 px-3.5 py-1.5 rounded-xl text-xs font-bold tracking-widest uppercase backdrop-blur-md">
+              {airport.icao_code} SECURE PORT AREA
+            </span>
           </div>
         </div>
 
@@ -494,10 +522,31 @@ export default function AirportDetailPage() {
 
               {/* TAB 4: STORIA & PROFILO */}
               {activeTab === "history" && (
-                <div className="bg-slate-900/30 border border-slate-900 rounded-3xl p-6 w-full">
-                  <p className="text-slate-300 leading-relaxed text-xs text-justify whitespace-pre-line break-words font-mono">
-                    {airport.history || "Nessun dato storico archiviato per questa infrastruttura."}
-                  </p>
+                <div className="flex flex-col gap-6 w-full font-sans">
+                  {airport.history ? (
+                    airport.history
+                      .split(/\n\s*\n/)
+                      .map((p) => p.trim())
+                      .filter((p) => p.length > 0)
+                      .map((paragraph, index) => (
+                        <div 
+                          key={index}
+                          className="bg-slate-900/20 border border-slate-900 hover:border-emerald-500/20 rounded-2xl p-6 backdrop-blur-sm transition-all duration-300 shadow-md relative overflow-hidden"
+                        >
+                          <div className="flex items-center gap-2 mb-3 font-mono text-[9px] uppercase tracking-widest text-slate-500 font-bold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70"></span>
+                            Cronologia Scalo // Sezione {String(index + 1).padStart(2, "0")}
+                          </div>
+                          <p className="text-slate-350 text-sm md:text-base leading-relaxed text-justify">
+                            {paragraph}
+                          </p>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="bg-slate-900/20 border border-slate-900 rounded-3xl p-8 text-center text-slate-500 font-mono text-xs shadow-inner">
+                      Nessun dato storico archiviato per questa infrastruttura.
+                    </div>
+                  )}
                 </div>
               )}
 

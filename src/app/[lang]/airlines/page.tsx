@@ -419,24 +419,26 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
                     )}
                   </div>
 
-                  {/* Info Principali (Logo + Nome) */}
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center p-2 border border-slate-900/80 shadow-md shrink-0 relative overflow-hidden">
-                      <AirlineLogo 
-                        src={airline.logo_url} 
-                        alt={`${airline.name} Logo`} 
-                        airlineName={airline.name} 
-                      />
+                  {/* Info Principali (Logo Centrato e Ampio + Nome) */}
+                  <div className="flex flex-col gap-4 mb-5">
+                    <div className="w-full h-20 rounded-2xl bg-white/95 flex items-center justify-center p-3 border border-slate-900/80 shadow-md relative overflow-hidden shrink-0">
+                      <div className="w-full h-full max-w-[180px] flex items-center justify-center">
+                        <AirlineLogo 
+                          src={airline.logo_url || (airline.website ? `https://logo.clearbit.com/${airline.website.replace('https://','').replace('http://','').replace('www.','').split('/')[0]}` : null)} 
+                          alt={`${airline.name} Logo`} 
+                          airlineName={airline.name} 
+                        />
+                      </div>
                       {isDefunct && (
-                        <div className="absolute inset-0 bg-slate-950/20 backdrop-saturate-50 mix-blend-color group-hover:opacity-0 transition-opacity pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-slate-950/25 backdrop-saturate-50 mix-blend-color group-hover:opacity-0 transition-opacity pointer-events-none"></div>
                       )}
                     </div>
 
                     <div className="min-w-0">
-                      <h2 className="text-lg font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-1">
+                      <h2 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors truncate uppercase leading-tight font-mono">
                         {airline.name}
                       </h2>
-                      <span className="text-slate-500 text-xs font-mono block mt-0.5">{airline.country}</span>
+                      <span className="text-slate-400 text-xs font-semibold block mt-1">{airline.country}</span>
                     </div>
                   </div>
 

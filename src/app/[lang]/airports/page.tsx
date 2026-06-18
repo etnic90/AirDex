@@ -15,6 +15,7 @@ interface Airport {
   runways_count: number;
   elevation_ft: number;
   annual_passengers_mio?: number | null;
+  image_url?: string | null;
 }
 
 export default function AirportsPage() {
@@ -40,15 +41,36 @@ export default function AirportsPage() {
 
   useEffect(() => {
     const fetchAirports = async () => {
-      // Scarichiamo l'elenco degli aeroporti (il caricamento è veloce e ottimizzato)
-      const { data, error } = await supabase
-        .from("airports")
-        .select("*")
-        .order("city", { ascending: true });
+      let allAirports: Airport[] = [];
+      let start = 0;
+      const size = 1000;
+      let hasMore = true;
 
-      if (!error && data) {
-        setAirports(data as Airport[]);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from("airports")
+          .select("*")
+          .order("city", { ascending: true })
+          .range(start, start + size - 1);
+
+        if (error) {
+          console.error("Errore recupero aeroporti:", error.message);
+          break;
+        }
+
+        if (data && data.length > 0) {
+          allAirports = [...allAirports, ...(data as Airport[])];
+          if (data.length < size) {
+            hasMore = false;
+          } else {
+            start += size;
+          }
+        } else {
+          hasMore = false;
+        }
       }
+
+      setAirports(allAirports);
       setLoading(false);
     };
 
@@ -119,7 +141,7 @@ export default function AirportsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 p-6 md:p-10 text-white relative overflow-hidden font-mono pb-24">
+    <main className="min-h-screen bg-slate-950 p-6 md:p-10 text-white relative overflow-hidden font-sans pb-24">
       {/* Sfondo Griglia Sci-Fi */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-0 left-0 w-full h-[400px] bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(16,185,129,0.03),transparent)] pointer-events-none z-0"></div>
@@ -128,30 +150,30 @@ export default function AirportsPage() {
         
         {/* Intestazione */}
         <div className="mb-10 text-center md:text-left border-b border-slate-900 pb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(16,185,129,0.05)] font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
             Aviation Terminal Nodes Active
           </div>
-          <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-2 leading-none">
+          <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-2 leading-none font-mono">
             Terminale Aeroporti
           </h1>
-          <p className="text-slate-500 text-xs md:text-sm max-w-xl leading-relaxed">
+          <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
             Esplora gli hub passeggeri commerciali del mondo. Monitora coordinate, altitudini, piste operative e allacciamenti delle alleanze globali.
           </p>
         </div>
 
         {/* CONTATORI KPI TELEMETRIA */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 font-mono">
           <div className="bg-slate-900/30 p-5 rounded-2xl border border-slate-900 border-b-2 border-b-emerald-500 shadow-[inset_0_0_15px_rgba(16,185,129,0.05)]">
-            <span className="text-[10px] text-slate-550 uppercase font-black block mb-1">Hub Tracciati</span>
+            <span className="text-[10px] text-slate-500 uppercase font-black block mb-1">Hub Tracciati</span>
             <span className="text-3xl font-black text-white">{stats.total}</span>
           </div>
           <div className="bg-slate-900/30 p-5 rounded-2xl border border-slate-900 border-b-2 border-b-cyan-500 shadow-[inset_0_0_15px_rgba(6,182,212,0.05)]">
-            <span className="text-[10px] text-slate-550 uppercase font-black block mb-1">Nazioni Raggiunte</span>
+            <span className="text-[10px] text-slate-500 uppercase font-black block mb-1">Nazioni Raggiunte</span>
             <span className="text-3xl font-black text-white">{stats.countries}</span>
           </div>
           <div className="bg-slate-900/30 p-5 rounded-2xl border border-slate-900 border-b-2 border-b-purple-500 shadow-[inset_0_0_15px_rgba(168,85,247,0.05)]">
-            <span className="text-[10px] text-slate-550 uppercase font-black block mb-1">Elevazione Media</span>
+            <span className="text-[10px] text-slate-500 uppercase font-black block mb-1">Elevazione Media</span>
             <span className="text-3xl font-black text-white">{stats.avgElevation.toLocaleString()} <span className="text-xs text-slate-500 font-normal">ft ASL</span></span>
           </div>
         </div>
@@ -162,23 +184,23 @@ export default function AirportsPage() {
             
             {/* Ricerca Libera */}
             <div className="md:col-span-2">
-              <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Ricerca Libera</label>
+              <label className="block text-slate-400 text-xs font-bold mb-2">Ricerca Libera</label>
               <input 
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cerca scalo per città, nazione o codici (IATA/ICAO)..."
-                className="w-full p-3 rounded-xl bg-slate-950 text-white border border-slate-800 focus:border-emerald-500 focus:outline-none text-xs transition-all shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] placeholder:text-slate-850"
+                className="w-full p-3 rounded-xl bg-slate-950 text-white border border-slate-800 focus:border-emerald-500 focus:outline-none text-sm transition-all shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] placeholder:text-slate-600"
               />
             </div>
 
             {/* Filtro Paese */}
             <div>
-              <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Filtro Nazione</label>
+              <label className="block text-slate-400 text-xs font-bold mb-2">Filtro Nazione</label>
               <select
                 value={selectedCountry}
                 onChange={(e) => setSelectedCountry(e.target.value)}
-                className="w-full p-3 rounded-xl bg-slate-950 text-white border border-slate-800 focus:border-emerald-500 focus:outline-none text-xs transition-all cursor-pointer text-slate-350"
+                className="w-full p-3 rounded-xl bg-slate-950 text-white border border-slate-800 focus:border-emerald-500 focus:outline-none text-sm transition-all cursor-pointer text-slate-300"
               >
                 <option value="ALL">Tutte le Nazioni ({countriesList.length})</option>
                 {countriesList.map((country, idx) => (
@@ -189,11 +211,11 @@ export default function AirportsPage() {
 
             {/* Filtro Piste */}
             <div>
-              <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Piste Minime</label>
+              <label className="block text-slate-400 text-xs font-bold mb-2">Piste Minime</label>
               <select
                 value={runwayFilter}
                 onChange={(e) => setRunwayFilter(e.target.value)}
-                className="w-full p-3 rounded-xl bg-slate-950 text-white border border-slate-800 focus:border-emerald-500 focus:outline-none text-xs transition-all cursor-pointer text-slate-350"
+                className="w-full p-3 rounded-xl bg-slate-950 text-white border border-slate-800 focus:border-emerald-500 focus:outline-none text-sm transition-all cursor-pointer text-slate-300"
               >
                 <option value="ALL">Qualsiasi configurazione</option>
                 <option value="1">Esattamente 1 pista</option>
@@ -243,51 +265,64 @@ export default function AirportsPage() {
                 return (
                   <div 
                     key={airport.id} 
-                    className="bg-slate-900/20 border border-slate-900 hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] rounded-2xl p-6 backdrop-blur-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between"
+                    className="bg-slate-900/20 border border-slate-900 hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] rounded-2xl overflow-hidden backdrop-blur-md transition-all duration-305 group flex flex-col justify-between"
                   >
-                    <div className="absolute top-0 left-0 w-1 h-full bg-transparent group-hover:bg-emerald-500 transition-colors"></div>
-
-                    {/* Header Card */}
-                    <div className="mb-4">
-                      <div className="flex items-start justify-between gap-4 w-full mb-2">
-                        <div className="min-w-0 flex-1">
-                          <h2 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors break-words leading-tight uppercase">
-                            {airport.name}
-                          </h2>
+                    {/* Airport Cover Image */}
+                    <div className="h-36 w-full bg-slate-950 relative overflow-hidden flex-shrink-0">
+                      {airport.image_url && airport.image_url !== 'NOT_FOUND' ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={airport.image_url}
+                          alt={airport.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-slate-900/40 to-slate-950/60 flex items-center justify-center border-b border-slate-900">
+                          <span className="text-[10px] text-slate-700 tracking-widest font-mono uppercase font-black">Radar No Image</span>
                         </div>
-
-                        {/* IATA & ICAO Badges */}
-                        <div className="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 font-mono text-center shadow-inner flex-shrink-0 min-w-[54px]">
-                          <span className="text-emerald-400 font-black text-xs tracking-wider block">{airport.iata_code}</span>
-                          <span className="text-slate-600 block text-[7px] uppercase font-black mt-0.5">{airport.icao_code}</span>
-                        </div>
-                      </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
                       
-                      <p className="text-slate-550 text-[10px] font-bold uppercase">{airport.city}, {airport.country}</p>
+                      {/* Code Badges overlapping image */}
+                      <div className="absolute top-3 right-3 bg-slate-950/90 backdrop-blur-sm px-2.5 py-1.5 rounded-lg border border-slate-800/80 font-mono text-center shadow-inner flex-shrink-0 min-w-[54px] z-10">
+                        <span className="text-emerald-400 font-black text-xs tracking-wider block leading-none">{airport.iata_code}</span>
+                        <span className="text-slate-500 block text-[7px] uppercase font-black mt-1 leading-none">{airport.icao_code}</span>
+                      </div>
                     </div>
 
-                    {/* Stats & Link */}
-                    <div>
-                      <div className="grid grid-cols-2 gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-900/50 font-mono text-[10px] mb-4 text-slate-450 shadow-inner">
-                        <div className="flex items-center gap-1.5">
-                          <span>🛫 Piste:</span>
-                          <strong className="text-white font-bold">{airport.runways_count}</strong>
-                        </div>
-                        <div className="flex items-center gap-1.5 justify-end">
-                          <span>👥 Pax:</span>
-                          <strong className="text-emerald-400 font-bold">{airport.annual_passengers_mio ? `${airport.annual_passengers_mio}M` : "—"}</strong>
-                        </div>
+                    {/* Card Content */}
+                    <div className="p-6 flex-grow flex flex-col justify-between">
+                      {/* Header Info */}
+                      <div className="mb-4">
+                        <h2 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-2 leading-snug uppercase">
+                          {airport.name}
+                        </h2>
+                        <p className="text-slate-400 text-xs font-semibold uppercase mt-1.5">{airport.city}, {airport.country}</p>
                       </div>
 
-                      <Link 
-                        href={`/${lang}/airports/${airport.id}`}
-                        className="w-full py-2 rounded-xl bg-slate-950 border border-slate-850 hover:border-slate-800 text-slate-400 hover:text-emerald-400 font-mono text-[10px] uppercase tracking-wider font-bold transition-all flex justify-center items-center gap-2 group-hover:bg-slate-900/40"
-                      >
-                        Torre Controllo
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 transform group-hover:translate-x-1.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </Link>
+                      {/* Stats & Link */}
+                      <div>
+                        <div className="grid grid-cols-2 gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-900/50 font-mono text-[10px] mb-4 text-slate-450 shadow-inner">
+                          <div className="flex items-center gap-1.5">
+                            <span>🛫 Piste:</span>
+                            <strong className="text-white font-bold">{airport.runways_count}</strong>
+                          </div>
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <span>👥 Pax:</span>
+                            <strong className="text-emerald-400 font-bold">{airport.annual_passengers_mio ? `${airport.annual_passengers_mio}M` : "—"}</strong>
+                          </div>
+                        </div>
+
+                        <Link 
+                          href={`/${lang}/airports/${airport.id}`}
+                          className="w-full py-2.5 rounded-xl bg-slate-950 border border-slate-850 hover:border-slate-850 text-slate-400 hover:text-emerald-400 font-mono text-[10px] uppercase tracking-wider font-bold transition-all flex justify-center items-center gap-2 group-hover:bg-slate-900/40"
+                        >
+                          Torre Controllo
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 transform group-hover:translate-x-1.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                        </Link>
+                      </div>
                     </div>
 
                   </div>
