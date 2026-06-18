@@ -421,8 +421,8 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
 
                   {/* Info Principali (Logo Centrato e Ampio + Nome) */}
                   <div className="flex flex-col gap-4 mb-5">
-                    <div className="w-full h-20 rounded-2xl bg-white/95 flex items-center justify-center p-3 border border-slate-900/80 shadow-md relative overflow-hidden shrink-0">
-                      <div className="w-full h-full max-w-[180px] flex items-center justify-center">
+                    <div className="w-full h-[100px] rounded-2xl bg-white/95 flex items-center justify-center p-3 border border-slate-900/80 shadow-md relative overflow-hidden shrink-0">
+                      <div className="w-full h-[56px] max-w-[180px] flex items-center justify-center">
                         <AirlineLogo 
                           src={airline.logo_url || (airline.website ? `https://logo.clearbit.com/${airline.website.replace('https://','').replace('http://','').replace('www.','').split('/')[0]}` : null)} 
                           alt={`${airline.name} Logo`} 
