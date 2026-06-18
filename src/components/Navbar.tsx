@@ -31,7 +31,7 @@ export default function Navbar({ lang }: { lang: string }) {
         <div className="hidden lg:flex items-center gap-8">
           <Link 
             href={`/${lang}`} 
-            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/radar') || isActive('/compare') || isActive('/stats') || isActive('/blog') || isActive('/airlines') || isActive('/airports') ? 'text-slate-400 hover:text-white' : 'text-cyan-400 font-bold'}`}
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/radar') || isActive('/compare') || isActive('/stats') || isActive('/blog') || isActive('/airlines') || isActive('/airports') || isActive('/timeline') ? 'text-slate-400 hover:text-white' : 'text-cyan-400 font-bold'}`}
           >
             Hangar
           </Link>
@@ -64,6 +64,12 @@ export default function Navbar({ lang }: { lang: string }) {
             className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/stats') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
           >
             Telemetria
+          </Link>
+          <Link 
+            href={`/${lang}/timeline`} 
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/timeline') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
+          >
+            Timeline
           </Link>
           <Link 
             href={`/${lang}/blog`} 

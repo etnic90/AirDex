@@ -22,7 +22,7 @@ Strutturazione Dati JSON-LD: Iniezione di microdati Schema.org (tipo Vehicle o P
 
 Dynamic OpenGraph: Creazione di un'API Edge Vercel (api/og) per autogenerare immagini social personalizzate per ogni aereo condiviso.
 
-FASE 10: Nuove Pagine Core & Data Discovery (Giorni 31-38)
+FASE 10: Nuove Pagine Core & Data Discovery (Giorni 31-38 - Completata)
 
 Hangar di Comparazione (/compare): Interfaccia a doppia colonna con grafici radar olografici sovrapposti per confrontare specifiche tecniche (range, passeggeri) di due velivoli.
 

@@ -381,3 +381,17 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
   - *Danger Zone (Smantellamento Hangar)*: Modulo di eliminazione con doppio checkbox di sicurezza che esegue l'RPC `delete_user_self()`, svuotando a cascata le tabelle collegate (`user_captures`, `user_profiles`, ed infine l'account da `auth.users`).
 - **Registrazione Database RPC**: Creato ed eseguito lo script `scripts/migration_delete_user.mjs` che registra l'RPC `delete_user_self` con permessi `SECURITY DEFINER`.
 - **Test Build**: Eseguito `npm run build` con successo, confermando l'integrità del codice TypeScript/Next.js (1.721 percorsi statici compilati correttamente).
+
+**Data:** Giorno 53
+**Fase Attuale:** Cronologia Lineare & Esplorazione Storica (Fase 10 - Completata).
+
+## Decisioni Prese:
+- **Navigazione Temporale**: Creazione della nuova rotta `/timeline` interamente dinamica e interattiva, strutturata su client-side query via Supabase per garantire filtri istantanei e prestazioni elevate.
+- **Raggruppamento per Ere**: Definizione di 4 macro-ere aeronautiche basate sull'anno di primo volo (`first_flight_year`), coerentemente con i filtri storici già presenti nel Radar Centrale.
+- **Integrazione Navigazione Circolare**: Puntamento diretto delle timeline card alle relative pagine di dettaglio aereo `/aircraft/[id]`.
+
+## Attività Completate:
+- **Routing & Pagine**: Creata la cartella e il file [src/app/[lang]/timeline/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/timeline/page.tsx) con la timeline olografica suddivisa in epoche, schede storiche ed elenco milestones per ciascuna era.
+- **Navbar**: Aggiornato [src/components/Navbar.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/Navbar.tsx) per integrare il link "Timeline" con indicatori di rotta attivi.
+- **Roadmap**: Aggiornato [roadmap.md](file:///C:/wamp64/www/aviation-pokedex/roadmap.md) segnando la Fase 10 come completata.
+- **Test Build**: Eseguita compilazione Next.js con successo, confermando l'integrità del routing multilingua per la rotta `/timeline`.
