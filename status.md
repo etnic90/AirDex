@@ -442,6 +442,7 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
 - **Visual Balance Footer**: Rimozione dei widget ingombranti a favore di una descrizione testuale dettagliata del portale e dell'inserimento dei link in stile cyber-minimale senza emoji.
 - **Premium Blog Layout**: Strutturazione delle pagine del blog secondo gli standard editoriali moderni (sidebar informative, sidebar di condivisione sticky, breadcrumbs, calcolo dei tempi di lettura e box di lettura segmentati).
 - **Affiliation Gear & B2B Sponsorship (Fase 14)**: Integrazione di attrezzi specialistici per lo spotting aeronautico (corpi mirrorless, zoom, binocoli) e banner promozionali contestuali B2B a comparsa condizionale (scuole di volo, lounge, Qsuite) in base al modello aereo.
+- **Dashboard Amministrativa CPT (Fase 12+)**: Creazione di un pannello CMS completo in stile WordPress per gestire ed editare manualmente tutti i record del database, suddiviso per content types.
 
 ## Attività Completate:
 - **Utility Paese**: Creato il file [src/lib/country.ts](file:///C:/wamp64/www/aviation-pokedex/src/lib/country.ts) con la funzione [getCountryIsoCode](file:///C:/wamp64/www/aviation-pokedex/src/lib/country.ts#L1).
@@ -456,4 +457,8 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
   - Aggiornato [src/components/AffiliateWidget.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/AffiliateWidget.tsx) implementando la terza card di consigli fotografici/ottici per lo spotting ed estendendo la griglia a 3 colonne per schermi grandi (`lg:grid-cols-3`).
   - Aggiornato [src/components/MockAdBanner.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/MockAdBanner.tsx) per accettare parametri e iniettare annunci contestuali (es. Qsuite Qatar Airways sui modelli A350, simulatori FFS Emirates sui modelli A380/777, corsi ATPL FSA Academy sui velivoli addestrativi/leggeri), preservando la compatibilità senza parametri sulla pagina profilo.
   - Modificato [src/app/[lang]/aircraft/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/aircraft/[id]/page.tsx) per passare i corretti parametri contestuali a `<MockAdBanner />`.
+- **CPT Admin Dashboard**:
+  - Creati 4 moduli di gestione completi di CRUD in [src/app/[lang]/admin/aircrafts/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/admin/aircrafts/page.tsx), [src/app/[lang]/admin/airlines/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/admin/airlines/page.tsx), [src/app/[lang]/admin/airports/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/admin/airports/page.tsx) e [src/app/[lang]/admin/blog/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/admin/blog/page.tsx).
+  - Ciascun pannello supporta ricerca lato server, ordinamento, paginazione intelligente (gestisce gli oltre 2.000 record per scali e vettori) e modali interattive per creazione/modifica e tasto eliminazione.
+  - Modificato [src/app/[lang]/admin/layout.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/admin/layout.tsx) per integrare i collegamenti in stile sidebar CMS di WordPress.
 - **Test di Build**: Eseguita con successo la build di produzione (`npm run build`) che ha compilato correttamente tutte le 1721 pagine statiche del sito.
