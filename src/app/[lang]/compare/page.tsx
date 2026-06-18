@@ -58,12 +58,11 @@ function AircraftAutocomplete({
   const filtered = useMemo(() => {
     if (!query) return aircrafts;
     
-    // Se la query è esattamente il nome completo (es. appena dopo aver cliccato), mostra l'intera lista se riapri
+    // Se la query è esattamente il nome completo, mostra la lista intera
     const selectedPlane = aircrafts.find(a => a.id === selectedId);
     const selectedFullName = selectedPlane ? `${selectedPlane.manufacturers?.name || ''} ${selectedPlane.model_name}` : "";
     if (query === selectedFullName) return aircrafts;
 
-    // Altrimenti filtra per nome o costruttore
     return aircrafts.filter(a => 
       `${a.manufacturers?.name || ''} ${a.model_name}`.toLowerCase().includes(query.toLowerCase())
     );
@@ -81,7 +80,7 @@ function AircraftAutocomplete({
         onChange={(e) => {
           setQuery(e.target.value);
           setIsOpen(true);
-          if (selectedId) onSelect(""); // Disconnette l'aereo attuale se l'utente ricomincia a scrivere
+          if (selectedId) onSelect(""); 
         }}
         onFocus={() => setIsOpen(true)}
         placeholder="Digita per scansionare i registri..."
@@ -130,7 +129,7 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
     const fetchAircrafts = async () => {
       const { data, error } = await supabase
         .from("aircraft_models")
-        .select("id, model_name, range_km, max_passengers, first_flight_year, rarity, manufacturers(name)")
+        .select("id, model_name, range_km, max_passengers, first_flight_year, rarity, house_livery_url, extended_stats, manufacturers(name)")
         .order("model_name", { ascending: true });
 
       if (!error && data) {
@@ -142,20 +141,44 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
     fetchAircrafts();
   }, [supabase]);
 
+  // Seleziona i due aerei più famosi come default all'avvio
+  useEffect(() => {
+    if (aircrafts.length > 0 && !selectedIdA && !selectedIdB) {
+      // Top famosi: Airbus A380 e Boeing 747
+      const a380 = aircrafts.find(a => a.model_name.toLowerCase().includes("a380"));
+      const b747 = aircrafts.find(a => a.model_name.toLowerCase().includes("747"));
+      
+      if (a380) {
+        setSelectedIdA(a380.id);
+      } else {
+        setSelectedIdA(aircrafts[0].id);
+      }
+
+      if (b747) {
+        setSelectedIdB(b747.id);
+      } else if (aircrafts.length > 1) {
+        setSelectedIdB(aircrafts[1].id);
+      }
+    }
+  }, [aircrafts, selectedIdA, selectedIdB]);
+
   const planeA = useMemo(() => aircrafts.find(a => a.id === selectedIdA), [aircrafts, selectedIdA]);
   const planeB = useMemo(() => aircrafts.find(a => a.id === selectedIdB), [aircrafts, selectedIdB]);
 
+  // Calcolo dati reali della telemetria per il grafico radar
   const chartData = useMemo(() => {
     if (!planeA && !planeB) return [];
 
-    const rarityScores: Record<string, number> = {
-      COMMON: 20, UNCOMMON: 40, RARE: 60, EPIC: 80, LEGENDARY: 100
-    };
-
-    const getRarityScore = (rarity?: string) => rarity ? rarityScores[rarity] || 20 : 0;
-    const getModernityScore = (year?: number) => year ? Math.max(0, ((year - 1910) / 116) * 100) : 0;
     const getPaxScore = (pax?: number) => pax ? Math.min(100, (pax / 850) * 100) : 0;
     const getRangeScore = (range?: number) => range ? Math.min(100, (range / 18000) * 100) : 0;
+    const getSpeedScore = (speed?: number) => speed ? Math.min(100, (speed / 1100) * 100) : 0;
+    const getAltitudeScore = (altitude?: number) => altitude ? Math.min(100, (altitude / 15000) * 100) : 0;
+
+    const speedA = planeA?.extended_stats?.cruise_speed_kmh || (planeA?.first_flight_year && planeA.first_flight_year < 1960 ? 450 : 880);
+    const speedB = planeB?.extended_stats?.cruise_speed_kmh || (planeB?.first_flight_year && planeB.first_flight_year < 1960 ? 450 : 880);
+
+    const altitudeA = planeA?.extended_stats?.max_altitude_m || (planeA?.first_flight_year && planeA.first_flight_year < 1960 ? 7000 : 12500);
+    const altitudeB = planeB?.extended_stats?.max_altitude_m || (planeB?.first_flight_year && planeB.first_flight_year < 1960 ? 7000 : 12500);
 
     return [
       {
@@ -169,14 +192,14 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
         B: planeB ? getPaxScore(planeB.max_passengers) : 0,
       },
       {
-        subject: "Modernità",
-        A: planeA ? getModernityScore(planeA.first_flight_year) : 0,
-        B: planeB ? getModernityScore(planeB.first_flight_year) : 0,
+        subject: "Velocità Crociera",
+        A: planeA ? getSpeedScore(speedA) : 0,
+        B: planeB ? getSpeedScore(speedB) : 0,
       },
       {
-        subject: "Grado Rarità",
-        A: planeA ? getRarityScore(planeA.rarity) : 0,
-        B: planeB ? getRarityScore(planeB.rarity) : 0,
+        subject: "Quota Massima",
+        A: planeA ? getAltitudeScore(altitudeA) : 0,
+        B: planeB ? getAltitudeScore(altitudeB) : 0,
       }
     ];
   }, [planeA, planeB]);
@@ -186,7 +209,7 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 p-6 md:p-10">
+    <main className="min-h-screen bg-slate-950 p-6 md:p-10 font-sans text-white">
       <div className="max-w-[1600px] w-[95%] mx-auto">
         
         {/* Header */}
@@ -195,8 +218,10 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
           <p className="text-cyan-500 font-mono text-sm uppercase tracking-widest">
             Analisi Telemetrica Incrociata
           </p>
-        </div>        {/* Selettori Autocomplete Vettori */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 relative z-20">
+        </div>
+
+        {/* Selettori Autocomplete Vettori */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 relative z-20">
           <div className="bg-slate-900/90 p-8 rounded-3xl border-t-4 border-cyan-500 shadow-xl border border-slate-800 backdrop-blur-xl">
             <AircraftAutocomplete 
               label="Vettore Alpha" 
@@ -220,68 +245,131 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
 
         {/* Area Dati */}
         {(planeA || planeB) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 bg-slate-900/90 p-8 rounded-3xl border border-slate-800 relative z-10 backdrop-blur-xl shadow-2xl">
+          <div className="flex flex-col gap-8 relative z-10">
             
-            {/* Ologramma Radar Chart */}
-            <div className="h-[400px] w-full flex items-center justify-center bg-slate-950 rounded-2xl border border-slate-850 shadow-[inset_0_0_40px_rgba(0,0,0,0.6)]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                  <PolarGrid stroke="#334155" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#e2e8f0', fontSize: 13, fontFamily: 'sans-serif', fontWeight: 'bold' }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', color: '#fff', fontFamily: 'monospace' }}
-                    itemStyle={{ color: '#06b6d4' }}
-                    formatter={() => ["", ""]}
+            {/* Foto dei due aerei a confronto */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-900/90 p-6 rounded-3xl border border-slate-800 backdrop-blur-xl shadow-2xl">
+              {/* Foto Aereo A */}
+              <div className="bg-slate-950 rounded-2xl border border-slate-850 overflow-hidden relative h-56 md:h-72 group shadow-inner">
+                {planeA?.house_livery_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img 
+                    src={planeA.house_livery_url} 
+                    alt={planeA.model_name}
+                    className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
                   />
-                  {planeA && (
-                    <Radar name={planeA.model_name} dataKey="A" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.4} />
-                  )}
-                  {planeB && (
-                    <Radar name={planeB.model_name} dataKey="B" stroke="#a855f7" fill="#a855f7" fillOpacity={0.4} />
-                  )}
-                  <Legend wrapperStyle={{ fontFamily: 'sans-serif', fontSize: '13px', color: '#94a3b8', fontWeight: 'bold' }} />
-                </RadarChart>
-              </ResponsiveContainer>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 bg-slate-900/20 font-mono text-xs uppercase">
+                    Nessun dato fotografico in archivio
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                <div className="absolute bottom-4 left-4 bg-slate-900/95 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-800 text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">
+                  {planeA ? `${planeA.manufacturers?.name || ''} ${planeA.model_name}` : "Vettore Alpha"}
+                </div>
+              </div>
+
+              {/* Foto Aereo B */}
+              <div className="bg-slate-950 rounded-2xl border border-slate-850 overflow-hidden relative h-56 md:h-72 group shadow-inner">
+                {planeB?.house_livery_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img 
+                    src={planeB.house_livery_url} 
+                    alt={planeB.model_name}
+                    className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 bg-slate-900/20 font-mono text-xs uppercase">
+                    Nessun dato fotografico in archivio
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                <div className="absolute bottom-4 left-4 bg-slate-900/95 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-800 text-xs font-mono text-purple-400 font-bold uppercase tracking-wider">
+                  {planeB ? `${planeB.manufacturers?.name || ''} ${planeB.model_name}` : "Vettore Bravo"}
+                </div>
+              </div>
             </div>
 
-            {/* Tabella Dati Grezzi */}
-            <div className="flex flex-col justify-center gap-4">
-              <div className="grid grid-cols-3 gap-4 border-b border-slate-805 pb-4 text-xs font-mono font-bold text-slate-500 uppercase tracking-widest text-center">
-                <div className="text-cyan-400 text-sm font-extrabold">{planeA?.model_name || "—"}</div>
-                <div className="font-sans uppercase text-slate-400 font-bold">Parametro</div>
-                <div className="text-purple-400 text-sm font-extrabold">{planeB?.model_name || "—"}</div>
+            {/* Griglia Dati / Radar Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 bg-slate-900/90 p-8 rounded-3xl border border-slate-800 backdrop-blur-xl shadow-2xl">
+              
+              {/* Ologramma Radar Chart */}
+              <div className="h-[400px] w-full flex items-center justify-center bg-slate-950 rounded-2xl border border-slate-850 shadow-[inset_0_0_40px_rgba(0,0,0,0.6)]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+                    <PolarGrid stroke="#334155" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#e2e8f0', fontSize: 13, fontFamily: 'sans-serif', fontWeight: 'bold' }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', color: '#fff', fontFamily: 'monospace' }}
+                      itemStyle={{ color: '#06b6d4' }}
+                      formatter={() => ["", ""]}
+                    />
+                    {planeA && (
+                      <Radar name={planeA.model_name} dataKey="A" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.4} />
+                    )}
+                    {planeB && (
+                      <Radar name={planeB.model_name} dataKey="B" stroke="#a855f7" fill="#a855f7" fillOpacity={0.4} />
+                    )}
+                    <Legend wrapperStyle={{ fontFamily: 'sans-serif', fontSize: '13px', color: '#94a3b8', fontWeight: 'bold' }} />
+                  </RadarChart>
+                </ResponsiveContainer>
               </div>
 
-              {/* Riga: Autonomia */}
-              <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner">
-                <div className="text-white font-extrabold text-xl">{planeA?.range_km ? `${planeA.range_km.toLocaleString()} km` : "—"}</div>
-                <div className="text-slate-400 text-sm font-sans uppercase font-bold">Autonomia</div>
-                <div className="text-white font-extrabold text-xl">{planeB?.range_km ? `${planeB.range_km.toLocaleString()} km` : "—"}</div>
-              </div>
+              {/* Tabella Dati Grezzi */}
+              <div className="flex flex-col justify-center gap-4">
+                <div className="grid grid-cols-3 gap-4 border-b border-slate-805 pb-4 text-xs font-mono font-bold text-slate-500 uppercase tracking-widest text-center">
+                  <div className="text-cyan-400 text-sm font-extrabold">{planeA?.model_name || "—"}</div>
+                  <div className="font-sans uppercase text-slate-400 font-bold">Parametro</div>
+                  <div className="text-purple-400 text-sm font-extrabold">{planeB?.model_name || "—"}</div>
+                </div>
 
-              {/* Riga: Passeggeri */}
-              <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner">
-                <div className="text-white font-extrabold text-xl">{planeA?.max_passengers ? `${planeA.max_passengers} PAX` : "—"}</div>
-                <div className="text-slate-400 text-sm font-sans uppercase font-bold">Capienza Max</div>
-                <div className="text-white font-extrabold text-xl">{planeB?.max_passengers ? `${planeB.max_passengers} PAX` : "—"}</div>
-              </div>
+                {/* Riga: Autonomia */}
+                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
+                  <div className="text-white font-extrabold text-lg">{planeA?.range_km ? `${planeA.range_km.toLocaleString()} km` : "—"}</div>
+                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Autonomia</div>
+                  <div className="text-white font-extrabold text-lg">{planeB?.range_km ? `${planeB.range_km.toLocaleString()} km` : "—"}</div>
+                </div>
 
-              {/* Riga: Anno */}
-              <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner">
-                <div className="text-white font-extrabold text-xl">{planeA?.first_flight_year || "—"}</div>
-                <div className="text-slate-400 text-sm font-sans uppercase font-bold">Primo Volo</div>
-                <div className="text-white font-extrabold text-xl">{planeB?.first_flight_year || "—"}</div>
-              </div>
+                {/* Riga: Passeggeri */}
+                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
+                  <div className="text-white font-extrabold text-lg">{planeA?.max_passengers ? `${planeA.max_passengers} PAX` : "—"}</div>
+                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Capienza Max</div>
+                  <div className="text-white font-extrabold text-lg">{planeB?.max_passengers ? `${planeB.max_passengers} PAX` : "—"}</div>
+                </div>
 
-              {/* Riga: Rarità */}
-              <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner">
-                <div className="text-cyan-405 text-sm font-black uppercase tracking-wider">{planeA?.rarity || "—"}</div>
-                <div className="text-slate-400 text-sm font-sans uppercase font-bold">Rarità</div>
-                <div className="text-purple-405 text-sm font-black uppercase tracking-wider">{planeB?.rarity || "—"}</div>
-              </div>
+                {/* Riga: Velocità Crociera */}
+                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
+                  <div className="text-white font-extrabold text-lg">
+                    {planeA ? `${planeA.extended_stats?.cruise_speed_kmh || (planeA.first_flight_year && planeA.first_flight_year < 1960 ? 450 : 880)} km/h` : "—"}
+                  </div>
+                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Velocità Crociera</div>
+                  <div className="text-white font-extrabold text-lg">
+                    {planeB ? `${planeB.extended_stats?.cruise_speed_kmh || (planeB.first_flight_year && planeB.first_flight_year < 1960 ? 450 : 880)} km/h` : "—"}
+                  </div>
+                </div>
 
+                {/* Riga: Quota Massima */}
+                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
+                  <div className="text-white font-extrabold text-lg">
+                    {planeA ? `${(planeA.extended_stats?.max_altitude_m || (planeA.first_flight_year && planeA.first_flight_year < 1960 ? 7000 : 12500)).toLocaleString()} m` : "—"}
+                  </div>
+                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Quota Massima</div>
+                  <div className="text-white font-extrabold text-lg">
+                    {planeB ? `${(planeB.extended_stats?.max_altitude_m || (planeB.first_flight_year && planeB.first_flight_year < 1960 ? 7000 : 12500)).toLocaleString()} m` : "—"}
+                  </div>
+                </div>
+
+                {/* Riga: Anno Primo Volo */}
+                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
+                  <div className="text-white font-extrabold text-lg">{planeA?.first_flight_year || "—"}</div>
+                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Primo Volo</div>
+                  <div className="text-white font-extrabold text-lg">{planeB?.first_flight_year || "—"}</div>
+                </div>
+
+              </div>
             </div>
+
           </div>
         )}
       </div>

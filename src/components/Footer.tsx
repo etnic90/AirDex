@@ -30,9 +30,8 @@ export default function Footer({ lang }: { lang: string }) {
               </p>
             </div>
 
-            {/* Status Indicator */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 w-max rounded-xl bg-slate-900/90 border border-emerald-950/40 text-xs font-mono text-emerald-400 shadow-inner">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+            {/* Status Indicator (Senza Icone/Ping pulsante) */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 w-max rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-cyan-400 shadow-inner">
               <span className="font-bold uppercase tracking-wider">
                 {isIt ? "Sistemi Avionici Online" : "Avionics Core Online"}
               </span>
@@ -46,75 +45,71 @@ export default function Footer({ lang }: { lang: string }) {
             </h4>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm font-mono">
               <Link href={`/${lang}`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                {isIt ? "🛫 Hangar" : "🛫 Hangar"}
+                Hangar
               </Link>
               <Link href={`/${lang}/radar`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                {isIt ? "📡 Radar" : "📡 Radar"}
+                Radar
               </Link>
               <Link href={`/${lang}/airlines`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                {isIt ? "🏢 Compagnie" : "🏢 Airlines"}
+                {isIt ? "Compagnie" : "Airlines"}
               </Link>
               <Link href={`/${lang}/airports`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                {isIt ? "🏨 Aeroporti" : "🏨 Airports"}
+                {isIt ? "Aeroporti" : "Airports"}
               </Link>
               <Link href={`/${lang}/compare`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                {isIt ? "⚖️ Confronto" : "⚖️ Compare"}
+                {isIt ? "Confronto" : "Compare"}
               </Link>
               <Link href={`/${lang}/stats`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                {isIt ? "📈 Statistiche" : "📈 Telemetry"}
+                {isIt ? "Statistiche" : "Telemetry"}
               </Link>
               <Link href={`/${lang}/timeline`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                {isIt ? "⏳ Cronologia" : "⏳ Timeline"}
+                {isIt ? "Cronologia" : "Timeline"}
               </Link>
               <Link href={`/${lang}/blog`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                {isIt ? "📰 News" : "📰 News"}
+                News
               </Link>
             </div>
           </div>
 
-          {/* COLONNA 3: LINK AVGEEK ESTERNI */}
+          {/* COLONNA 3: PARTNERSHIP AVGEEK */}
           <div className="flex flex-col gap-4">
             <h4 className="text-xs font-black text-white uppercase tracking-widest border-b border-slate-900 pb-2 font-mono">
-              {isIt ? "Strumenti Avionici Esterni" : "External Resources"}
+              {isIt ? "Partner Affiliati" : "Affiliated Partners"}
             </h4>
-            <div className="flex flex-col gap-2.5 text-xs font-mono">
-              <a href="https://flightradar24.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors uppercase tracking-wider flex items-center gap-1.5">
-                🌐 Flightradar24 Live TFC
+            <div className="flex flex-col gap-2.5 text-xs font-mono text-slate-400">
+              <a href="#" className="hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                AeroPress Network
               </a>
-              <a href="https://opensky-network.org" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors uppercase tracking-wider flex items-center gap-1.5">
-                📡 OpenSky ADS-B Feed
+              <a href="#" className="hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                World Aviation Spotters
               </a>
-              <a href="https://skyvector.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors uppercase tracking-wider flex items-center gap-1.5">
-                🗺️ SkyVector VFR/IFR Charts
+              <a href="#" className="hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                SimFlight Alliance
               </a>
-              <a href="https://www.aviationweather.gov" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors uppercase tracking-wider flex items-center gap-1.5">
-                🌦️ METAR / TAF Reports
+              <a href="#" className="hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                Virtual ATC Control Group
               </a>
             </div>
           </div>
 
-          {/* COLONNA 4: STATISTICHE CORE / TELEMETRIA */}
+          {/* COLONNA 4: SOCIAL & COMMUNITY */}
           <div className="flex flex-col gap-4">
             <h4 className="text-xs font-black text-white uppercase tracking-widest border-b border-slate-900 pb-2 font-mono">
-              {isIt ? "Telemetria Database" : "Database Telemetry"}
+              Community
             </h4>
-            <div className="flex flex-col gap-2 font-mono text-xs text-slate-400">
-              <div className="flex justify-between py-1.5 border-b border-slate-900/60">
-                <span className="text-slate-550 font-bold">NODE CLUSTER</span>
-                <span className="text-slate-300 font-extrabold uppercase">Supabase PG v15</span>
-              </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-900/60">
-                <span className="text-slate-550 font-bold">ROUTING CORE</span>
-                <span className="text-cyan-400 font-extrabold">Next.js 16 + Turbopack</span>
-              </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-900/60">
-                <span className="text-slate-550 font-bold">DATABASE RECORDS</span>
-                <span className="text-slate-200 font-extrabold">1,721 HUB // 450 AC</span>
-              </div>
-              <div className="flex justify-between py-1.5">
-                <span className="text-slate-550 font-bold">HOSTING ENDPOINT</span>
-                <span className="text-purple-400 font-extrabold">Vercel Edge Nodes</span>
-              </div>
+            <div className="flex flex-col gap-2.5 text-xs font-mono text-slate-400">
+              <a href="#" className="hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                Discord Server
+              </a>
+              <a href="#" className="hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                Instagram @AirDex
+              </a>
+              <a href="#" className="hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                YouTube Channel
+              </a>
+              <a href="#" className="hover:text-cyan-400 transition-colors uppercase tracking-wider">
+                Reddit Community
+              </a>
             </div>
           </div>
 

@@ -12,18 +12,19 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
   // 1. Estrazione parallela dal Cockpit di Supabase (Ora con 6 query simultanee)
   const [
-    { data: recentAircrafts },
+    { data: recentNews },
     { data: featuredAircraft },
     { count: totalCount },
     { count: activeCount },
     { count: legendaryCount },
     { data: searchIndexData } // <-- 6a Query: Recupera i dati minimi per l'indice di ricerca
   ] = await Promise.all([
-    // Griglia principale: Ultime aggiunte
+    // Ultime 3 news pubblicate
     supabase
-      .from("aircraft_models")
-      .select(`*, manufacturers (name)`)
-      .order("created_at", { ascending: false })
+      .from("articles")
+      .select("*")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
       .limit(3),
     // Aereo del Giorno: Estraiamo un aereo epico o leggendario per la vetrina premium
     supabase
@@ -40,7 +41,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     supabase.from("aircraft_models").select("id, model_name, manufacturers(name)")
   ]);
 
-  const flottaRecente = (recentAircrafts as unknown as AircraftModel[]) || [];
+  const recentNewsList = recentNews || [];
   const aereoDelGiorno = featuredAircraft as unknown as AircraftModel | null;
 
   // Formattiamo i dati della sesta query in un array pulito per l'autocomplete
@@ -318,30 +319,74 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         </div>
       </section>
 
-      {/* ------------------ SEZIONE: ULTIME AGGIUNTE ------------------ */}
+      {/* ------------------ SEZIONE: ULTIME NEWS & APPROFONDIMENTI ------------------ */}
       <section className="relative z-10 px-4 max-w-7xl mx-auto py-12">
         <div className="flex justify-between items-end mb-8 border-b border-slate-900 pb-4">
           <div>
             <h2 className="text-xl font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
               <span className="w-1 h-5 bg-cyan-500 rounded"></span>
-              Ultimi Ingressi in Linea di Volo
+              Ultime dal Blog & News
             </h2>
-            <p className="text-slate-400 font-mono text-xs mt-1">Aggiornamenti strutturali e nuovi aeromobili validati dall'Admin Console.</p>
+            <p className="text-slate-400 font-mono text-xs mt-1">Approfondimenti tecnici, analisi comparative e tracciati di volo.</p>
           </div>
-          <Link href={`/${lang}/radar`} className="text-cyan-500 hover:text-cyan-400 font-mono text-xs uppercase tracking-widest flex items-center gap-2 transition-colors group">
-            APRI RADAR COMPLETO <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+          <Link href={`/${lang}/blog`} className="text-cyan-500 hover:text-cyan-400 font-mono text-xs uppercase tracking-widest flex items-center gap-2 transition-colors group">
+            TUTTI GLI ARTICOLI <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
           </Link>
         </div>
 
-        {/* Griglia che ospita le AircraftCard del team */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {flottaRecente.length > 0 ? (
-            flottaRecente.map((aircraft) => (
-              <AircraftCard key={aircraft.id} aircraft={aircraft} lang={lang} />
-            ))
+        {/* Griglia che ospita i 3 box delle news */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {recentNewsList.length > 0 ? (
+            recentNewsList.map((article: any) => {
+              const dateStr = article.published_at 
+                ? new Date(article.published_at).toLocaleDateString(lang, { day: 'numeric', month: 'short', year: 'numeric' })
+                : "N/D";
+              return (
+                <Link 
+                  key={article.id}
+                  href={`/${lang}/blog/${article.slug}`}
+                  className="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/50 rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-300 group flex flex-col justify-between shadow-lg hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]"
+                >
+                  <div>
+                    {/* Cover image */}
+                    <div className="h-48 w-full bg-slate-950 relative overflow-hidden">
+                      {article.cover_image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img 
+                          src={article.cover_image_url} 
+                          alt={article.title}
+                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-900/50 flex items-center justify-center text-slate-700 font-mono text-xs uppercase">
+                          No Image
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                    </div>
+
+                    <div className="p-6">
+                      <span className="text-slate-500 font-mono text-xs block mb-2">{dateStr}</span>
+                      <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-2 uppercase font-mono tracking-tight leading-snug">
+                        {article.title}
+                      </h3>
+                      <p className="text-slate-400 text-xs font-semibold leading-relaxed mt-3.5 line-clamp-3 font-sans">
+                        {article.content}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="px-6 pb-6 pt-2">
+                    <span className="text-cyan-400 font-mono text-xs uppercase tracking-widest font-bold flex items-center gap-1.5">
+                      Leggi Articolo &rarr;
+                    </span>
+                  </div>
+                </Link>
+              );
+            })
           ) : (
             <p className="text-slate-500 font-mono text-xs animate-pulse tracking-widest py-10 col-span-full text-center">
-              &gt; NESSUN VETTORE REGISTRATO NELLE ULTIME 24 ORE. SYSTEM IDLE.
+              &gt; NESSUN ARTICOLO DISPONIBILE NELL'ARCHIVIO EDITORIALE.
             </p>
           )}
         </div>
