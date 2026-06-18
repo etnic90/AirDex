@@ -10,8 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-mono);
-  --color-slate-950: #03050c;
-  --color-slate-900: #121d33;
+  --color-slate-900: #182542;
 }
 
 @media (prefers-color-scheme: dark) {
