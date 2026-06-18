@@ -295,7 +295,11 @@ export default async function AircraftPage({
         />
 
         {/* Sponsorizzato Radar Ads Banner */}
-        <MockAdBanner />
+        <MockAdBanner 
+          modelName={aircraft.model_name}
+          manufacturerName={aircraft.manufacturers?.name || "Aviation"}
+          operators={operators.map(item => item.airlines?.name).filter(Boolean)}
+        />
 
         {/* COMPONENTE OPERATORI REATTIVO E AGGANCIATO ALLA NAVIGAZIONE CIRCOLARE */}
 <div className="w-full border-t border-slate-800/60 mt-20 pt-10 clear-both block">

@@ -5,14 +5,67 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-export default function MockAdBanner() {
+interface MockAdBannerProps {
+  modelName?: string;
+  manufacturerName?: string;
+  operators?: string[];
+}
+
+export default function MockAdBanner({ modelName = "", manufacturerName = "", operators = [] }: MockAdBannerProps) {
   const params = useParams();
   const lang = params?.lang || "en";
   const [isPro, setIsPro] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentAdIdx, setCurrentAdIdx] = useState(0);
 
+  // Genera annunci contestuali (B2B Nativi) in base all'aereo
+  const getDynamicAds = () => {
+    const ads = [];
+    const nameLower = modelName.toLowerCase();
+    
+    if (nameLower.includes("350") || nameLower.includes("a350")) {
+      ads.push({
+        title: "Qatar Airways — Volo Airbus A350 in Qsuite",
+        desc: "Scopri il comfort rivoluzionario della migliore classe Business al mondo. Cabine private a bordo della flotta Airbus A350.",
+        cta: "Scopri Qsuite",
+        link: "https://www.qatarairways.com",
+        badge: "QATAR NATIVE SPONSOR",
+        badgeColor: "border-rose-500/30 text-rose-400 bg-rose-950/20",
+        glowColor: "shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:border-rose-500/30"
+      });
+    }
+    
+    if (nameLower.includes("380") || nameLower.includes("a380") || nameLower.includes("777")) {
+      ads.push({
+        title: "Emirates Aviation Training Simulator",
+        desc: "Prova l'emozione di pilotare l'A380 o il Boeing 777. Prenota la tua sessione nei simulatori FFS Full Flight professionali a Dubai.",
+        cta: "Prenota Slot",
+        link: "https://www.emirates.com",
+        badge: "EMIRATES TRAINING",
+        badgeColor: "border-red-500/30 text-red-400 bg-red-950/20",
+        glowColor: "shadow-[0_0_15px_rgba(239,68,68,0.15)] hover:border-red-500/30"
+      });
+    }
+
+    if (nameLower.includes("cessna") || nameLower.includes("piper") || nameLower.includes("aermacchi") || nameLower.includes("m.20") || nameLower.includes("b.308")) {
+      ads.push({
+        title: "FSA Flight Academy — Diventa Pilota di Linea",
+        desc: "Iscrizioni aperte per i corsi ATPL Integrato EASA 2026. Flotta addestrativa avanzata e addestramento su simulatore Alsim ALX.",
+        cta: "Diventa Pilota",
+        link: "https://www.easa.europa.eu",
+        badge: "ACADEMY CO-SPONSOR",
+        badgeColor: "border-amber-500/30 text-amber-400 bg-amber-950/20",
+        glowColor: "shadow-[0_0_15px_rgba(245,158,11,0.15)] hover:border-amber-500/30"
+      });
+    }
+
+    return ads;
+  };
+
+  const dynamicAds = getDynamicAds();
+
   const ADS = [
+    ...dynamicAds,
     {
       title: "Microsoft Flight Simulator 2024",
       desc: "Pilota l'A350-1000 con la fisica dei sistemi aggiornata. Disponibile ora l'espansione ufficiale per PC.",

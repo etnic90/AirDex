@@ -70,8 +70,40 @@ export default function AffiliateWidget({
     return { dev, platform, type, price };
   };
 
+  // Calcola i dettagli dell'attrezzatura per spotting consigliata
+  const getGearDetails = () => {
+    let type = "Binocolo Spotting";
+    let name = "Nikon Prostaff P7 8x42";
+    let desc = "Ottiche antiriflesso e struttura impermeabile antinebbia, ideale per identificare la flotta nei punti di osservazione perimetrali.";
+    let price = "189.00";
+    let link = `https://www.amazon.it/s?k=nikon+prostaff+p7+binocolo`;
+
+    if (rarity === "LEGENDARY" || rarity === "EPIC") {
+      type = "Mirrorless Spotting Kit";
+      name = "Sony Alpha 7 IV + 200-600mm G";
+      desc = "Il setup definitivo per gli spotter professionisti. Autofocus in tempo reale basato su IA e sensore full-frame ad altissima sensibilità.";
+      price = "3,450.00";
+      link = `https://www.amazon.it/s?k=sony+alpha+7+iv+200-600mm`;
+    } else if (rarity === "RARE") {
+      type = "Teleobiettivo Zoom";
+      name = "Sigma 150-600mm Contemporary";
+      desc = "Obiettivo super-tele compatto ma potente, perfetto per fotografare atterraggi e dettagli aerei a lunghe distanze.";
+      price = "949.00";
+      link = `https://www.amazon.it/s?k=sigma+150-600mm+contemporary`;
+    } else if (status === "HISTORIC") {
+      type = "Fotocamera Spotting Starter";
+      name = "Canon EOS R10 + RF 100-400mm";
+      desc = "Kit mirrorless leggero con sensore APS-C e teleobiettivo compatto, ideale per chi inizia a tracciare velivoli storici.";
+      price = "1,149.00";
+      link = `https://www.amazon.it/s?k=canon+eos+r10+100-400mm`;
+    }
+
+    return { type, name, desc, price, link };
+  };
+
   const collectible = getCollectibleDetails();
   const sim = getSimDetails();
+  const gear = getGearDetails();
 
   return (
     <div className="w-full border-t border-slate-800/60 mt-16 pt-10 font-mono">
@@ -85,7 +117,7 @@ export default function AffiliateWidget({
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
         
         {/* CARD 1: MODELLINO DA COLLEZIONE (AMAZON AFFILIATE) */}
         <div
@@ -196,6 +228,63 @@ export default function AffiliateWidget({
             >
               ✈️ Sblocca sul Sim Store
             </button>
+          </div>
+        </div>
+
+        {/* CARD 3: ATTREZZATURA SPOTTER (AMAZON AFFILIATE) */}
+        <div
+          onMouseEnter={() => setHoveredCard(3)}
+          onMouseLeave={() => setHoveredCard(null)}
+          className="relative bg-slate-900/20 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-sm flex flex-col justify-between transition-all duration-350 hover:border-amber-500/30 hover:bg-slate-900/40 hover:shadow-[0_0_25px_rgba(245,158,11,0.05)] overflow-hidden group"
+        >
+          {/* Neon Gradient Overlay on Hover */}
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-amber-500 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+
+          <div>
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-[9px] text-amber-500 font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-950/30 border border-amber-800/30">
+                Attrezzatura Spotting
+              </span>
+              <span className="text-[10px] text-slate-500 font-bold">Consigliato</span>
+            </div>
+
+            <h4 className="text-sm font-black text-white uppercase tracking-wider mb-2 group-hover:text-amber-400 transition-colors">
+              {gear.name}
+            </h4>
+            <p className="text-[11px] text-slate-400 mb-6 font-sans leading-relaxed">
+              {gear.desc}
+            </p>
+
+            <div className="space-y-2 text-[10px] border-t border-slate-950 pt-4 mb-6">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Tipologia</span>
+                <span className="text-slate-300 font-bold">{gear.type}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Ottiche</span>
+                <span className="text-slate-300">Zoom multicostruzione</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Utilizzo</span>
+                <span className="text-amber-500">Avvistamenti Esterni</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between items-baseline mb-4">
+              <span className="text-slate-500 text-[10px]">Prezzo Suggerito</span>
+              <span className="text-lg font-black text-white font-mono">{gear.price}€</span>
+            </div>
+
+            <a
+              href={gear.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center text-[10px] font-black uppercase tracking-widest py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all duration-300 shadow-lg hover:shadow-amber-500/10 cursor-pointer"
+            >
+              📷 Cerca su Amazon.it
+            </a>
           </div>
         </div>
 
