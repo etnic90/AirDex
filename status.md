@@ -441,6 +441,7 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
 - **Semplificazione Navigazione & Telemetria**: Spostamento della telemetria globale come voce integrata e minimale nel footer invece di sovraccaricare la Navbar principale.
 - **Visual Balance Footer**: Rimozione dei widget ingombranti a favore di una descrizione testuale dettagliata del portale e dell'inserimento dei link in stile cyber-minimale senza emoji.
 - **Premium Blog Layout**: Strutturazione delle pagine del blog secondo gli standard editoriali moderni (sidebar informative, sidebar di condivisione sticky, breadcrumbs, calcolo dei tempi di lettura e box di lettura segmentati).
+- **Affiliation Gear & B2B Sponsorship (Fase 14)**: Integrazione di attrezzi specialistici per lo spotting aeronautico (corpi mirrorless, zoom, binocoli) e banner promozionali contestuali B2B a comparsa condizionale (scuole di volo, lounge, Qsuite) in base al modello aereo.
 
 ## Attività Completate:
 - **Utility Paese**: Creato il file [src/lib/country.ts](file:///C:/wamp64/www/aviation-pokedex/src/lib/country.ts) con la funzione [getCountryIsoCode](file:///C:/wamp64/www/aviation-pokedex/src/lib/country.ts#L1).
@@ -451,4 +452,8 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
   - In [src/components/Footer.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/Footer.tsx) rimossi gli emoji, rimosso il box telemetria a sinistra, estesa la descrizione del brand sotto il logo e aggiunto il link Telemetria nel deep footer accanto a AirDex PRO con lo stesso stile di Console Avionica.
 - **Blog Archive**: Modificato [src/app/[lang]/blog/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/blog/page.tsx) rimuovendo la barra azzurra superiore, allargando il contenitore principale, e dividendo l'area in 3 colonne per le news e una sidebar laterale destra (ricerca, aree tematiche, newsletter).
 - **Blog Detail**: Modificato [src/app/[lang]/blog/[slug]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/blog/[slug]/page.tsx) per allargare il layout di lettura, inserire breadcrumbs, barra sticky sinistra per la condivisione social, calcolo tempo di lettura, formattazione paragrafi/elenchi puntati in box ad alta leggibilità, e una barra laterale destra con gli articoli consigliati.
+- **Affiliate & B2B Integration**:
+  - Aggiornato [src/components/AffiliateWidget.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/AffiliateWidget.tsx) implementando la terza card di consigli fotografici/ottici per lo spotting ed estendendo la griglia a 3 colonne per schermi grandi (`lg:grid-cols-3`).
+  - Aggiornato [src/components/MockAdBanner.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/MockAdBanner.tsx) per accettare parametri e iniettare annunci contestuali (es. Qsuite Qatar Airways sui modelli A350, simulatori FFS Emirates sui modelli A380/777, corsi ATPL FSA Academy sui velivoli addestrativi/leggeri), preservando la compatibilità senza parametri sulla pagina profilo.
+  - Modificato [src/app/[lang]/aircraft/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/aircraft/[id]/page.tsx) per passare i corretti parametri contestuali a `<MockAdBanner />`.
 - **Test di Build**: Eseguita con successo la build di produzione (`npm run build`) che ha compilato correttamente tutte le 1721 pagine statiche del sito.
