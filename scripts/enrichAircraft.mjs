@@ -80,8 +80,8 @@ async function runEnrichment() {
     }
     
     // LIMITATORE DI VELOCITÀ: Pausa esatta di 30 secondi (2 al minuto)
-    console.log(`🕒 Attesa di 2 secondi per mantenere la velocità di crociera...`);
-    await new Promise(r => setTimeout(r, 0));
+    console.log(`🕒 Attesa di 30 secondi per mantenere la velocità di crociera...`);
+    await new Promise(r => setTimeout(r, 30000));
   }
   
   console.log("\n🏁 Blocco di 50 aerei completato.");

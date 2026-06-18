@@ -1,0 +1,63 @@
+import { MetadataRoute } from 'next';
+import { supabase } from '@/lib/supabase';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://airdex.com'; 
+  const locales = ['en', 'it', 'es', 'fr'];
+
+  // 1. Pagine Statiche di Base
+  const staticPaths = ['', '/radar', '/airlines', '/airports', '/compare', '/stats', '/blog'];
+  const staticEntries: MetadataRoute.Sitemap = [];
+  
+  for (const path of staticPaths) {
+    for (const lang of locales) {
+      staticEntries.push({
+        url: `${baseUrl}/${lang}${path}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: path === '' ? 1.0 : 0.8,
+      });
+    }
+  }
+
+  // 2. Aerei Dinamici (SSG)
+  const { data: aircrafts } = await supabase
+    .from('aircraft_models')
+    .select('id');
+    
+  const aircraftEntries: MetadataRoute.Sitemap = [];
+  if (aircrafts) {
+    for (const a of aircrafts) {
+      for (const lang of locales) {
+        aircraftEntries.push({
+          url: `${baseUrl}/${lang}/aircraft/${a.id}`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.7,
+        });
+      }
+    }
+  }
+
+  // 3. Blog Dinamico (Articoli)
+  const { data: articles } = await supabase
+    .from('articles')
+    .select('slug, published_at')
+    .eq('is_published', true);
+    
+  const blogEntries: MetadataRoute.Sitemap = [];
+  if (articles) {
+    for (const art of articles) {
+      for (const lang of locales) {
+        blogEntries.push({
+          url: `${baseUrl}/${lang}/blog/${art.slug}`,
+          lastModified: new Date(art.published_at || new Date()),
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        });
+      }
+    }
+  }
+
+  return [...staticEntries, ...aircraftEntries, ...blogEntries];
+}

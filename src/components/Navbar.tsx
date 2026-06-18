@@ -31,7 +31,7 @@ export default function Navbar({ lang }: { lang: string }) {
         <div className="hidden lg:flex items-center gap-8">
           <Link 
             href={`/${lang}`} 
-            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/radar') || isActive('/compare') || isActive('/stats') ? 'text-slate-400 hover:text-white' : 'text-cyan-400 font-bold'}`}
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/radar') || isActive('/compare') || isActive('/stats') || isActive('/blog') || isActive('/airlines') || isActive('/airports') ? 'text-slate-400 hover:text-white' : 'text-cyan-400 font-bold'}`}
           >
             Hangar
           </Link>
@@ -40,6 +40,18 @@ export default function Navbar({ lang }: { lang: string }) {
             className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/radar') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
           >
             Radar
+          </Link>
+          <Link 
+            href={`/${lang}/airlines`} 
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/airlines') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
+          >
+            Compagnie
+          </Link>
+          <Link 
+            href={`/${lang}/airports`} 
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/airports') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
+          >
+            Aeroporti
           </Link>
           <Link 
             href={`/${lang}/compare`} 
@@ -52,6 +64,12 @@ export default function Navbar({ lang }: { lang: string }) {
             className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/stats') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
           >
             Telemetria
+          </Link>
+          <Link 
+            href={`/${lang}/blog`} 
+            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/blog') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
+          >
+            News
           </Link>
         </div>
 

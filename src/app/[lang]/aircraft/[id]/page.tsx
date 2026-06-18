@@ -6,6 +6,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 // Importiamo il nuovo componente schermato contro i crash
 import AirlineLogo from "@/components/AirlineLogo";
+import SpotterSection from "@/components/SpotterSection";
+import CaptureButtons from "@/components/CaptureButtons";
+import AffiliateWidget from "@/components/AffiliateWidget";
+import MockAdBanner from "@/components/MockAdBanner";
 
 /**
  * 1. SEO - GENERATE METADATA
@@ -98,6 +102,55 @@ export default async function AircraftPage({
 
   const operators = (fleetData || []) as any[];
 
+  // Query 3: Foto Spotter Approvate
+  const { data: spotterData } = await supabase
+    .from('spotter_uploads')
+    .select(`
+      id,
+      photographer_name,
+      image_url,
+      registration_number,
+      notes,
+      created_at,
+      airlines ( name ),
+      airports ( name, iata_code )
+    `)
+    .eq('aircraft_id', id)
+    .eq('status', 'APPROVED')
+    .order('created_at', { ascending: false });
+
+  const initialPhotos = (spotterData || []) as any[];
+
+  // Query 4: Lista Compagnie per Dropdown (con paginazione per superare il limite di 1000)
+  let airlinesList: { id: string; name: string }[] = [];
+  let startAirlines = 0;
+  const sizeAirlines = 1000;
+  while (true) {
+    const { data: chunk, error: err } = await supabase
+      .from('airlines')
+      .select('id, name')
+      .order('name')
+      .range(startAirlines, startAirlines + sizeAirlines - 1);
+      
+    if (err) {
+      console.error("Errore recupero dropdown compagnie:", err.message);
+      break;
+    }
+    if (chunk) {
+      airlinesList = airlinesList.concat(chunk);
+      if (chunk.length < sizeAirlines) break;
+    } else {
+      break;
+    }
+    startAirlines += sizeAirlines;
+  }
+
+  // Query 5: Lista Aeroporti per Dropdown
+  const { data: airportsList } = await supabase
+    .from('airports')
+    .select('id, name, iata_code')
+    .order('name');
+
   // Strategia Immagini: Fallback gerarchico
   const imageUrl = aircraft.house_livery_url || aircraft.launch_customer_livery_url;
 
@@ -158,6 +211,11 @@ export default async function AircraftPage({
               </span>
             )}
           </div>
+        </div>
+
+        {/* Pulsanti Registrazione AirDex */}
+        <div className="mb-8 w-full max-w-sm">
+          <CaptureButtons targetId={id} type="AIRCRAFT" lang={lang} />
         </div>
 
         {/* Immagine con Fallback Olografico Sci-Fi */}
@@ -228,6 +286,17 @@ export default async function AircraftPage({
           </div>
         </div>
 
+        {/* Sponsor & Collectibles Affiliate Widget */}
+        <AffiliateWidget 
+          modelName={aircraft.model_name}
+          manufacturerName={aircraft.manufacturers?.name || "Aviation"}
+          rarity={aircraft.rarity}
+          status={aircraft.status}
+        />
+
+        {/* Sponsorizzato Radar Ads Banner */}
+        <MockAdBanner />
+
         {/* COMPONENTE OPERATORI REATTIVO E AGGANCIATO ALLA NAVIGAZIONE CIRCOLARE */}
 <div className="w-full border-t border-slate-800/60 mt-20 pt-10 clear-both block">
   <h3 className="text-purple-400 font-mono text-sm uppercase tracking-[0.3em] mb-6 flex items-center gap-3 font-black">
@@ -284,6 +353,15 @@ export default async function AircraftPage({
             </div>
           )}
         </div>
+
+        {/* SEZIONE SPOTTER CARICAMENTI E GALLERIA */}
+        <SpotterSection
+          aircraftId={id}
+          lang={lang}
+          initialPhotos={initialPhotos}
+          airlinesList={airlinesList || []}
+          airportsList={airportsList || []}
+        />
         
       </div>
     </main>

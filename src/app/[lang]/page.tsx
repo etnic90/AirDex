@@ -234,6 +234,65 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         </div>
       </section>
 
+      {/* ------------------ SEZIONE: ECOSISTEMA GLOBALE (COMPAGNIE & AEROPORTI) ------------------ */}
+      <section className="relative z-10 px-4 max-w-7xl mx-auto py-12">
+        <div className="mb-8">
+          <h2 className="text-xl font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+            <span className="w-1 h-5 bg-cyan-500 rounded"></span>
+            Ecosistema Aeronautico Globale
+          </h2>
+          <p className="text-slate-400 font-mono text-xs mt-1">
+            Navigazione circolare tra i registri flotta delle compagnie aeree e le telemetrie degli aeroporti mondiali.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Card Compagnie */}
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-md relative overflow-hidden group flex flex-col justify-between hover:border-purple-500/40 transition-all duration-300 shadow-xl">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800 group-hover:bg-purple-500 transition-colors"></div>
+            <div>
+              <span className="text-purple-400 font-mono text-xs uppercase tracking-widest font-black block mb-2">
+                // REGISTRO OPERATORI DI LINEA
+              </span>
+              <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-4 group-hover:text-purple-400 transition-colors">
+                Compagnie Aeree
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-sans mb-6">
+                Esplora le schede di dettaglio dei vettori commerciali globali, le statistiche sulle flotte attive e storiche, le rotte coperte e gli specifici modelli di aeromobili operati in tutto il mondo.
+              </p>
+            </div>
+            <Link
+              href={`/${lang}/airlines`}
+              className="inline-flex items-center justify-center bg-purple-950/20 hover:bg-purple-900/30 border border-purple-900/40 text-purple-400 hover:text-purple-300 font-mono text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition-all cursor-pointer w-full md:w-auto text-center"
+            >
+              Apri Registro Compagnie &rarr;
+            </Link>
+          </div>
+
+          {/* Card Aeroporti */}
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-md relative overflow-hidden group flex flex-col justify-between hover:border-cyan-500/40 transition-all duration-300 shadow-xl">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800 group-hover:bg-cyan-500 transition-colors"></div>
+            <div>
+              <span className="text-cyan-400 font-mono text-xs uppercase tracking-widest font-black block mb-2">
+                // INFRASTRUTTURE & HUB INTERNAZIONALI
+              </span>
+              <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-4 group-hover:text-cyan-400 transition-colors">
+                Aeroporti Globali
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed font-sans mb-6">
+                Analizza le telemetrie infrastrutturali degli aeroporti civili: piste attive, coordinate satellitari, orientamento magnetico, radiofrequenze ATIS/TOWER e bollettini meteo avionici (METAR) live.
+              </p>
+            </div>
+            <Link
+              href={`/${lang}/airports`}
+              className="inline-flex items-center justify-center bg-cyan-950/20 hover:bg-cyan-900/30 border border-cyan-900/40 text-cyan-400 hover:text-cyan-300 font-mono text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition-all cursor-pointer w-full md:w-auto text-center"
+            >
+              Accedi al Radar Aeroporti &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ------------------ SEZIONE: ULTIME AGGIUNTE ------------------ */}
       <section className="relative z-10 px-4 max-w-7xl mx-auto py-12">
         <div className="flex justify-between items-end mb-8 border-b border-slate-900 pb-4">

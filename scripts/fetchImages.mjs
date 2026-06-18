@@ -87,14 +87,60 @@ async function runImageFetch() {
         await new Promise(r => setTimeout(r, 1000));
     }
 
+    // Se abbiamo trovato l'URL da Wikipedia, proviamo a scaricarlo e caricarlo su Supabase Storage
+    let finalImageUrl = null;
+    if (imageUrl) {
+        try {
+            console.log(`  ├─ 🌐 Trovato URL Wiki: ${imageUrl.substring(0, 60)}...`);
+            console.log(`  ├─ 📥 Download dell'immagine da Wikipedia...`);
+            const imgRes = await fetch(imageUrl, { headers: WIKI_HEADERS });
+            if (imgRes.ok) {
+                const contentType = imgRes.headers.get("content-type") || "image/jpeg";
+                const buffer = await imgRes.arrayBuffer();
+                
+                let ext = "jpg";
+                if (contentType.includes("png")) ext = "png";
+                else if (contentType.includes("webp")) ext = "webp";
+                else if (contentType.includes("svg")) ext = "svg";
+                
+                const storagePath = `liveries/${aircraft.id}-wiki.${ext}`;
+                console.log(`  ├─ ☁️ Upload su Supabase Storage (${storagePath})...`);
+                
+                const { error: uploadError } = await supabase.storage
+                    .from('aircraft_images')
+                    .upload(storagePath, buffer, {
+                        upsert: true,
+                        contentType: contentType
+                    });
+                    
+                if (uploadError) {
+                    throw uploadError;
+                }
+                
+                const { data: { publicUrl } } = supabase.storage
+                    .from('aircraft_images')
+                    .getPublicUrl(storagePath);
+                
+                finalImageUrl = publicUrl;
+                console.log(`  ├─ ☁️ Upload completato con successo.`);
+            } else {
+                console.log(`  ├─ ⚠️ Impossibile scaricare l'immagine (Status: ${imgRes.status}). Uso URL Wikipedia.`);
+                finalImageUrl = imageUrl;
+            }
+        } catch (err) {
+            console.error(`  ├─ ❌ Errore scaricamento/caricamento (Storage):`, err.message);
+            finalImageUrl = imageUrl; // Fallback all'URL diretto di Wikipedia
+        }
+    }
+
     // Salvataggio finale sul Database
     await supabase
         .from('aircraft_models')
-        .update({ house_livery_url: imageUrl || 'NOT_FOUND_WIKI' })
+        .update({ house_livery_url: finalImageUrl || 'NOT_FOUND_WIKI' })
         .eq('id', aircraft.id);
 
     // Pulizia visiva se ci sono stati ritentativi sulla stessa riga
-    if (imageUrl) {
+    if (finalImageUrl) {
         console.log(`✅ [CATTURATO] Immagine salvata per: ${aircraft.model_name}`);
         successCount++;
     } else {

@@ -26,6 +26,14 @@ export default function RadarClient({ lang }: { lang: string }) {
   const [minRange, setMinRange] = useState<number>(0); // Range in km
   const [minPassengers, setMinPassengers] = useState<number>(0); // Capienza PAX
 
+  // Paginazione client-side per evitare bloat del DOM
+  const [visibleCount, setVisibleCount] = useState<number>(18);
+
+  // Reset del contatore elementi visibili quando cambiano i filtri
+  useEffect(() => {
+    setVisibleCount(18);
+  }, [searchTerm, statusFilter, rarityFilter, eraFilter, minRange, minPassengers]);
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -239,10 +247,21 @@ export default function RadarClient({ lang }: { lang: string }) {
 
         {/* Griglia AircraftCard */}
         {filteredAircrafts.length > 0 ? (
-          <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-            {filteredAircrafts.map((aircraft) => (
-              <AircraftCard key={aircraft.id} aircraft={aircraft} lang={lang} />
-            ))}
+          <div className="flex flex-col gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
+              {filteredAircrafts.slice(0, visibleCount).map((aircraft) => (
+                <AircraftCard key={aircraft.id} aircraft={aircraft} lang={lang} />
+              ))}
+            </div>
+            {filteredAircrafts.length > visibleCount && (
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 18)}
+                className="w-full mt-4 text-cyan-400 hover:text-white border border-cyan-800/80 hover:border-cyan-500 hover:bg-cyan-950/30 p-4 rounded-xl text-sm font-mono uppercase tracking-widest transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] flex justify-center items-center gap-2 cursor-pointer"
+              >
+                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
+                Espandi Tracciamento Radar (+18 Aerei)
+              </button>
+            )}
           </div>
         ) : (
           <div className="bg-slate-900/80 border border-dashed border-slate-700 rounded-2xl p-16 flex flex-col items-center justify-center text-center">

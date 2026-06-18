@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import Link from "next/link";
+import CaptureButtons from "@/components/CaptureButtons";
 
 interface AirlineDetail {
   id: string;
@@ -190,6 +191,11 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
               <span className="text-purple-400 font-black text-base">{airline.icao_code || "—"}</span>
             </div>
           </div>
+        </div>
+
+        {/* Pulsante Registrazione AirDex */}
+        <div className="mb-8 w-full max-w-sm">
+          <CaptureButtons targetId={id} type="AIRLINE" lang={lang} />
         </div>
 
         {/* BARRA DEI COMANDI INTERATTIVI */}

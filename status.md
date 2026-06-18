@@ -291,3 +291,93 @@ Il sistema è ora pronto e ottimizzato. Abbiamo una base solida, performante e p
 - Sviluppata la rotta `src/app/[lang]/stats/page.tsx` (Global Telemetry) con calcolo aggregato lato client (`useMemo`) di KPI globali, distribuzioni storiche e dominance dei costruttori.
 - Aggiornato `src/components/Navbar.tsx` con logo a gradiente metallico, nuovi link di navigazione e margini fluidi sincronizzati.
 - Salvataggio Git: `Giorno 21: completata fase 10 con compare, stats e navbar fluida`.
+
+Data: Giorno 48
+Fase Attuale: Espansione dell'Ecosistema (Fase 11 - Completata).
+
+Decisioni Prese:
+Navigazione Circolare: Chiuso il "triangolo logistico" interattivo (Aereo -> Compagnia -> Aeroporto e viceversa), permettendo all'utente di navigare senza mai interrompere il flusso.
+
+UX/UI Premium e Antiproiettile: Abbandonato il CSS Grid standard in favore di un layout asimmetrico (Bento Box) basato su Flexbox a percentuali assolute (2/3 e 1/3). Questo ha eliminato i bug di "Grid Blowout" causati da stringhe non formattate (es. METAR e dettagli piste).
+
+Dettagli Visuali: Sviluppato un converter interno per tradurre nazioni in codici ISO e visualizzare bandiere SVG ad alta risoluzione con tooltip custom CSS-only.
+
+Attività Completate:
+Sviluppata la pagina Indice e Dettaglio del modulo Airlines (Compagnie Aeree) con gestione fallback loghi (Clearbit/Wikipedia).
+
+Sviluppata la pagina Indice e Dettaglio del modulo Airports (Aeroporti) con telemetria, meteo avionico e dati infrastrutturali.
+
+Corretto il parsing asincrono dei params per conformità totale a Next.js 15 in tutte le nuove rotte.
+
+Eseguito commit: feat: completata Fase 11 - Integrazione Aeroporti, Layout Dashboard e Navigazione Circolare.
+
+Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
+
+**Data:** Giorno 49
+**Fase Attuale:** Content Marketing & Community Building (Fase 12 - Completata).
+
+## Decisioni Prese:
+- Integrazione Database Supabase: Sfruttate le tabelle native `articles` e `spotter_uploads` già predisposte per evitare la dipendenza da CMS esterni (come Sanity), garantendo relazioni dirette e performanti nel database di AirDex.
+- Storage Locale degli Avvistamenti: Le foto caricate dagli spotter vengono inviate direttamente al bucket Supabase `spotters/uploads/` e rimosse in automatico dallo storage fisico se rifiutate durante la moderazione.
+- Separazione dei Componenti: La galleria degli spotter e il modulo di upload interattivo sono stati isolati nel client component `SpotterSection` per mantenere intatta la compilazione statica e le performance SEO (SSG) della pagina di dettaglio dell'aereo.
+
+## Attività Completate:
+- Sviluppata la pagina Indice Blog `/blog` e Dettaglio Articolo `/blog/[slug]` con layout premium, supporto SSG e SEO dinamico.
+- Sviluppato il componente `SpotterSection` integrato in fondo alle schede aereo per visualizzare le foto approvate e gestire l'invio (upload) in stato `PENDING` di nuovi avvistamenti da parte dei membri della community.
+- Sviluppato il pannello admin `/admin/spotters` (Moderazione Spotter) con funzionalità di approvazione e rifiuto (con eliminazione dallo Storage di Supabase).
+- Aggiornata la `Navbar` globale (link News, link Compagnie e link Aeroporti) e la sidebar amministrativa `layout.tsx` (link Moderazione Spotter).
+- **Integrazione Ecosistema in Homepage**: Inserita una sezione bento-style in `page.tsx` con card dedicate per indirizzare gli utenti direttamente al registro delle Compagnie Aeree (`/airlines`) e degli Aeroporti (`/airports`).
+- **SEO Tecnico Avanzato**:
+  - Implementati i dati strutturati Schema.org (**JSON-LD** `BlogPosting`) all'interno di ciascun articolo del blog.
+  - Sviluppato il file generatore di **Sitemap dinamico** `sitemap.ts` nativo Next.js, mappando tutte le rotte statiche (inclusi `/airlines` e `/airports`) e dinamiche (aerei, compagnie, aeroporti, blog) per ogni lingua supportata.
+  - Sviluppato il file **robots.ts** per istruire correttamente i motori di ricerca sull'indicizzazione ed escludere le rotte `/admin` e `/profile`.
+- **Espansione Compagnie Aeree**: Inserite nel database **20 nuove compagnie aeree storiche e attive** (es. Air France, British Airways, ITA Airways, TWA, Swissair) con dati reali di flotta, alleanze, hub e codici IATA/ICAO validati per evitare conflitti di chiavi esterne.
+- **Localizzazione Loghi Compagnie**: Sviluppato un **modulo di manutenzione loghi client-side** integrato nella dashboard amministrativa `/admin`. Questo modulo permette all'amministratore di scaricare e caricare i loghi in tempo reale direttamente dal browser, bypassando i blocchi DNS e le restrizioni di CORS esterne tramite il proxy **`corsproxy.io`**, salvando i file su Supabase Storage e preservando i formati vettoriali nativi (SVG) e trasparenti (PNG) originali.
+- Eseguito test di build di produzione superato con successo: generate correttamente 1721 risorse statiche (inclusi `/sitemap.xml` e `/robots.txt`).
+
+**Data:** Giorno 50
+**Fase Attuale:** Localizzazione Automatica dei Loghi via Terminale (Completata).
+
+## Decisioni Prese:
+- **Fallback Wikipedia**: Progettata e implementata una ricerca fallback automatica su Wikipedia API se l'URL del logo principale (o Clearbit) non è raggiungibile o restituisce errori.
+- **User-Agent Compliant**: Sostituito il classico User-Agent generico da browser con uno specifico e descrittivo (`AviationPokedexLogoSync/1.0`) per rispettare le linee guida sull'uso delle API di Wikipedia, azzerando gli errori `429 Too Many Requests`.
+- **Upload su Supabase**: Tutti i loghi scaricati (in formato SVG, PNG, WEBP o JPG) vengono caricati nel bucket Supabase `spotters` sotto il path `airlines/` e il database viene aggiornato con gli URL pubblici permanenti, evitando link rotti o dipendenze esterne.
+
+## Attività Completate:
+- Ottimizzazione dello script `scripts/localLogoSync.mjs`.
+- Esecuzione dello script e completamento con successo della sincronizzazione di tutti i loghi mancanti delle compagnie aeree civili nel database (18/18 loghi elaborati e caricati con successo nel bucket Supabase).
+- Risolti i problemi di DNS ed esecuzione.
+
+**Data:** Giorno 51
+**Fase Attuale:** Importazione Globale e Restyling Terminale Compagnie (Completata).
+
+## Decisioni Prese:
+- **Espansione Massiva (Wikidata SPARQL)**: Eseguita una query SPARQL completa per importare tutte le compagnie commerciali della storia dell'aviazione che hanno sia un codice IATA sia un codice ICAO. Questo ha inserito nel database ben **2.215 nuove compagnie aeree storiche e attive** del mondo (totale di **2.297 vettori**). Le collisioni di chiavi uniche IATA (es. Sabena/Brussels Airlines `SN`) sono state risolte dinamicamente azzerando il codice per la storica e mantenendo l'ICAO/Nome.
+- **Risoluzione Loghi Fair-Use Locale**: Migrata la ricerca dei file dall'API di Wikimedia Commons a quella locale di English Wikipedia (`en.wikipedia.org`). Questo ha permesso di scaricare correttamente sia le immagini su Commons sia i file locali salvati sotto la regola del "fair-use" (come il logo di United Airlines).
+- **Risoluzione Loghi Massiva**: Per le 2.215 nuove compagnie, l'URL del logo viene ricavato direttamente convertendo l'indirizzo Wikidata in un redirect Commons Special FilePath. Questo permette di caricare ed esporre oltre 2200 loghi istantaneamente nel browser senza intasare il bucket Supabase locale.
+- **Paginazione e Filtri Avanzati**: Implementati controlli dinamici client-side sulla pagina delle compagnie per garantire tempi di risposta istantanei (0ms), con filtri avanzati per Alleanze, Stato e ordinamenti mirati.
+
+## Attività Completate:
+- Creazione ed esecuzione dello script di importazione `scripts/importAllAirlinesFromWikidata.mjs`.
+- Rilancio dello script definitivo `scripts/localLogoSync.mjs` che ha completato con successo la localizzazione dei loghi originari.
+- Riscritto il file [src/app/[lang]/airlines/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airlines/page.tsx) con una dashboard statistica per AvGeek, barra di ricerca testuale multi-campo, filtri per alleanza/stato, paginazione dinamica e ordinamenti multipli.
+- Compilazione e test Next.js superato con successo.
+
+**Data:** Giorno 52
+**Fase Attuale:** Sicurezza Consensi, Profilo & Autenticazione Avanzata (Fase 13 - Completata).
+
+## Decisioni Prese:
+- **Bypass Limitazione Client Autodelete**: Poiché le client-side API di Supabase non supportano la cancellazione autonoma dell'utente (del record `auth.users`) a causa di restrizioni di sicurezza, è stata registrata una funzione PostgreSQL sicura con privilegi `SECURITY DEFINER` denominata `delete_user_self()`.
+- **Integrazione Consensi in DB**: Aggiunte colonne `privacy_accepted` (booleano) e `newsletter_subscribed` (booleano) alla tabella `user_profiles` tramite script di migrazione.
+- **Supporto Password in Settings**: Aggiunta la possibilità di impostare o aggiornare la password dal terminale dell'area riservata, offrendo compatibilità e integrazione per gli account creati tramite Google OAuth che desiderano attivare anche l'accesso email tradizionale.
+- **UI di Sicurezza (Danger Zone)**: Fornito un modulo a doppio sblocco tramite caselle di controllo obbligatorie per l'eliminazione dell'account, riducendo a zero i rischi di disattivazione involontaria.
+
+## Attività Completate:
+- **Database Schema**: Eseguito con successo `scripts/migration_consents.mjs` per aggiungere le colonne relative ai consensi.
+- **Registrazione & Login**: Aggiornato [src/app/[lang]/login/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/login/page.tsx) per raccogliere ed inviare i consensi di privacy (obbligatorio) e newsletter (facoltativo) al DB all'atto della registrazione.
+- **Impostazioni Profilo (Console)**: Implementato il modulo Impostazioni (Tab ⚙️ Impostazioni) in [src/app/[lang]/profile/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/profile/page.tsx) con tre macro-sezioni:
+  - *Aggiornamento Licenza Pilota*: Modifica dinamica di Callsign, Aeroporto Base (dropdown caricato dal DB), Compagnia Preferita (con barra di ricerca ad autocompletamento e loghi inline) e Decennio Storico.
+  - *Cambio Password*: Form di sicurezza con validazione di lunghezza e corrispondenza tramite `supabase.auth.updateUser`.
+  - *Danger Zone (Smantellamento Hangar)*: Modulo di eliminazione con doppio checkbox di sicurezza che esegue l'RPC `delete_user_self()`, svuotando a cascata le tabelle collegate (`user_captures`, `user_profiles`, ed infine l'account da `auth.users`).
+- **Registrazione Database RPC**: Creato ed eseguito lo script `scripts/migration_delete_user.mjs` che registra l'RPC `delete_user_self` con permessi `SECURITY DEFINER`.
+- **Test Build**: Eseguito `npm run build` con successo, confermando l'integrità del codice TypeScript/Next.js (1.721 percorsi statici compilati correttamente).
