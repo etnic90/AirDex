@@ -103,6 +103,18 @@ export default function ProfilePage() {
   const [authNewsletterChecked, setAuthNewsletterChecked] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
 
+  // Stati Autocomplete Aeroporto Onboarding
+  const [airportQuery, setAirportQuery] = useState("");
+
+  const filteredAirports = useMemo(() => {
+    if (!airportQuery.trim()) return airports.slice(0, 5);
+    const query = airportQuery.toLowerCase().trim();
+    return airports.filter(a => 
+      a.name.toLowerCase().includes(query) || 
+      a.iata_code.toLowerCase().includes(query)
+    ).slice(0, 6);
+  }, [airports, airportQuery]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -110,8 +122,13 @@ export default function ProfilePage() {
       if (action === "signup") {
         setAuthMode("signup");
       }
+
+      const tab = params.get("tab");
+      if (tab === "settings" || tab === "airlines" || tab === "quiz" || tab === "teca") {
+        setActiveTab(tab as any);
+      }
     }
-  }, []);
+  }, [user]);
 
   // Stati Dashboard
   const [activeTab, setActiveTab] = useState<"teca" | "airlines" | "quiz" | "settings">("teca");
@@ -1102,7 +1119,13 @@ export default function ProfilePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/3 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="w-full max-w-xl bg-slate-900/60 border border-slate-800 rounded-3xl p-8 backdrop-blur-xl relative z-10 shadow-2xl">
-          <div className="mb-8 font-mono text-center">
+          <div className="mb-8 font-mono text-center relative">
+            <button
+              onClick={handleSignOut}
+              className="absolute top-0 right-0 text-[9px] uppercase tracking-wider text-slate-500 hover:text-red-400 transition-colors border border-slate-850 px-2.5 py-1 rounded bg-slate-950 cursor-pointer"
+            >
+              Sign Out
+            </button>
             <span className="text-[10px] text-emerald-400 uppercase tracking-[0.3em] font-black block mb-2">Firma Radar Attivata</span>
             <h1 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Profilazione Pilota</h1>
             <div className="w-full bg-slate-950 h-1.5 rounded-full mt-4 overflow-hidden border border-slate-900 p-0.5 flex">
@@ -1135,28 +1158,69 @@ export default function ProfilePage() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 max-h-60 overflow-y-auto mb-8 pr-2">
-                {airports.map((airport) => (
-                  <button
-                    key={airport.id}
-                    onClick={() => setSelectedAirport(`${airport.name} (${airport.iata_code})`)}
-                    className={`p-4 rounded-xl border text-left font-mono text-sm transition-all flex justify-between items-center ${
-                      selectedAirport.includes(airport.iata_code)
-                        ? "border-emerald-500 bg-emerald-500/10 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                        : "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700"
-                    }`}
-                  >
-                    <span>{airport.name}</span>
-                    <span className="text-xs font-black px-2 py-0.5 bg-slate-900 border border-slate-800 text-emerald-400 rounded">{airport.iata_code}</span>
-                  </button>
-                ))}
+              {/* Airport Input & Autocomplete Search */}
+              <div className="mb-8 font-mono">
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
+                  Aeroporto di Riferimento (Hub Base)
+                </label>
+                
+                {selectedAirport ? (
+                  <div className="p-4 rounded-xl border border-emerald-500 bg-emerald-500/10 text-white flex justify-between items-center">
+                    <div>
+                      <span className="text-[9px] text-emerald-400 uppercase font-black block tracking-widest">Selezionato</span>
+                      <span className="text-sm font-bold">{selectedAirport}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedAirport("");
+                        setAirportQuery("");
+                      }}
+                      className="text-xs text-red-400 hover:text-red-300 hover:underline cursor-pointer"
+                    >
+                      Resetta Cerca
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={airportQuery}
+                      onChange={(e) => setAirportQuery(e.target.value)}
+                      placeholder="Cerca aeroporto per nome o IATA (es. Malpensa, JFK, FCO)..."
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition-all placeholder:text-slate-800"
+                    />
+                    
+                    {airportQuery.trim() !== "" && (
+                      <div className="absolute w-full mt-2 bg-slate-950 border border-slate-850 rounded-xl overflow-hidden z-30 shadow-2xl text-xs max-h-60 overflow-y-auto">
+                        {filteredAirports.map((airport) => (
+                          <button
+                            key={airport.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAirport(`${airport.name} (${airport.iata_code})`);
+                              setAirportQuery("");
+                            }}
+                            className="w-full text-left p-3 border-b border-slate-900 hover:bg-slate-900/60 text-slate-355 flex items-center justify-between transition-colors cursor-pointer"
+                          >
+                            <span className="font-bold text-white">{airport.name}</span>
+                            <span className="text-[10px] text-emerald-455 font-mono border border-slate-800 bg-slate-900 px-2 py-0.5 rounded">{airport.iata_code}</span>
+                          </button>
+                        ))}
+                        {filteredAirports.length === 0 && (
+                          <div className="p-3 text-slate-600 text-center">Nessun aeroporto trovato</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end">
                 <button
                   disabled={!selectedAirport || !pilotCallsign.trim()}
                   onClick={() => setOnboardingStep(2)}
-                  className="bg-emerald-500 text-slate-950 font-bold px-8 py-3 rounded-xl hover:bg-emerald-400 disabled:opacity-30 disabled:pointer-events-none transition-all uppercase tracking-wider font-mono text-xs"
+                  className="bg-emerald-500 text-slate-950 font-bold px-8 py-3 rounded-xl hover:bg-emerald-400 disabled:opacity-30 disabled:pointer-events-none transition-all uppercase tracking-wider font-mono text-xs cursor-pointer"
                 >
                   Continua &rarr;
                 </button>

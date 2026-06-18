@@ -64,6 +64,13 @@ export default function Navbar({ lang }: { lang: string }) {
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    window.location.assign(`/${lang}/profile`);
+  };
+
   return (
     <nav className="bg-slate-950/80 backdrop-blur-lg border-b border-slate-800 sticky top-0 z-50">
       <div className="w-full px-6 md:px-10 mx-auto flex items-center justify-between h-20">
@@ -127,16 +134,51 @@ export default function Navbar({ lang }: { lang: string }) {
         <div className="flex items-center gap-4">
           
           {user ? (
-            <Link 
-              href={`/${lang}/profile`} 
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all duration-300 text-xs font-mono"
-              title="Accedi al tuo Profilo Pilota"
-            >
-              <span className="text-sm md:text-base select-none">{getAvatarEmoji(profile?.avatar_id)}</span>
-              <span className="hidden sm:inline text-slate-300 group-hover:text-white uppercase tracking-wider font-bold">
-                {profile?.pilot_callsign || "PILOTA"}
-              </span>
-            </Link>
+            <div className="relative group py-2">
+              <Link 
+                href={`/${lang}/profile`} 
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all duration-300 text-xs font-mono"
+                title="Accedi al tuo Profilo Pilota"
+              >
+                <span className="text-sm md:text-base select-none">{getAvatarEmoji(profile?.avatar_id)}</span>
+                <span className="hidden sm:inline text-slate-300 group-hover:text-white uppercase tracking-wider font-bold font-sans">
+                  {profile?.pilot_callsign || "PILOTA"}
+                </span>
+                <span className="text-[8px] text-slate-500 group-hover:text-cyan-400 transition-colors select-none">▼</span>
+              </Link>
+
+              {/* MENU DROPDOWN AL PASSAGGIO DEL MOUSE */}
+              <div className="absolute right-0 top-full mt-1 w-48 bg-slate-950 border border-slate-850 rounded-xl shadow-2xl p-2 hidden group-hover:flex flex-col gap-1 z-50 font-mono text-[9px] tracking-wider uppercase">
+                <Link 
+                  href={`/${lang}/profile`} 
+                  className="px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors flex items-center gap-2 font-bold"
+                >
+                  <span>📊</span> Profilo Pilota
+                </Link>
+                <Link 
+                  href={`/${lang}/profile?tab=settings`} 
+                  className="px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors flex items-center gap-2 font-bold"
+                >
+                  <span>⚙️</span> Impostazioni
+                </Link>
+                {/* Accesso diretto admin per gli amministratori */}
+                {user && user.email && ["admin@airdex.com", "mirkogalantucci@gmail.com"].includes(user.email) && (
+                  <Link 
+                    href={`/${lang}/admin`} 
+                    className="px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors flex items-center gap-2 font-bold"
+                  >
+                    <span>🛡️</span> Dashboard Admin
+                  </Link>
+                )}
+                <div className="h-px bg-slate-900 my-1"></div>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full text-left px-3 py-2.5 rounded-lg text-red-500 hover:text-red-400 hover:bg-red-950/20 transition-colors flex items-center gap-2 font-bold cursor-pointer"
+                >
+                  <span>🚪</span> Disconnetti
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <Link 
