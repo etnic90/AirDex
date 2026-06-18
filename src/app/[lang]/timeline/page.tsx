@@ -146,7 +146,7 @@ export default function TimelinePage() {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-0 left-0 w-full h-[500px] bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(6,182,212,0.05),transparent)] pointer-events-none z-0"></div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-[1600px] w-[95%] mx-auto relative z-10">
         
         {/* Header Principale */}
         <div className="text-center mb-12">

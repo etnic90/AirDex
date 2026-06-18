@@ -226,7 +226,7 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
       {/* Sfondo Radiale Sci-Fi */}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.08),rgba(0,0,0,0))] pointer-events-none z-0"></div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="max-w-[1600px] w-[95%] mx-auto relative z-10">
         
         {/* Header principale */}
         <div className="mb-8 border-b border-slate-900 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">

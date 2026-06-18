@@ -146,7 +146,7 @@ export default function AirportsPage() {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-0 left-0 w-full h-[400px] bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(16,185,129,0.03),transparent)] pointer-events-none z-0"></div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-[1600px] w-[95%] mx-auto relative z-10">
         
         {/* Intestazione */}
         <div className="mb-10 text-center md:text-left border-b border-slate-900 pb-8">

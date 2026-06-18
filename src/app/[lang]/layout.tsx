@@ -5,6 +5,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import "../globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: '--font-sans' });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: '--font-space' });
@@ -52,6 +53,8 @@ return (
           <div className="flex-grow">
             {children}
           </div>
+
+          <Footer lang={lang} />
         </NextIntlClientProvider>
       </body>
     </html>

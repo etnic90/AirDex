@@ -191,7 +191,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
 
   return (
     <main className="min-h-screen bg-slate-950 text-white p-4 md:p-10 font-sans selection:bg-cyan-500/30">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[1600px] w-[95%] mx-auto">
         
         {/* Navigazione Indietro */}
         <div className="mb-6">

@@ -249,14 +249,14 @@ export default function AirportDetailPage() {
 
       {/* 1. TOP BAR */}
       <div className="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-[1600px] w-[95%] mx-auto px-6 py-4">
           <Link href={`/${lang}/airports`} className="text-xs font-bold text-slate-550 hover:text-emerald-400 transition-colors uppercase tracking-widest flex items-center gap-2 w-max font-mono">
             &larr; Ritorna al Radar Aeroporti
           </Link>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pt-10 relative z-10">
+      <div className="max-w-[1600px] w-[95%] mx-auto px-6 pt-10 relative z-10">
         
         {/* 2. HEADER ACCATTIVANTE */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 border-b border-slate-900 pb-10">

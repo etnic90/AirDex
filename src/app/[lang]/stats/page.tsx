@@ -121,7 +121,7 @@ export default function StatsDashboard() {
 
   return (
     <main className="min-h-screen bg-slate-950 p-6 md:p-10">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1600px] w-[95%] mx-auto">
         
         {/* Header */}
         <div className="mb-10 text-center">

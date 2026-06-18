@@ -87,6 +87,21 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         {/* BARRA DI RICERCA PREDITTIVA */}
         <SearchAutocomplete lang={lang} searchIndex={searchIndex} />
 
+        {/* Live System Console Status Ticker */}
+        <div className="w-full max-w-5xl mt-6 mb-12 p-3.5 bg-slate-900/60 backdrop-blur-sm border border-slate-800/80 rounded-2xl flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400 relative overflow-hidden group shadow-inner">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent"></div>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-emerald-400 uppercase font-black tracking-wider">ADS-B Connection:</span>
+            <span className="text-slate-200 font-extrabold uppercase animate-pulse">Live Radar Network Active</span>
+          </div>
+          <div className="flex gap-5">
+            <span>PACKETS: <strong className="text-slate-300">100% SECURE</strong></span>
+            <span className="hidden md:inline">LATENCY: <strong className="text-cyan-400">12ms</strong></span>
+            <span className="hidden sm:inline">NODES: <strong className="text-purple-400">2,171 TELEMETRIES</strong></span>
+          </div>
+        </div>
+
         {/* TELEMETRIA DASHBOARD (STATISTICHE AVANZATE) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-5xl relative">
           {[
@@ -207,23 +222,34 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { title: "I Pionieri & Elica", era: "1910 - 1945", desc: "Dagli albori in legno e tela ai motori radiali della Seconda Guerra Mondiale.", query: "era=pioneers", badge: "HISTORIC" },
-            { title: "L'Età dell'Oro a Pistoni", era: "1946 - 1957", desc: "I giganti transoceanici commerciali a pistoni come il DC-6 e il Constellation.", query: "era=golden", badge: "HISTORIC" },
-            { title: "L'Avvento del Motore a Getto", era: "1958 - 1999", desc: "La rivoluzione dei Jet. Dal Boeing 707, all'iconico 747 fino al supersonico Concorde.", query: "era=jetage", badge: "ACTIVE_HISTORIC" },
-            { title: "Era Moderna & Widebody", era: "2000 - 2026", desc: "I giganti dei cieli in fibra di carbonio ad altissima efficienza energetica: A380, A350, 787.", query: "era=modern", badge: "ACTIVE" },
+            { title: "I Pionieri & Elica", era: "1910 - 1945", desc: "Dagli albori in legno e tela ai motori radiali della Seconda Guerra Mondiale.", query: "era=pioneers", badge: "HISTORIC", img: "/images/eras/pioneers_era.jpg" },
+            { title: "L'Età dell'Oro a Pistoni", era: "1946 - 1957", desc: "I giganti transoceanici commerciali a pistoni come il DC-6 e il Constellation.", query: "era=golden", badge: "HISTORIC", img: "/images/eras/golden_era.jpg" },
+            { title: "L'Avvento del Motore a Getto", era: "1958 - 1999", desc: "La rivoluzione dei Jet. Dal Boeing 707, all'iconico 747 fino al supersonico Concorde.", query: "era=jetage", badge: "ACTIVE_HISTORIC", img: "/images/eras/jet_era.jpg" },
+            { title: "Era Moderna & Widebody", era: "2000 - 2026", desc: "I giganti dei cieli in fibra di carbonio ad altissima efficienza energetica: A380, A350, 787.", query: "era=modern", badge: "ACTIVE", img: "/images/eras/modern_era.jpg" },
           ].map((epoch, i) => (
             <Link 
               href={`/${lang}/radar?${epoch.query}`} 
               key={i} 
-              className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 hover:border-cyan-500/60 hover:bg-slate-900/95 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all duration-300 group flex flex-col justify-between backdrop-blur-xl shadow-lg"
+              className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 hover:border-cyan-500/60 hover:bg-slate-900/95 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all duration-300 group flex flex-col justify-between backdrop-blur-xl shadow-lg overflow-hidden"
             >
               <div>
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-cyan-505 font-mono text-sm font-black tracking-wider">{epoch.era}</span>
-                  <span className="text-xs font-mono border border-slate-700 text-slate-400 px-2.5 py-0.5 rounded-full uppercase font-bold">{epoch.badge}</span>
+                {/* Immagine di Epoca con sovrapposizione olografica */}
+                <div className="h-32 w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-850 relative mb-5 shadow-inner">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={epoch.img} 
+                    alt={epoch.title} 
+                    className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
                 </div>
-                <h3 className="text-base font-extrabold text-white uppercase tracking-wide mb-3 group-hover:text-cyan-400 transition-colors font-mono">{epoch.title}</h3>
-                <p className="text-slate-350 text-sm font-normal leading-relaxed">{epoch.desc}</p>
+
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-cyan-400 font-mono text-xs font-black tracking-wider">{epoch.era}</span>
+                  <span className="text-[10px] font-mono border border-slate-700/60 text-slate-400 px-2 py-0.5 rounded uppercase font-bold">{epoch.badge}</span>
+                </div>
+                <h3 className="text-base font-extrabold text-white uppercase tracking-wide mb-2.5 group-hover:text-cyan-400 transition-colors font-mono">{epoch.title}</h3>
+                <p className="text-slate-350 text-xs font-semibold leading-relaxed font-sans">{epoch.desc}</p>
               </div>
               <div className="text-cyan-400 font-mono text-xs uppercase tracking-widest mt-6 opacity-0 group-hover:opacity-100 transition-opacity font-bold">
                 Inizializza Scansione &rarr;
@@ -321,10 +347,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         </div>
       </section>
 
-      {/* FOOTER SYSTEM INDICATOR */}
-      <div className="text-center mt-24 text-xs font-mono text-slate-500 tracking-[0.25em] uppercase relative z-10 border-t border-slate-900/60 pt-8 max-w-7xl mx-auto">
-        AirDex OS v4.2.1 // Supabase Relational Cluster Connected // Node Environment Active
-      </div>
+      <div className="h-10"></div>
 
     </main>
   );
