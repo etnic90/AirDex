@@ -431,3 +431,24 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
 - **Index Compagnie**: Modificato [src/app/[lang]/airlines/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airlines/page.tsx) per allargare le logo slot e iniettare la logica Clearbit API fallback.
 - **Details Compagnia**: Modificato [src/app/[lang]/airlines/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airlines/[id]/page.tsx) per inserire la bandiera nazionale olografica con tooltip CSS e la cronologia strutturata a paragrafi boxati.
 - **Tipografia**: Configurato `globals.css` per impostare Inter come font-sans predefinito ed eliminati i tag `font-mono` generici nei percorsi principali.
+
+**Data:** Giorno 56
+**Fase Attuale:** Ottimizzazione Layout Archivi, Navbar, Footer e Blog Editoriale (Completata).
+
+## Decisioni Prese:
+- **Centralizzazione Utility Flags**: Creazione del file `src/lib/country.ts` per centralizzare la logica di conversione dei paesi (in inglese ed italiano) in codici ISO-2 per visualizzare correttamente le bandiere nazionali da `flagcdn.com` su tutto il sito.
+- **Griglie Espansive**: Ampliamento degli archivi di Compagnie ed Aeroporti da layout classico/stretto a una griglia a 4 colonne (`xl:grid-cols-4`) su risoluzioni larghe per valorizzare la mole di dati.
+- **Semplificazione Navigazione & Telemetria**: Spostamento della telemetria globale come voce integrata e minimale nel footer invece di sovraccaricare la Navbar principale.
+- **Visual Balance Footer**: Rimozione dei widget ingombranti a favore di una descrizione testuale dettagliata del portale e dell'inserimento dei link in stile cyber-minimale senza emoji.
+- **Premium Blog Layout**: Strutturazione delle pagine del blog secondo gli standard editoriali moderni (sidebar informative, sidebar di condivisione sticky, breadcrumbs, calcolo dei tempi di lettura e box di lettura segmentati).
+
+## Attività Completate:
+- **Utility Paese**: Creato il file [src/lib/country.ts](file:///C:/wamp64/www/aviation-pokedex/src/lib/country.ts) con la funzione [getCountryIsoCode](file:///C:/wamp64/www/aviation-pokedex/src/lib/country.ts#L1).
+- **Archivio Compagnie**: Aggiornato [src/app/[lang]/airlines/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airlines/page.tsx) con la griglia a 4 colonne, allineamento della bandiera a destra del nome con tooltip, e risolto il wrapping dell'Hub principale tramite `shrink-0` e troncamento testo.
+- **Archivio Aeroporti**: Aggiornato [src/app/[lang]/airports/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/page.tsx) con la griglia a 4 colonne e inserimento della bandiera all'interno del badge dei codici IATA/ICAO con tooltip su hover.
+- **Navbar & Footer**:
+  - In [src/components/Navbar.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/Navbar.tsx) rimosso il link a Telemetria.
+  - In [src/components/Footer.tsx](file:///C:/wamp64/www/aviation-pokedex/src/components/Footer.tsx) rimossi gli emoji, rimosso il box telemetria a sinistra, estesa la descrizione del brand sotto il logo e aggiunto il link Telemetria nel deep footer accanto a AirDex PRO con lo stesso stile di Console Avionica.
+- **Blog Archive**: Modificato [src/app/[lang]/blog/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/blog/page.tsx) rimuovendo la barra azzurra superiore, allargando il contenitore principale, e dividendo l'area in 3 colonne per le news e una sidebar laterale destra (ricerca, aree tematiche, newsletter).
+- **Blog Detail**: Modificato [src/app/[lang]/blog/[slug]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/blog/[slug]/page.tsx) per allargare il layout di lettura, inserire breadcrumbs, barra sticky sinistra per la condivisione social, calcolo tempo di lettura, formattazione paragrafi/elenchi puntati in box ad alta leggibilità, e una barra laterale destra con gli articoli consigliati.
+- **Test di Build**: Eseguita con successo la build di produzione (`npm run build`) che ha compilato correttamente tutte le 1721 pagine statiche del sito.
