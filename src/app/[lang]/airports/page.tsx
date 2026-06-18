@@ -265,8 +265,11 @@ export default function AirportsPage() {
                 return (
                   <div 
                     key={airport.id} 
-                    className="bg-slate-900/20 border border-slate-900 hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] rounded-2xl overflow-hidden backdrop-blur-md transition-all duration-305 group flex flex-col justify-between"
+                    className="bg-slate-900/30 border border-slate-800/80 hover:border-emerald-500/40 hover:shadow-[0_0_25px_rgba(16,185,129,0.08)] rounded-2xl overflow-hidden backdrop-blur-md transition-all duration-300 group flex flex-col justify-between relative"
                   >
+                    {/* Spot sfumato olografico */}
+                    <div className="absolute -right-8 -top-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all duration-500 pointer-events-none z-0"></div>
+
                     {/* Airport Cover Image */}
                     <div className="h-36 w-full bg-slate-950 relative overflow-hidden flex-shrink-0">
                       {airport.image_url && airport.image_url !== 'NOT_FOUND' ? (

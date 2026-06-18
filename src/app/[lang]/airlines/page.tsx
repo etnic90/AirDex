@@ -404,12 +404,18 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
               return (
                 <div 
                   key={airline.id} 
-                  className={`bg-slate-900/20 border rounded-3xl p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group ${
+                  className={`bg-slate-900/30 border rounded-3xl p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden group ${
                     isDefunct 
-                      ? 'border-slate-900/80 hover:border-amber-600/40 hover:shadow-amber-950/10' 
-                      : 'border-slate-900/80 hover:border-emerald-500/40 hover:shadow-emerald-950/10'
+                      ? 'border-slate-800/80 hover:border-amber-600/40 hover:shadow-amber-950/10' 
+                      : 'border-slate-800/80 hover:border-emerald-500/40 hover:shadow-emerald-950/10'
                   }`}
                 >
+                  {/* Spot sfumato olografico (arancio per storico, verde per attivo) */}
+                  <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl transition-all duration-500 pointer-events-none z-0 ${
+                    isDefunct 
+                      ? 'bg-amber-500/10 group-hover:bg-amber-500/20' 
+                      : 'bg-emerald-500/10 group-hover:bg-emerald-500/20'
+                  }`}></div>
                   {/* Badge Stato (Angolo alto-destra) */}
                   <div className="absolute top-4 right-4 font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 rounded border border-slate-900 bg-slate-950 z-20">
                     {isDefunct ? (

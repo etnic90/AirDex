@@ -21,9 +21,21 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
     LEGENDARY: 'border-amber-900/80 hover:border-amber-500 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)]',
   };
 
+  const raritySpots: Record<string, string> = {
+    COMMON: 'bg-slate-400/5 group-hover:bg-slate-400/10',
+    UNCOMMON: 'bg-emerald-500/10 group-hover:bg-emerald-500/20',
+    RARE: 'bg-blue-500/10 group-hover:bg-blue-500/20',
+    EPIC: 'bg-purple-500/10 group-hover:bg-purple-500/20',
+    LEGENDARY: 'bg-amber-500/10 group-hover:bg-amber-500/20',
+  };
+
   const cardBorderAndGlow = aircraft.rarity && rarityColors[aircraft.rarity]
     ? rarityColors[aircraft.rarity]
     : 'border-slate-700/50 hover:border-cyan-600/50 hover:shadow-[0_0_25px_rgba(6,182,212,0.15)]';
+
+  const raritySpotClass = aircraft.rarity && raritySpots[aircraft.rarity]
+    ? raritySpots[aircraft.rarity]
+    : 'bg-cyan-500/10 group-hover:bg-cyan-500/20';
 
   // Status Badge Colors
   const isHistoric = aircraft.status === 'HISTORIC';
@@ -33,9 +45,11 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
 
   return (
     <Link href={`/${lang}/aircraft/${aircraft.id}`} className="block transition-transform hover:scale-[1.02]">
-      <div className={`relative bg-slate-900/60 backdrop-blur-sm rounded-2xl p-6 w-96 border transition-all duration-300 overflow-hidden group ${cardBorderAndGlow}`}>
-        
-        <div className="flex justify-between items-start mb-6">
+      <div className={`relative bg-slate-900/30 backdrop-blur-md rounded-2xl p-6 w-96 border transition-all duration-300 overflow-hidden group ${cardBorderAndGlow}`}>
+        {/* Spot sfumato olografico per rarità */}
+        <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl transition-all duration-500 pointer-events-none z-0 ${raritySpotClass}`}></div>
+
+        <div className="flex justify-between items-start mb-6 relative z-10">
           <div>
             <h2 className="text-2xl font-semibold text-white truncate max-w-[220px]" title={aircraft.model_name}>
               {aircraft.model_name}
@@ -90,7 +104,7 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
           )}
         </div>
 
-        <div className="space-y-3 font-mono text-sm text-cyan-100/70">
+        <div className="space-y-3 font-mono text-sm text-cyan-100/70 relative z-10">
           <div className="flex justify-between border-b border-slate-700/60 pb-1.5">
             <span className="text-cyan-600 font-bold uppercase">Motori</span>
             <span className="text-white text-right truncate max-w-[160px]">{aircraft.engines || 'N/A'}</span>
