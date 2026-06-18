@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import Link from "next/link";
 import AirlineLogo from "@/components/AirlineLogo";
+import { getCountryIsoCode } from "@/lib/country";
 
 interface Airline {
   id: string;
@@ -397,7 +398,7 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
 
         {/* Griglia Principale delle Compagnie */}
         {paginatedAirlines.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
             {paginatedAirlines.map((airline) => {
               const isDefunct = !!airline.closed_year;
 
@@ -440,11 +441,27 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
                       )}
                     </div>
 
-                    <div className="min-w-0">
-                      <h2 className="text-xl font-extrabold text-white group-hover:text-emerald-400 transition-colors truncate uppercase leading-tight font-mono">
-                        {airline.name}
-                      </h2>
-                      <span className="text-slate-400 text-sm font-semibold block mt-1">{airline.country}</span>
+                    <div className="flex justify-between items-start gap-3 w-full">
+                      <div className="min-w-0">
+                        <h2 className="text-lg font-extrabold text-white group-hover:text-emerald-400 transition-colors truncate uppercase leading-tight font-mono" title={airline.name}>
+                          {airline.name}
+                        </h2>
+                        <span className="text-slate-400 text-xs font-semibold block mt-1">{airline.country}</span>
+                      </div>
+                      
+                      {/* Bandiera Nazione con Tooltip */}
+                      <div className="relative group shrink-0 self-center">
+                        <div className="w-6 h-4 rounded shadow-sm border border-slate-800 overflow-hidden bg-slate-950 flex items-center justify-center cursor-help">
+                          <img 
+                            src={`https://flagcdn.com/${getCountryIsoCode(airline.country)}.svg`} 
+                            alt={airline.country}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-max bg-slate-900 border border-slate-800 text-[10px] uppercase font-mono tracking-widest text-slate-200 px-2 py-1 rounded shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
+                          {airline.country}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -468,9 +485,9 @@ export default function AirlinesPage({ params }: { params: Promise<{ lang: strin
 
                   {/* Informazioni Logistiche Secondarie */}
                   <div className="space-y-3 font-mono text-xs text-slate-400 mb-6 border-t border-slate-900/40 pt-5 relative z-10">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500 uppercase text-xs font-bold">Hub Principale:</span>
-                      <span className="text-slate-200 font-bold truncate max-w-[170px]" title={airline.main_hub || undefined}>
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-slate-500 uppercase text-xs font-bold shrink-0">Hub Principale:</span>
+                      <span className="text-slate-200 font-bold truncate text-right max-w-[140px] text-xs block" title={airline.main_hub || undefined}>
                         {airline.main_hub || "Non inserito"}
                       </span>
                     </div>

@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { getCountryIsoCode } from "@/lib/country";
 
 interface Airport {
   id: string;
@@ -260,7 +261,7 @@ export default function AirportsPage() {
         {/* GRIGLIA DEGLI AEROPORTI */}
         {filteredAndSortedAirports.length > 0 ? (
           <div className="flex flex-col gap-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredAndSortedAirports.slice(0, visibleCount).map((airport) => {
                 return (
                   <div 
@@ -286,10 +287,26 @@ export default function AirportsPage() {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
                       
-                      {/* Code Badges overlapping image */}
-                      <div className="absolute top-3.5 right-3.5 bg-slate-950/95 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-800 font-mono text-center shadow-lg flex-shrink-0 min-w-[60px] z-10">
-                        <span className="text-emerald-400 font-black text-sm tracking-wider block leading-none">{airport.iata_code}</span>
-                        <span className="text-slate-450 block text-[11px] uppercase font-black mt-1 leading-none">{airport.icao_code}</span>
+                      {/* Code Badges & Flag overlapping image */}
+                      <div className="absolute top-3.5 right-3.5 bg-slate-950/95 backdrop-blur-md px-3 py-2.5 rounded-xl border border-slate-800 font-mono text-center shadow-lg flex flex-col items-center gap-2 z-10">
+                        <div>
+                          <span className="text-emerald-400 font-black text-sm tracking-wider block leading-none">{airport.iata_code}</span>
+                          <span className="text-slate-450 block text-[11px] uppercase font-black mt-1 leading-none">{airport.icao_code}</span>
+                        </div>
+                        
+                        {/* Bandiera Nazione con Tooltip */}
+                        <div className="relative group self-center border-t border-slate-800 pt-1.5 w-full flex justify-center">
+                          <div className="w-6 h-4 rounded shadow-sm border border-slate-800 overflow-hidden bg-slate-950 flex items-center justify-center cursor-help">
+                            <img 
+                              src={`https://flagcdn.com/${getCountryIsoCode(airport.country)}.svg`} 
+                              alt={airport.country}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <span className="pointer-events-none absolute bottom-full mb-2 w-max bg-slate-900 border border-slate-800 text-[10px] uppercase font-mono tracking-widest text-slate-200 px-2 py-1 rounded shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
+                            {airport.country}
+                          </span>
+                        </div>
                       </div>
                     </div>
 

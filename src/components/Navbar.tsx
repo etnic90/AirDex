@@ -60,12 +60,6 @@ export default function Navbar({ lang }: { lang: string }) {
             Confronto
           </Link>
           <Link 
-            href={`/${lang}/stats`} 
-            className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/stats') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
-          >
-            Telemetria
-          </Link>
-          <Link 
             href={`/${lang}/timeline`} 
             className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/timeline') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
           >

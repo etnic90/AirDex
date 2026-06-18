@@ -32,103 +32,172 @@ export default async function BlogPage({
     .eq("is_published", true)
     .order("published_at", { ascending: false });
 
+  const isIt = lang === "it";
+
   return (
-    <main className="min-h-screen bg-slate-950 p-6 md:p-10 flex flex-col items-center">
-      <div className="w-full max-w-5xl">
+    <main className="min-h-screen bg-slate-950 p-6 md:p-10 text-white relative overflow-hidden font-sans">
+      {/* Background Grids */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-[400px] bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(6,182,212,0.03),transparent)] pointer-events-none z-0"></div>
+
+      <div className="max-w-[1600px] w-[95%] mx-auto relative z-10 px-4 md:px-10">
+        
         {/* Intestazione */}
-        <div className="mb-12 border-b border-slate-800 pb-6 relative">
-          <div className="absolute top-0 left-0 w-20 h-[2px] bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
-          <h1 className="text-3xl md:text-5xl font-black text-white uppercase tracking-wider mb-2">
+        <div className="mb-12 border-b border-slate-900 pb-8">
+          <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-2 font-mono">
             Aviation News & Tech
           </h1>
-          <p className="text-slate-400 font-mono text-sm">
-            Rapporti telemetrici, analisi e approfondimenti editoriali.
+          <p className="text-slate-400 font-mono text-sm uppercase tracking-wider">
+            {isIt ? "Rapporti telemetrici, analisi e approfondimenti editoriali." : "Telemetry reports, analyses, and editorial deep-dives."}
           </p>
         </div>
 
-        {error || !articles || articles.length === 0 ? (
-          <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-16 text-center text-slate-500 font-mono text-sm">
-            Nessun articolo pubblicato nel database.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {articles.map((article) => {
-              const formattedDate = article.published_at
-                ? new Date(article.published_at).toLocaleDateString(lang, {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })
-                : "N/D";
+        {/* CONTENUTO IN 2 COLONNE: ARTICOLI (9/12) + SIDEBAR (3/12) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start w-full">
+          
+          {/* COLONNA SINISTRA: GRID ARTICOLI */}
+          <div className="lg:col-span-9 w-full">
+            {error || !articles || articles.length === 0 ? (
+              <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl p-16 text-center text-slate-500 font-mono text-sm shadow-inner">
+                {isIt ? "Nessun articolo pubblicato nel database." : "No articles published in database."}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {articles.map((article) => {
+                  const formattedDate = article.published_at
+                    ? new Date(article.published_at).toLocaleDateString(lang, {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "N/D";
 
-              return (
-                <article
-                  key={article.id}
-                  className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-lg hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(6,182,212,0.1)] transition-all duration-300 flex flex-col group relative"
-                >
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-cyan-500 transition-colors" />
-
-                  {/* Immagine di Copertina */}
-                  <div className="relative h-48 md:h-56 bg-slate-950 overflow-hidden">
-                    {article.cover_image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={article.cover_image_url}
-                        alt={article.title}
-                        className="w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-slate-900/50">
-                        <span className="text-slate-700 font-mono text-xs uppercase tracking-widest">
-                          No Image
-                        </span>
-                      </div>
-                    )}
-                    <span className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur-md text-cyan-400 border border-cyan-800/60 px-3 py-1 rounded text-[10px] font-mono uppercase tracking-wider">
-                      Analisi
-                    </span>
-                  </div>
-
-                  {/* Contenuto Card */}
-                  <div className="p-6 flex-grow flex flex-col justify-between">
-                    <div>
-                      <span className="text-slate-500 font-mono text-xs block mb-2">
-                        {formattedDate} — Di {article.author || "Redazione"}
-                      </span>
-                      <h2 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors line-clamp-2">
-                        {article.title}
-                      </h2>
-                      <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed mb-6">
-                        {article.content}
-                      </p>
-                    </div>
-
-                    <Link
-                      href={`/${lang}/blog/${article.slug}`}
-                      className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-mono text-xs uppercase tracking-widest group/link transition-colors cursor-pointer"
+                  return (
+                    <article
+                      key={article.id}
+                      className="bg-slate-900/60 border border-slate-800/80 hover:border-cyan-500/50 rounded-3xl overflow-hidden shadow-lg hover:shadow-[0_0_35px_rgba(6,182,212,0.1)] transition-all duration-300 flex flex-col justify-between group relative"
                     >
-                      Leggi Tracciato
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 group-hover/link:translate-x-1 transition-transform"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </Link>
-                  </div>
-                </article>
-              );
-            })}
+                      <div>
+                        {/* Immagine di Copertina */}
+                        <div className="relative h-48 bg-slate-950 overflow-hidden">
+                          {article.cover_image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={article.cover_image_url}
+                              alt={article.title}
+                              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-slate-900/50">
+                              <span className="text-slate-700 font-mono text-xs uppercase tracking-widest">
+                                No Image
+                              </span>
+                            </div>
+                          )}
+                          <span className="absolute top-4 right-4 bg-slate-950/90 backdrop-blur-md text-cyan-400 border border-cyan-850 px-3 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider font-bold">
+                            {isIt ? "Analisi" : "Analysis"}
+                          </span>
+                        </div>
+
+                        {/* Contenuto Card */}
+                        <div className="p-6">
+                          <span className="text-slate-500 font-mono text-xs block mb-2">
+                            {formattedDate} — Di {article.author || "Redazione"}
+                          </span>
+                          <h2 className="text-lg font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors line-clamp-2 uppercase font-mono tracking-tight leading-snug">
+                            {article.title}
+                          </h2>
+                          <p className="text-slate-400 text-xs font-semibold leading-relaxed line-clamp-3 font-sans">
+                            {article.content}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="px-6 pb-6 pt-2">
+                        <Link
+                          href={`/${lang}/blog/${article.slug}`}
+                          className="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-305 font-mono text-xs uppercase tracking-widest group/link transition-colors cursor-pointer font-bold"
+                        >
+                          {isIt ? "Leggi Tracciato" : "View Article"} &rarr;
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* COLONNA DESTRA: SIDEBAR COMPLETA */}
+          <aside className="lg:col-span-3 w-full flex flex-col gap-8 lg:sticky lg:top-24">
+            
+            {/* Widget 1: Ricerca (Decorativa) */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-sm">
+              <h4 className="text-xs font-black text-white uppercase tracking-widest mb-4 font-mono">
+                {isIt ? "Cerca Articolo" : "Search Blog"}
+              </h4>
+              <div className="relative">
+                <input 
+                  type="text" 
+                  disabled
+                  placeholder={isIt ? "Cerca news..." : "Search news..."}
+                  className="w-full p-3.5 rounded-xl bg-slate-950 text-slate-500 border border-slate-900 text-xs focus:outline-none placeholder:text-slate-700 font-mono cursor-not-allowed"
+                />
+              </div>
+            </div>
+
+            {/* Widget 2: Categorie AvGeek */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-sm">
+              <h4 className="text-xs font-black text-white uppercase tracking-widest mb-4 font-mono">
+                {isIt ? "Aree Tematiche" : "Categories"}
+              </h4>
+              <div className="flex flex-col gap-2.5 font-mono text-xs text-slate-400">
+                <div className="flex justify-between py-1 border-b border-slate-950 hover:text-cyan-400 transition-colors cursor-pointer">
+                  <span>OPERAZIONI FLOTTE</span>
+                  <span className="text-slate-600 font-bold">12</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-950 hover:text-cyan-400 transition-colors cursor-pointer">
+                  <span>INGEGNERIA AVIONICA</span>
+                  <span className="text-slate-600 font-bold">8</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-950 hover:text-cyan-400 transition-colors cursor-pointer">
+                  <span>GUIDE SPOTTER</span>
+                  <span className="text-slate-600 font-bold">15</span>
+                </div>
+                <div className="flex justify-between py-1 hover:text-cyan-400 transition-colors cursor-pointer">
+                  <span>REGISTRI AEROPORTUALI</span>
+                  <span className="text-slate-600 font-bold">6</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Widget 3: Newsletter Iscrizione Rete */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 relative overflow-hidden group shadow-inner">
+              <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none"></div>
+              
+              <h4 className="text-xs font-black text-white uppercase tracking-widest mb-3 font-mono relative z-10">
+                {isIt ? "Newsletter Avionica" : "Avionics Feed"}
+              </h4>
+              <p className="text-slate-400 text-xs leading-relaxed mb-4 relative z-10 font-sans">
+                {isIt 
+                  ? "Ricevi direttamente via e-mail i piani di volo e le telemetrie degli aeromobili più rari del mondo."
+                  : "Get flight schedules and rare aircraft telemetries delivered straight to your terminal."}
+              </p>
+              
+              <input 
+                type="email" 
+                placeholder="pilot@airdex.com"
+                className="w-full p-3.5 rounded-xl bg-slate-950 text-white border border-slate-900 focus:border-cyan-500 focus:outline-none text-xs font-mono mb-3 relative z-10 placeholder:text-slate-755"
+              />
+              <button className="w-full py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 hover:border-cyan-500 text-cyan-400 hover:text-white font-mono text-[10px] uppercase tracking-wider font-bold transition-all relative z-10 cursor-pointer">
+                {isIt ? "Registra Canale" : "Subscribe Terminal"}
+              </button>
+            </div>
+
+          </aside>
+
+        </div>
+
       </div>
     </main>
   );
