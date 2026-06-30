@@ -15,9 +15,15 @@ export default function Navbar({ lang }: { lang: string }) {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<NavbarProfile | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Helper per evidenziare la rotta attiva
   const isActive = (path: string) => pathname.includes(path);
+
+  // Chiude il menu mobile quando cambia la pagina
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     // Caricamento sessione iniziale
@@ -186,8 +192,78 @@ export default function Navbar({ lang }: { lang: string }) {
               </div>
             </div>
           ) : null}
+
+          {/* Tasto Hamburger per Mobile */}
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden flex items-center p-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white bg-slate-900/60 focus:outline-none transition-colors ml-4 cursor-pointer"
+            aria-label="Toggle Menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {isOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* MENU MOBILE SLIDE-DOWN */}
+      {isOpen && (
+        <div className="lg:hidden border-t border-slate-900 bg-slate-950/95 backdrop-blur-xl px-6 py-6 flex flex-col gap-4 font-mono text-sm tracking-wider uppercase z-50 absolute left-0 top-20 w-full shadow-2xl animate-fade-in border-b border-slate-800/50">
+          <Link 
+            href={`/${lang}`} 
+            onClick={() => setIsOpen(false)}
+            className={`py-2 border-b border-slate-900/50 transition-colors ${isActive('/radar') || isActive('/compare') || isActive('/stats') || isActive('/blog') || isActive('/airlines') || isActive('/airports') || isActive('/timeline') ? 'text-slate-400' : 'text-cyan-400 font-bold'}`}
+          >
+            Hangar
+          </Link>
+          <Link 
+            href={`/${lang}/radar`} 
+            onClick={() => setIsOpen(false)}
+            className={`py-2 border-b border-slate-900/50 transition-colors ${isActive('/radar') ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}
+          >
+            Aerei
+          </Link>
+          <Link 
+            href={`/${lang}/airlines`} 
+            onClick={() => setIsOpen(false)}
+            className={`py-2 border-b border-slate-900/50 transition-colors ${isActive('/airlines') ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}
+          >
+            Aerolinee
+          </Link>
+          <Link 
+            href={`/${lang}/airports`} 
+            onClick={() => setIsOpen(false)}
+            className={`py-2 border-b border-slate-900/50 transition-colors ${isActive('/airports') ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}
+          >
+            Aeroporti
+          </Link>
+          <Link 
+            href={`/${lang}/compare`} 
+            onClick={() => setIsOpen(false)}
+            className={`py-2 border-b border-slate-900/50 transition-colors ${isActive('/compare') ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}
+          >
+            Confronto
+          </Link>
+          <Link 
+            href={`/${lang}/timeline`} 
+            onClick={() => setIsOpen(false)}
+            className={`py-2 border-b border-slate-900/50 transition-colors ${isActive('/timeline') ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}
+          >
+            Timeline
+          </Link>
+          <Link 
+            href={`/${lang}/blog`} 
+            onClick={() => setIsOpen(false)}
+            className={`py-2 transition-colors ${isActive('/blog') ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}
+          >
+            News
+          </Link>
+        </div>
+      )}
     </nav>
   );
 }
