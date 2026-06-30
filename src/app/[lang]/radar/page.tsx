@@ -1,5 +1,36 @@
 import { Suspense } from "react";
 import RadarClient from "./RadarClient";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  const isIt = lang === "it";
+  const isEs = lang === "es";
+  const isFr = lang === "fr";
+
+  let title = "Aircraft Registry | AirDex";
+  let description = "Real-time civil aviation database search and advanced filtering. Explore all active and historic fleet data.";
+
+  if (isIt) {
+    title = "Registro Aeromobili | AirDex";
+    description = "Ricerca e filtraggio avanzato del database di aviazione civile in tempo reale. Esplora i dati delle flotte attive e storiche.";
+  } else if (isEs) {
+    title = "Registro de Aeronaves | AirDex";
+    description = "Búsqueda y filtrado avanzado en tiempo real de la base de datos de aviación civil. Explora flotas activas e históricas.";
+  } else if (isFr) {
+    title = "Registre des Aéronefs | AirDex";
+    description = "Recherche et filtrage avancés en temps réel de la base de données de l'aviation civile. Explorez les flottes actives et historiques.";
+  }
+
+  return {
+    title,
+    description,
+  };
+}
 
 // 1. Il Guscio Server (Prepara l'involucro e passa la lingua)
 export default async function RadarPage({ params }: { params: Promise<{ lang: string }> }) {
@@ -14,13 +45,16 @@ export default async function RadarPage({ params }: { params: Promise<{ lang: st
       </div>
       
       <div className="max-w-[1600px] w-[95%] mx-auto px-4 relative z-10">
-        <div className="mb-8">
-          <h1 className="text-4xl font-black text-white uppercase tracking-widest flex items-center gap-4">
-            <span className="w-3 h-3 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_15px_#06b6d4]"></span>
-            Radar Centrale
+        <div className="mb-10 text-center md:text-left border-b border-slate-900 pb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(6,182,212,0.05)] font-mono font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
+            Aviation Fleet Database Active
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-2 leading-none font-mono">
+            Registro Aeromobili
           </h1>
-          <p className="text-slate-400 font-mono text-xs mt-2 uppercase tracking-widest">
-            Sistema di intercettazione flotte e filtraggio dati
+          <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
+            Database completo dei modelli di aerei commerciali e storici con parametri di ricerca e filtri avanzati.
           </p>
         </div>
 

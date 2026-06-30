@@ -22,6 +22,7 @@ interface AircraftModel {
   era: string | null;
   house_livery_url: string | null;
   launch_customer_livery_url: string | null;
+  image_needs_review?: boolean;
   manufacturers?: {
     name: string;
   } | null;
@@ -67,6 +68,7 @@ export default function AdminAircraftsManager() {
   const [era, setEra] = useState("JET_AGE");
   const [houseLiveryUrl, setHouseLiveryUrl] = useState("");
   const [launchCustomerLiveryUrl, setLaunchCustomerLiveryUrl] = useState("");
+  const [imageNeedsReview, setImageNeedsReview] = useState(false);
 
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const triviaTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -125,6 +127,7 @@ export default function AdminAircraftsManager() {
   }, [supabase, currentPage, search]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAircrafts();
   }, [fetchAircrafts]);
 
@@ -151,6 +154,7 @@ export default function AdminAircraftsManager() {
     setEra("JET_AGE");
     setHouseLiveryUrl("");
     setLaunchCustomerLiveryUrl("");
+    setImageNeedsReview(false);
     setView("edit");
   };
 
@@ -172,6 +176,7 @@ export default function AdminAircraftsManager() {
     setEra(aircraft.era || "JET_AGE");
     setHouseLiveryUrl(aircraft.house_livery_url || "");
     setLaunchCustomerLiveryUrl(aircraft.launch_customer_livery_url || "");
+    setImageNeedsReview(aircraft.image_needs_review || false);
     setView("edit");
   };
 
@@ -214,6 +219,7 @@ export default function AdminAircraftsManager() {
       era,
       house_livery_url: houseLiveryUrl.trim() !== "" ? houseLiveryUrl.trim() : null,
       launch_customer_livery_url: launchCustomerLiveryUrl.trim() !== "" ? launchCustomerLiveryUrl.trim() : null,
+      image_needs_review: imageNeedsReview,
     };
 
     if (editingAircraft) {
@@ -617,6 +623,18 @@ export default function AdminAircraftsManager() {
                 <span>🖼️</span> Immagini e Livree
               </h3>
               <div className="space-y-4">
+                <div className="flex items-center gap-2.5 py-1.5 px-3 bg-red-950/20 border border-red-900/30 rounded-xl">
+                  <input
+                    type="checkbox"
+                    id="imageNeedsReview"
+                    checked={imageNeedsReview}
+                    onChange={(e) => setImageNeedsReview(e.target.checked)}
+                    className="w-4 h-4 rounded bg-slate-950 border-slate-800 text-red-500 focus:ring-red-500 focus:ring-offset-slate-900 focus:ring-2 cursor-pointer"
+                  />
+                  <label htmlFor="imageNeedsReview" className="text-red-400 font-mono text-[10px] font-bold uppercase tracking-wider cursor-pointer select-none">
+                    🚩 Segnala immagine (Richiede revisione)
+                  </label>
+                </div>
                 <div className="space-y-1.5">
                   <label className="block text-slate-500 uppercase font-bold">URL Foto Livrea Standard (House)</label>
                   <input
@@ -722,8 +740,13 @@ export default function AdminAircraftsManager() {
                         )}
                       </td>
                       <td className="p-4 max-w-xs font-sans">
-                        <span className="text-cyan-400 font-bold block text-[10px] font-mono uppercase tracking-wider">
+                        <span className="text-cyan-400 font-bold block text-[10px] font-mono uppercase tracking-wider flex items-center gap-2">
                           {aircraft.manufacturers?.name || "Aviation"}
+                          {aircraft.image_needs_review && (
+                            <span className="px-1.5 py-0.5 rounded bg-red-950 border border-red-500/40 text-red-400 text-[8px] font-black uppercase tracking-widest animate-pulse flex items-center gap-0.5">
+                              <span>🚩</span> REVISIONE
+                            </span>
+                          )}
                         </span>
                         <span className="text-white font-extrabold text-sm block mt-0.5">{aircraft.model_name}</span>
                       </td>

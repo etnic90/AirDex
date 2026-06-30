@@ -73,7 +73,7 @@ export default function AdminGuard({ children, lang }: AdminGuardProps) {
               href={`/${lang}/profile`}
               className="bg-cyan-950 border border-cyan-800 text-cyan-400 hover:bg-cyan-900 hover:text-cyan-300 py-3 rounded-xl transition-all uppercase tracking-widest text-xs font-bold"
             >
-              Ritorna all'Hangar Pilota
+              Ritorna all&apos;Hangar Pilota
             </Link>
             <button
               onClick={async () => {

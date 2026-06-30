@@ -24,7 +24,11 @@ export interface AircraftModel {
   manufacturers?: Manufacturer;
   era?: string;
   description?: string;
+  description_it?: string;
+  description_en?: string;
+  description_es?: string;
+  description_fr?: string;
   trivia?: string[];
-  extended_stats?: any;
+  extended_stats?: Record<string, unknown>;
    
 }

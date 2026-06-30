@@ -5,13 +5,23 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
+interface UserProfile {
+  id: string;
+  is_pro: boolean;
+  username?: string;
+  avatar_url?: string;
+  created_at?: string;
+  pilot_callsign?: string;
+  avatar_id?: string;
+}
+
 export default function ProPage() {
   const params = useParams();
   const router = useRouter();
   const lang = params?.lang || "en";
 
-  const [user, setUser] = useState<any | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
+  const [user, setUser] = useState<import("@supabase/supabase-js").User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -55,6 +65,10 @@ export default function ProPage() {
 
     // Simula pagamento Stripe
     setTimeout(async () => {
+      if (!user) {
+        setCheckoutLoading(false);
+        return;
+      }
       setCheckoutMessage("Autorizzazione pagamento completata! Aggiornamento licenza...");
       
       const { error } = await supabase
@@ -75,6 +89,7 @@ export default function ProPage() {
   };
 
   const handleCancelPro = async () => {
+    if (!user) return;
     if (!confirm("Sei sicuro di voler disattivare la tua licenza PRO? Perderai tutti i vantaggi.")) return;
     setLoading(true);
     const { error } = await supabase
@@ -83,7 +98,7 @@ export default function ProPage() {
       .eq("id", user.id);
 
     if (!error) {
-      setProfile((prev: any) => prev ? { ...prev, is_pro: false } : null);
+      setProfile((prev) => prev ? { ...prev, is_pro: false } : null);
     }
     setLoading(false);
   };

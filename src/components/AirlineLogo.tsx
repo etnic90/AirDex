@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import Image from "next/image";
+
 interface AirlineLogoProps {
   src: string | null;
   alt: string;
@@ -23,10 +25,11 @@ export default function AirlineLogo({ src, alt, airlineName }: AirlineLogoProps)
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       src={src}
       alt={alt}
+      width={180}
+      height={56}
       className="max-w-full max-h-full object-contain relative z-10"
       onError={() => {
         setHasError(true);

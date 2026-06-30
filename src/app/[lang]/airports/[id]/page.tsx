@@ -5,34 +5,39 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import AirlineLogo from "@/components/AirlineLogo";
+import { getCountryIsoCode } from "@/lib/country";
 
-// Helper per convertire il nome esteso nel codice ISO a 2 lettere per le bandiere.
-function getCountryIsoCode(country: string): string {
-  if (!country) return "un";
-  const normalized = country.toLowerCase().trim();
-  const map: Record<string, string> = {
-    "united states": "us", "usa": "us",
-    "germany": "de",
-    "united arab emirates": "ae", "uae": "ae",
-    "italy": "it", "italia": "it",
-    "france": "fr",
-    "united kingdom": "gb", "uk": "gb",
-    "spain": "es",
-    "japan": "jp",
-    "china": "cn",
-    "canada": "ca",
-    "australia": "au",
-    "brazil": "br",
-    "india": "in",
-    "netherlands": "nl",
-    "switzerland": "ch",
-    "singapore": "sg",
-    "qatar": "qa",
-    "turkey": "tr",
-    "south korea": "kr",
-  };
-  return map[normalized] || "un"; 
-}
+
+const getAirportFallbackImage = (airport: { name?: string | null; runways_count?: number | null; elevation_ft?: number | null; country?: string | null }) => {
+  const name = (airport.name || "").toLowerCase();
+  const country = (airport.country || "").toLowerCase();
+  const runways = airport.runways_count || 1;
+  const elevation = airport.elevation_ft || 0;
+
+  // 1. Coastal / Island airports
+  const islandKeywords = ["maldives", "seychelles", "hawaii", "caribbean", "bahamas", "bora bora", "tahiti", "fiji", "ibiza", "palma", "malta", "aranuka", "agaun", "island", "isola", "islas", "kiribati"];
+  if (islandKeywords.some(kw => name.includes(kw) || country.includes(kw))) {
+    return "/images/airports/coastal_airport.jpg";
+  }
+
+  // 2. High Altitude / Mountain airports
+  if (elevation > 5000 || name.includes("mountain") || name.includes("alpi") || name.includes("nepal") || name.includes("kathmandu") || name.includes("quiché") || name.includes("andes") || name.includes("lhasa") || name.includes("bisha")) {
+    return "/images/airports/mountain_airport.jpg";
+  }
+
+  // 3. Small general aviation / remote airstrips
+  if (runways === 1 && !name.includes("internazionale") && !name.includes("international")) {
+    return "/images/airports/remote_airstrip.jpg";
+  }
+
+  // 4. Large international hubs
+  if (runways >= 2 || name.includes("internazionale") || name.includes("international") || name.includes("hub") || name.includes("los angeles") || name.includes("lione") || name.includes("saint exupéry")) {
+    return "/images/airports/airport_hub_large.jpg";
+  }
+
+  // 5. Default regional
+  return "/images/airports/regional_airport.jpg";
+};
 
 // Helper per convertire coordinate decimali in DMS format
 function decimalToDMS(dec: number | null, isLat: boolean): string {
@@ -155,6 +160,10 @@ interface AirportDetail {
   atis_frequency: string | null;
   tower_frequency: string | null;
   history: string | null;
+  history_it?: string | null;
+  history_en?: string | null;
+  history_es?: string | null;
+  history_fr?: string | null;
   main_alliances: string | null;
   total_gates: number | null;
   runway_details: string | null;
@@ -186,6 +195,8 @@ export default function AirportDetailPage() {
   const [airport, setAirport] = useState<AirportDetail | null>(null);
   const [hubAirlines, setHubAirlines] = useState<HubAirline[]>([]);
   const [loading, setLoading] = useState(true);
+  const [allAirlines, setAllAirlines] = useState<{ id: string; name: string }[]>([]);
+  const [allModels, setAllModels] = useState<{ id: string; model_name: string }[]>([]);
   
   const [activeTab, setActiveTab] = useState<"overview" | "runways" | "airlines" | "history">("overview");
 
@@ -204,10 +215,152 @@ export default function AirportDetailPage() {
 
       if (airportData) setAirport(airportData as AirportDetail);
       if (hubsData) setHubAirlines(hubsData as unknown as HubAirline[]);
+
+      // Fetch all airlines with paginated requests to bypass the 1000 limit
+      let airlinesList: { id: string; name: string }[] = [];
+      let start = 0;
+      const size = 1000;
+      while (true) {
+        const { data: chunk } = await supabase
+          .from("airlines")
+          .select("id, name")
+          .order("name")
+          .range(start, start + size - 1);
+        if (!chunk || chunk.length === 0) break;
+        airlinesList = airlinesList.concat(chunk);
+        if (chunk.length < size) break;
+        start += size;
+      }
+      setAllAirlines(airlinesList);
+
+      // Fetch all aircraft models
+      const { data: modelsData } = await supabase.from("aircraft_models").select("id, model_name");
+      if (modelsData) setAllModels(modelsData);
+
       setLoading(false);
     };
     fetchAirportData();
   }, [supabase, id]);
+
+  const findMatchingLink = (val: string): string | null => {
+    const cleanVal = val.trim().toLowerCase();
+    if (!cleanVal || cleanVal.length < 2) return null;
+
+    // 1. Check aircraft models
+    for (const plane of allModels) {
+      const pName = plane.model_name.toLowerCase();
+      if (cleanVal === pName || (cleanVal.length > 5 && pName.includes(cleanVal)) || (pName.length > 5 && cleanVal.includes(pName))) {
+        return `/${lang}/aircraft/${plane.id}`;
+      }
+    }
+
+    // 2. Check airlines
+    for (const airline of allAirlines) {
+      const aName = airline.name.toLowerCase();
+      if (cleanVal === aName || (cleanVal.length > 4 && aName.includes(cleanVal)) || (aName.length > 4 && cleanVal.includes(aName))) {
+        return `/${lang}/airlines/${airline.id}`;
+      }
+    }
+
+    return null;
+  };
+
+  const parseInlineFormatting = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        const cleanVal = part.slice(2, -2).trim();
+        const matchingLink = findMatchingLink(cleanVal);
+        if (matchingLink) {
+          return (
+            <Link 
+              key={idx} 
+              href={matchingLink} 
+              className="text-emerald-400 font-extrabold hover:text-emerald-350 hover:underline transition-colors underline-offset-4 decoration-emerald-500/50"
+            >
+              {cleanVal}
+            </Link>
+          );
+        }
+        return <strong key={idx} className="text-emerald-300 font-extrabold">{cleanVal}</strong>;
+      }
+      return part;
+    });
+  };
+
+  const renderLinkedHistoryParagraphs = useMemo(() => {
+    const localizedHistory = airport ? ((airport[`history_${lang}` as keyof AirportDetail] as string | null) || airport.history) : null;
+    if (!localizedHistory) return [];
+
+    const lines = localizedHistory.split('\n');
+    const result = [];
+    let currentParagraphLines: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('###')) {
+        if (currentParagraphLines.length > 0) {
+          result.push({
+            type: 'paragraph',
+            text: currentParagraphLines.join('\n')
+          });
+          currentParagraphLines = [];
+        }
+        result.push({
+          type: 'heading-3',
+          text: line.replace(/^###\s*/, '')
+        });
+      } else if (line.startsWith('##')) {
+        if (currentParagraphLines.length > 0) {
+          result.push({
+            type: 'paragraph',
+            text: currentParagraphLines.join('\n')
+          });
+          currentParagraphLines = [];
+        }
+        result.push({
+          type: 'heading-2',
+          text: line.replace(/^##\s*/, '')
+        });
+      } else if (line.startsWith('#')) {
+        if (currentParagraphLines.length > 0) {
+          result.push({
+            type: 'paragraph',
+            text: currentParagraphLines.join('\n')
+          });
+          currentParagraphLines = [];
+        }
+        result.push({
+          type: 'heading-1',
+          text: line.replace(/^#\s*/, '')
+        });
+      } else if (line === '') {
+        if (currentParagraphLines.length > 0) {
+          result.push({
+            type: 'paragraph',
+            text: currentParagraphLines.join('\n')
+          });
+          currentParagraphLines = [];
+        }
+      } else {
+        currentParagraphLines.push(lines[i]);
+      }
+    }
+
+    if (currentParagraphLines.length > 0) {
+      result.push({
+        type: 'paragraph',
+        text: currentParagraphLines.join('\n')
+      });
+    }
+
+    return result.map((item, idx) => ({
+      index: idx,
+      type: item.type,
+      nodes: parseInlineFormatting(item.text)
+    }));
+  }, [airport, allAirlines, allModels, lang]);
 
   // Dati computati per gli AvGeek
   const runwaysList = useMemo(() => {
@@ -276,11 +429,11 @@ export default function AirportDetailPage() {
           </div>
 
           {/* IATA & ICAO Badges */}
-          <div className="flex gap-3 shrink-0">
+          <div className="flex flex-wrap gap-2.5 sm:gap-3 sm:shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
             {/* Country flag */}
-            <div className="bg-slate-900/65 border border-slate-800 rounded-2xl px-6 py-4.5 flex flex-col items-center justify-center shadow-lg relative group">
-              <span className="text-xs text-slate-400 uppercase font-black block mb-1.5 font-mono">Nazione</span>
-              <div className="w-10 h-7 rounded shadow-sm border border-slate-800 overflow-hidden bg-slate-950 flex items-center justify-center">
+            <div className="bg-slate-900/65 border border-slate-800 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 flex flex-col items-center justify-center shadow-lg relative group flex-1 sm:flex-initial min-w-[70px]">
+              <span className="text-[10px] sm:text-xs text-slate-400 uppercase font-black block mb-1 sm:mb-1.5 font-mono">Nazione</span>
+              <div className="w-8 sm:w-10 h-5.5 sm:h-7 rounded shadow-sm border border-slate-850 overflow-hidden bg-slate-950 flex items-center justify-center">
                 <img 
                   src={`https://flagcdn.com/${getCountryIsoCode(airport.country)}.svg`} 
                   alt={airport.country}
@@ -290,36 +443,27 @@ export default function AirportDetailPage() {
             </div>
 
             {/* Badge IATA */}
-            <div className="bg-slate-900/65 border border-slate-800 rounded-2xl px-7 py-4.5 text-center shadow-lg min-w-[90px]">
-              <span className="text-xs text-slate-400 uppercase font-black block mb-1.5 font-mono">IATA</span>
-              <span className="text-emerald-400 font-black text-2xl tracking-wider block leading-none font-mono">{airport.iata_code}</span>
+            <div className="bg-slate-900/65 border border-slate-800 rounded-2xl px-4 sm:px-7 py-3 sm:py-4.5 text-center shadow-lg flex-1 sm:flex-initial min-w-[80px] sm:min-w-[90px]">
+              <span className="text-[10px] sm:text-xs text-slate-400 uppercase font-black block mb-1 sm:mb-1.5 font-mono">IATA</span>
+              <span className="text-emerald-400 font-black text-xl sm:text-2xl tracking-wider block leading-none font-mono">{airport.iata_code}</span>
             </div>
             
             {/* Badge ICAO */}
-            <div className="bg-slate-900/65 border border-slate-800 rounded-2xl px-7 py-4.5 text-center shadow-lg min-w-[100px]">
-              <span className="text-xs text-slate-400 uppercase font-black block mb-1.5 font-mono">ICAO</span>
-              <span className="text-purple-400 font-black text-2xl tracking-wider block leading-none font-mono">{airport.icao_code}</span>
+            <div className="bg-slate-900/65 border border-slate-800 rounded-2xl px-4 sm:px-7 py-3 sm:py-4.5 text-center shadow-lg flex-1 sm:flex-initial min-w-[90px] sm:min-w-[100px]">
+              <span className="text-[10px] sm:text-xs text-slate-400 uppercase font-black block mb-1 sm:mb-1.5 font-mono">ICAO</span>
+              <span className="text-purple-400 font-black text-xl sm:text-2xl tracking-wider block leading-none font-mono">{airport.icao_code}</span>
             </div>
           </div>
         </div>
 
         {/* HERO IMAGE BANNERS */}
         <div className="w-full h-80 md:h-[450px] bg-slate-950 rounded-3xl border border-slate-900 overflow-hidden relative mb-10 shadow-2xl group">
-          {airport.image_url && airport.image_url !== 'NOT_FOUND' ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={airport.image_url}
-              alt={airport.name}
-              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-1000"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-slate-900/40 to-slate-950/60 flex flex-col items-center justify-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-slate-700 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-              <span className="text-[10px] text-slate-650 tracking-[0.2em] font-mono uppercase font-black">Nessun Rilevamento Fotografico Disponibile</span>
-            </div>
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={airport.image_url && airport.image_url !== 'NOT_FOUND' ? airport.image_url : getAirportFallbackImage(airport)}
+            alt={airport.name}
+            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-1000"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent"></div>
           
           {/* Tagline / ICAO sovrapposto in basso a sinistra */}
@@ -346,7 +490,7 @@ export default function AirportDetailPage() {
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as "overview" | "runways" | "airlines" | "history")}
                   className={`pb-4 text-sm font-black transition-all relative ${
                     activeTab === tab.id ? "text-white" : "text-slate-500 hover:text-slate-300"
                   }`}
@@ -369,7 +513,7 @@ export default function AirportDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                     
                     {/* Capacità Flussi */}
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 flex flex-col gap-6">
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col gap-6">
                       <h3 className="text-xs font-black text-white uppercase tracking-widest border-b border-slate-900 pb-3">Capacità e Flussi</h3>
                       
                       <div className="w-full">
@@ -394,7 +538,7 @@ export default function AirportDetailPage() {
                     </div>
 
                     {/* Ground Services (AvGeek Spec) */}
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between">
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
                       <h3 className="text-xs font-black text-white uppercase tracking-widest border-b border-slate-900 pb-3">Attrezzature di Terra</h3>
                       
                       {groundEquip && (
@@ -426,7 +570,7 @@ export default function AirportDetailPage() {
                   </div>
 
                   {/* Spotting Log Alert Box */}
-                  <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 relative overflow-hidden">
+                  <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 relative overflow-hidden">
                     <h3 className="text-xs font-black text-white uppercase tracking-widest border-b border-slate-900 pb-3 mb-4 flex items-center gap-2">
                       📷 SPOTTER CORNER & INFO SCATTO
                     </h3>
@@ -522,28 +666,40 @@ export default function AirportDetailPage() {
 
               {/* TAB 4: STORIA & PROFILO */}
               {activeTab === "history" && (
-                <div className="flex flex-col gap-6 w-full font-sans">
-                  {airport.history ? (
-                    airport.history
-                      .split(/\n\s*\n/)
-                      .map((p) => p.trim())
-                      .filter((p) => p.length > 0)
-                      .map((paragraph, index) => (
-                        <div 
-                          key={index}
-                          className="bg-slate-900/60 border border-slate-800 hover:border-emerald-500/35 rounded-3xl p-8 backdrop-blur-sm transition-all duration-300 shadow-md relative overflow-hidden"
-                        >
-                          <div className="flex items-center gap-2 mb-3.5 font-mono text-xs uppercase tracking-wider text-slate-400 font-bold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70"></span>
-                            Cronologia Scalo // Sezione {String(index + 1).padStart(2, "0")}
-                          </div>
-                          <p className="text-slate-100 text-base md:text-lg leading-relaxed text-left">
-                            {paragraph}
+                <div className="w-full font-sans">
+                  {renderLinkedHistoryParagraphs.length > 0 ? (
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 sm:p-10 backdrop-blur-sm shadow-md space-y-6">
+                      {renderLinkedHistoryParagraphs.map((block) => {
+                        if (block.type === 'heading-1') {
+                          return (
+                            <h2 key={block.index} className="text-2xl sm:text-3xl font-black text-white mt-8 mb-4 border-b border-slate-800 pb-3 tracking-tight uppercase font-mono">
+                              {block.nodes}
+                            </h2>
+                          );
+                        }
+                        if (block.type === 'heading-2') {
+                          return (
+                            <h3 key={block.index} className="text-xl sm:text-2xl font-extrabold text-white mt-7 mb-3 tracking-tight font-mono">
+                              {block.nodes}
+                            </h3>
+                          );
+                        }
+                        if (block.type === 'heading-3') {
+                          return (
+                            <h4 key={block.index} className="text-lg sm:text-xl font-bold text-emerald-400 mt-6 mb-2 font-mono">
+                              {block.nodes}
+                            </h4>
+                          );
+                        }
+                        return (
+                          <p key={block.index} className="text-slate-350 text-base md:text-lg leading-relaxed text-left font-sans whitespace-pre-line last:mb-0">
+                            {block.nodes}
                           </p>
-                        </div>
-                      ))
+                        );
+                      })}
+                    </div>
                   ) : (
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 text-center text-slate-500 font-mono text-xs shadow-inner">
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 text-center text-slate-500 font-mono text-xs shadow-inner">
                       Nessun dato storico archiviato per questa infrastruttura.
                     </div>
                   )}
@@ -557,7 +713,7 @@ export default function AirportDetailPage() {
           <div className="w-full lg:w-1/3 flex flex-col gap-6 lg:sticky lg:top-24">
             
             {/* Box Infrastruttura */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 shadow-sm w-full overflow-hidden">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm w-full overflow-hidden">
               <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-900 pb-3">Infrastruttura</h3>
               
               <div className="grid grid-cols-3 gap-3 text-center mb-6">
@@ -584,7 +740,7 @@ export default function AirportDetailPage() {
             </div>
 
             {/* Frequenze Radio COM */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 shadow-sm w-full overflow-hidden">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm w-full overflow-hidden">
               <h3 className="text-xs font-black text-emerald-500 uppercase tracking-widest mb-6 border-b border-slate-900 pb-3 flex justify-between items-center">
                 Frequenze COM
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
@@ -602,7 +758,7 @@ export default function AirportDetailPage() {
             </div>
 
             {/* Bollettino Meteo METAR */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 shadow-sm w-full overflow-hidden">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm w-full overflow-hidden">
               <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-900 pb-3">METAR Avionico</h3>
               
               <div className="grid grid-cols-2 gap-4 mb-6 w-full text-xs">

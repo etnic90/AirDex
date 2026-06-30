@@ -59,5 +59,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  return [...staticEntries, ...aircraftEntries, ...blogEntries];
+  // 4. Compagnie Dinamiche (Airlines)
+  const { data: airlines } = await supabase
+    .from('airlines')
+    .select('id');
+    
+  const airlineEntries: MetadataRoute.Sitemap = [];
+  if (airlines) {
+    for (const a of airlines) {
+      for (const lang of locales) {
+        airlineEntries.push({
+          url: `${baseUrl}/${lang}/airlines/${a.id}`,
+          lastModified: new Date(),
+          changeFrequency: 'monthly',
+          priority: 0.5,
+        });
+      }
+    }
+  }
+
+  // 5. Aeroporti Dinamici (Airports)
+  const { data: airports } = await supabase
+    .from('airports')
+    .select('id');
+    
+  const airportEntries: MetadataRoute.Sitemap = [];
+  if (airports) {
+    for (const a of airports) {
+      for (const lang of locales) {
+        airportEntries.push({
+          url: `${baseUrl}/${lang}/airports/${a.id}`,
+          lastModified: new Date(),
+          changeFrequency: 'monthly',
+          priority: 0.5,
+        });
+      }
+    }
+  }
+
+  return [...staticEntries, ...aircraftEntries, ...blogEntries, ...airlineEntries, ...airportEntries];
 }

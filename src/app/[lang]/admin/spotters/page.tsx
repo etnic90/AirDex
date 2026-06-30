@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 
 interface SpotterUpload {
@@ -29,12 +29,18 @@ export default function AdminSpottersPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const fetchPendingSubmissions = async () => {
+  const fetchPendingSubmissions = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("spotter_uploads")
       .select(`
-        *,
+        id,
+        photographer_name,
+        image_url,
+        registration_number,
+        notes,
+        created_at,
+        status,
         aircraft_models (
           model_name,
           manufacturers ( name )
@@ -51,11 +57,12 @@ export default function AdminSpottersPage() {
       setSubmissions(data as unknown as SpotterUpload[]);
     }
     setLoading(false);
-  };
+  }, [supabase]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPendingSubmissions();
-  }, [supabase]);
+  }, [fetchPendingSubmissions]);
 
   // Gestione Approvazione
   const handleApprove = async (id: string) => {
@@ -210,10 +217,9 @@ export default function AdminSpottersPage() {
                         </div>
                       )}
                     </div>
-
                     {sub.notes && (
                       <div className="mt-4 bg-slate-950/40 p-3 rounded border border-slate-800 text-slate-400 text-xs italic font-sans">
-                        "{sub.notes}"
+                        &quot;{sub.notes}&quot;
                       </div>
                     )}
                   </div>

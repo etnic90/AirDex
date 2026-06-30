@@ -203,7 +203,7 @@ export default async function ArticlePage({
               
               <div className="flex flex-col gap-6">
                 {otherArticles && otherArticles.length > 0 ? (
-                  otherArticles.map((item: any, index: number) => (
+                  otherArticles.map((item: { slug: string; title: string; cover_image_url: string | null }, index: number) => (
                     <Link 
                       key={index}
                       href={`/${lang}/blog/${item.slug}`}

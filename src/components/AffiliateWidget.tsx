@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -16,7 +17,6 @@ export default function AffiliateWidget({
   status = "ACTIVE",
 }: AffiliateWidgetProps) {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
-
   // Calcola i dettagli del modello da collezione basandosi sull'aereo
   const getCollectibleDetails = () => {
     const isHistoric = status === "HISTORIC";
@@ -25,7 +25,7 @@ export default function AffiliateWidget({
     
     let price = 49.99;
     let material = "Metallo Die-Cast Pressofuso";
-    let link = `https://www.amazon.it/s?k=modello+collezione+${encodeURIComponent(manufacturerName)}+${encodeURIComponent(modelName)}`;
+    const link = `https://www.amazon.it/s?k=modello+collezione+${encodeURIComponent(manufacturerName)}+${encodeURIComponent(modelName)}`;
 
     if (rarity === "LEGENDARY" || rarity === "EPIC") {
       price = 119.50;
@@ -44,7 +44,7 @@ export default function AffiliateWidget({
   // Calcola i dettagli del simulatore basandosi sull'aereo
   const getSimDetails = () => {
     let dev = "Aerosoft";
-    let platform = "MSFS 2024 / X-Plane 12";
+    const platform = "MSFS 2024 / X-Plane 12";
     let type = "Studio-Level Replica";
     let price = "69.99";
 
@@ -112,7 +112,7 @@ export default function AffiliateWidget({
           <span className="w-2.5 h-2.5 bg-cyan-500 rounded-full animate-ping shrink-0"></span>
           AvGeek Sponsorship & Collectibles
         </h3>
-        <span className="text-[9px] text-slate-500 uppercase tracking-widest hidden sm:inline">
+        <span className="text-sm text-slate-500 uppercase tracking-widest hidden sm:inline">
           AirDex Sponsor Network
         </span>
       </div>
@@ -130,20 +130,20 @@ export default function AffiliateWidget({
 
           <div>
             <div className="flex justify-between items-start mb-4">
-              <span className="text-[9px] text-cyan-500 font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-cyan-950/30 border border-cyan-800/30">
+              <span className="text-sm text-cyan-500 font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-cyan-950/30 border border-cyan-800/30">
                 Modellino in Scala
               </span>
-              <span className="text-[10px] text-slate-500 font-bold">Scala {collectible.scale}</span>
+              <span className="text-sm text-slate-500 font-bold">Scala {collectible.scale}</span>
             </div>
 
-            <h4 className="text-sm font-black text-white uppercase tracking-wider mb-2 group-hover:text-cyan-400 transition-colors">
+            <h4 className="text-base font-black text-white uppercase tracking-wider mb-2 group-hover:text-cyan-400 transition-colors">
               {manufacturerName} {modelName}
             </h4>
-            <p className="text-[11px] text-slate-400 mb-6 font-sans leading-relaxed">
+            <p className="text-sm text-slate-400 mb-6 font-sans leading-relaxed">
               Replica ufficiale da collezione finemente rifinita nei minimi dettagli. Perfetto per la scrivania di ogni appassionato di aviazione.
             </p>
 
-            <div className="space-y-2 text-[10px] border-t border-slate-950 pt-4 mb-6">
+            <div className="space-y-2 text-sm border-t border-slate-950 pt-4 mb-6">
               <div className="flex justify-between">
                 <span className="text-slate-500">Materiale</span>
                 <span className="text-slate-300 font-bold truncate max-w-[180px]">{collectible.material}</span>
@@ -161,7 +161,7 @@ export default function AffiliateWidget({
 
           <div>
             <div className="flex justify-between items-baseline mb-4">
-              <span className="text-slate-500 text-[10px]">Prezzo Suggerito</span>
+              <span className="text-slate-500 text-sm">Prezzo Suggerito</span>
               <span className="text-lg font-black text-white font-mono">{collectible.price}€</span>
             </div>
 
@@ -169,7 +169,7 @@ export default function AffiliateWidget({
               href={collectible.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full text-center text-[10px] font-black uppercase tracking-widest py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all duration-300 shadow-lg hover:shadow-cyan-500/10 cursor-pointer"
+              className="block w-full text-center text-sm font-black uppercase tracking-widest py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all duration-300 shadow-lg hover:shadow-cyan-500/10 cursor-pointer"
             >
               🛒 Verifica su Amazon.it
             </a>
@@ -187,20 +187,20 @@ export default function AffiliateWidget({
 
           <div>
             <div className="flex justify-between items-start mb-4">
-              <span className="text-[9px] text-purple-400 font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-purple-950/30 border border-purple-800/30">
+              <span className="text-sm text-purple-400 font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-purple-950/30 border border-purple-800/30">
                 Flight Sim Expansion
               </span>
-              <span className="text-[10px] text-slate-500 font-bold">Study Level</span>
+              <span className="text-sm text-slate-500 font-bold">Study Level</span>
             </div>
 
-            <h4 className="text-sm font-black text-white uppercase tracking-wider mb-2 group-hover:text-purple-400 transition-colors">
+            <h4 className="text-base font-black text-white uppercase tracking-wider mb-2 group-hover:text-purple-400 transition-colors">
               {sim.dev} {modelName}
             </h4>
-            <p className="text-[11px] text-slate-400 mb-6 font-sans leading-relaxed">
+            <p className="text-sm text-slate-400 mb-6 font-sans leading-relaxed">
               Vola ai comandi di questo velivolo con la simulazione dei sistemi più complessa sul mercato per PC.
             </p>
 
-            <div className="space-y-2 text-[10px] border-t border-slate-950 pt-4 mb-6">
+            <div className="space-y-2 text-sm border-t border-slate-950 pt-4 mb-6">
               <div className="flex justify-between">
                 <span className="text-slate-500">Sviluppatore</span>
                 <span className="text-slate-300 font-bold">{sim.dev}</span>
@@ -218,13 +218,13 @@ export default function AffiliateWidget({
 
           <div>
             <div className="flex justify-between items-baseline mb-4">
-              <span className="text-slate-500 text-[10px]">Licenza Sim</span>
+              <span className="text-slate-500 text-sm">Licenza Sim</span>
               <span className="text-lg font-black text-white font-mono">~{sim.price}€</span>
             </div>
 
             <button
               onClick={() => alert(`Stai per essere reindirizzato al portale dello sviluppatore ${sim.dev} in modalità protetta.`)}
-              className="block w-full text-center text-[10px] font-black uppercase tracking-widest py-3 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 transition-all duration-300 shadow-lg hover:shadow-purple-500/10 cursor-pointer"
+              className="block w-full text-center text-sm font-black uppercase tracking-widest py-3 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 transition-all duration-300 shadow-lg hover:shadow-purple-500/10 cursor-pointer"
             >
               ✈️ Sblocca sul Sim Store
             </button>
@@ -242,20 +242,20 @@ export default function AffiliateWidget({
 
           <div>
             <div className="flex justify-between items-start mb-4">
-              <span className="text-[9px] text-amber-500 font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-950/30 border border-amber-800/30">
+              <span className="text-sm text-amber-500 font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-950/30 border border-amber-800/30">
                 Attrezzatura Spotting
               </span>
-              <span className="text-[10px] text-slate-500 font-bold">Consigliato</span>
+              <span className="text-sm text-slate-500 font-bold">Consigliato</span>
             </div>
 
-            <h4 className="text-sm font-black text-white uppercase tracking-wider mb-2 group-hover:text-amber-400 transition-colors">
+            <h4 className="text-base font-black text-white uppercase tracking-wider mb-2 group-hover:text-amber-400 transition-colors">
               {gear.name}
             </h4>
-            <p className="text-[11px] text-slate-400 mb-6 font-sans leading-relaxed">
+            <p className="text-sm text-slate-400 mb-6 font-sans leading-relaxed">
               {gear.desc}
             </p>
 
-            <div className="space-y-2 text-[10px] border-t border-slate-950 pt-4 mb-6">
+            <div className="space-y-2 text-sm border-t border-slate-950 pt-4 mb-6">
               <div className="flex justify-between">
                 <span className="text-slate-500">Tipologia</span>
                 <span className="text-slate-300 font-bold">{gear.type}</span>
@@ -273,7 +273,7 @@ export default function AffiliateWidget({
 
           <div>
             <div className="flex justify-between items-baseline mb-4">
-              <span className="text-slate-500 text-[10px]">Prezzo Suggerito</span>
+              <span className="text-slate-500 text-sm">Prezzo Suggerito</span>
               <span className="text-lg font-black text-white font-mono">{gear.price}€</span>
             </div>
 
@@ -281,7 +281,7 @@ export default function AffiliateWidget({
               href={gear.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full text-center text-[10px] font-black uppercase tracking-widest py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all duration-300 shadow-lg hover:shadow-amber-500/10 cursor-pointer"
+              className="block w-full text-center text-sm font-black uppercase tracking-widest py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all duration-300 shadow-lg hover:shadow-amber-500/10 cursor-pointer"
             >
               📷 Cerca su Amazon.it
             </a>

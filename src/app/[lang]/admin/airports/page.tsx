@@ -15,6 +15,7 @@ interface Airport {
   elevation_ft: number;
   annual_passengers_mio: number | null;
   image_url: string | null;
+  image_needs_review?: boolean;
 }
 
 export default function AdminAirportsManager() {
@@ -44,6 +45,7 @@ export default function AdminAirportsManager() {
   const [elevationFt, setElevationFt] = useState(0);
   const [annualPassengersMio, setAnnualPassengersMio] = useState<string>("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageNeedsReview, setImageNeedsReview] = useState(false);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -81,6 +83,7 @@ export default function AdminAirportsManager() {
   }, [supabase, currentPage, search]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAirports();
   }, [fetchAirports]);
 
@@ -100,6 +103,7 @@ export default function AdminAirportsManager() {
     setElevationFt(0);
     setAnnualPassengersMio("");
     setImageUrl("");
+    setImageNeedsReview(false);
     setView("edit");
   };
 
@@ -114,6 +118,7 @@ export default function AdminAirportsManager() {
     setElevationFt(airport.elevation_ft);
     setAnnualPassengersMio(airport.annual_passengers_mio !== null ? String(airport.annual_passengers_mio) : "");
     setImageUrl(airport.image_url || "");
+    setImageNeedsReview(airport.image_needs_review || false);
     setView("edit");
   };
 
@@ -149,6 +154,7 @@ export default function AdminAirportsManager() {
       elevation_ft: Number(elevationFt),
       annual_passengers_mio: annualPassengersMio.trim() !== "" ? Number(annualPassengersMio) : null,
       image_url: imageUrl.trim() !== "" ? imageUrl.trim() : null,
+      image_needs_review: imageNeedsReview,
     };
 
     if (editingAirport) {
@@ -366,6 +372,18 @@ export default function AdminAirportsManager() {
                 <span>🖼️</span> Immagine Scalo
               </h3>
               <div className="space-y-3">
+                <div className="flex items-center gap-2.5 py-1.5 px-3 bg-red-950/20 border border-red-900/30 rounded-xl">
+                  <input
+                    type="checkbox"
+                    id="imageNeedsReview"
+                    checked={imageNeedsReview}
+                    onChange={(e) => setImageNeedsReview(e.target.checked)}
+                    className="w-4 h-4 rounded bg-slate-950 border-slate-800 text-red-500 focus:ring-red-500 focus:ring-offset-slate-900 focus:ring-2 cursor-pointer"
+                  />
+                  <label htmlFor="imageNeedsReview" className="text-red-400 font-mono text-[10px] font-bold uppercase tracking-wider cursor-pointer select-none">
+                    🚩 Segnala immagine (Richiede revisione)
+                  </label>
+                </div>
                 <div className="space-y-1.5">
                   <label className="block text-slate-500 uppercase font-bold">URL Foto</label>
                   <input
@@ -468,7 +486,14 @@ export default function AdminAirportsManager() {
                         <span className="text-purple-400 block mt-0.5">{airport.icao_code}</span>
                       </td>
                       <td className="p-4 font-sans max-w-xs">
-                        <span className="text-white font-bold block">{airport.name}</span>
+                        <span className="text-white font-bold block flex items-center gap-2">
+                          {airport.name}
+                          {airport.image_needs_review && (
+                            <span className="px-1.5 py-0.5 rounded bg-red-950 border border-red-500/40 text-red-400 text-[8px] font-black font-mono uppercase tracking-widest animate-pulse flex items-center gap-0.5">
+                              <span>🚩</span> REVISIONE
+                            </span>
+                          )}
+                        </span>
                       </td>
                       <td className="p-4">
                         <span className="text-slate-300 block">{airport.city}</span>

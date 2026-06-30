@@ -4,11 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
+
+interface NavbarProfile {
+  avatar_id?: string;
+  pilot_callsign?: string;
+}
 
 export default function Navbar({ lang }: { lang: string }) {
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<NavbarProfile | null>(null);
 
   // Helper per evidenziare la rotta attiva
   const isActive = (path: string) => pathname.includes(path);
@@ -96,13 +102,13 @@ export default function Navbar({ lang }: { lang: string }) {
             href={`/${lang}/radar`} 
             className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/radar') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
           >
-            Radar
+            Aerei
           </Link>
           <Link 
             href={`/${lang}/airlines`} 
             className={`text-sm font-mono tracking-widest uppercase transition-colors ${isActive('/airlines') ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-white'}`}
           >
-            Compagnie
+            Aerolinee
           </Link>
           <Link 
             href={`/${lang}/airports`} 
@@ -179,29 +185,7 @@ export default function Navbar({ lang }: { lang: string }) {
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link 
-                href={`/${lang}/profile`} 
-                className="text-slate-400 hover:text-white text-xs font-mono uppercase tracking-widest transition-colors px-3 py-1.5"
-              >
-                Accedi
-              </Link>
-              <Link 
-                href={`/${lang}/profile?action=signup`} 
-                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-[10px] font-mono font-black uppercase tracking-widest px-3 py-1.5 rounded transition-all shadow-md hover:shadow-cyan-500/20"
-              >
-                Registrati
-              </Link>
-            </div>
-          )}
-
-          <Link 
-            href={`/${lang}/pro`} 
-            className="px-4 py-2 rounded bg-slate-900 border border-slate-700 hover:border-amber-500 text-amber-500 text-xs font-black tracking-widest uppercase transition-colors shadow-[0_0_10px_rgba(245,158,11,0.1)] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]"
-          >
-            PRO
-          </Link>
+          ) : null}
         </div>
       </div>
     </nav>

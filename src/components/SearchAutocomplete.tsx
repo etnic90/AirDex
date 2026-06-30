@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 type SearchItem = {
@@ -16,28 +16,30 @@ interface SearchAutocompleteProps {
 
 export default function SearchAutocomplete({ lang, searchIndex }: SearchAutocompleteProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Motore di filtraggio istantaneo (lato client)
-  useEffect(() => {
+  // Calcola i risultati in fase di render (evita useEffect cascata)
+  const results = useMemo(() => {
     if (query.trim().length > 1) {
       const term = query.toLowerCase();
-      const filtered = searchIndex
+      return searchIndex
         .filter(
           (item) =>
             item.model_name.toLowerCase().includes(term) ||
             item.manufacturer.toLowerCase().includes(term)
         )
-        .slice(0, 6); // Mostra i top 6 risultati
-      setResults(filtered);
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
+        .slice(0, 6);
     }
+    return [];
   }, [query, searchIndex]);
+
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+    setIsOpen(val.trim().length > 1);
+  };
 
   // Chiude il menu a tendina se clicchi fuori
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function SearchAutocomplete({ lang, searchIndex }: SearchAutocomp
           <input 
             type="text" 
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={handleQueryChange}
             onFocus={() => query.length > 1 && setIsOpen(true)}
             placeholder="Inserisci Modello, Costruttore, Sigla ICAO (es. B747, Concorde)..." 
             className="w-full bg-transparent border-none text-white p-4 focus:outline-none font-mono text-sm placeholder-slate-500"

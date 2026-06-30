@@ -43,12 +43,16 @@ export default async function BlogPage({
       <div className="max-w-[1600px] w-[95%] mx-auto relative z-10 px-4 md:px-10">
         
         {/* Intestazione */}
-        <div className="mb-12 border-b border-slate-900 pb-8">
-          <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tight mb-2 font-mono">
+        <div className="mb-10 text-center md:text-left border-b border-slate-900 pb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(6,182,212,0.05)] font-mono font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
+            Aviation Editorial Center
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-2 leading-none font-mono">
             Aviation News & Tech
           </h1>
-          <p className="text-slate-400 font-mono text-sm uppercase tracking-wider">
-            {isIt ? "Rapporti telemetrici, analisi e approfondimenti editoriali." : "Telemetry reports, analyses, and editorial deep-dives."}
+          <p className="text-slate-400 text-sm max-w-xl leading-relaxed mx-auto md:mx-0">
+            {isIt ? "Rapporti telemetrici, analisi e approfondimenti editoriali del settore aeronautico." : "Telemetry reports, analyses, and editorial deep-dives in the aeronautics sector."}
           </p>
         </div>
 

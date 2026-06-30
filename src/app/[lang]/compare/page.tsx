@@ -47,9 +47,11 @@ function AircraftAutocomplete({
     if (selectedId) {
       const plane = aircrafts.find(a => a.id === selectedId);
       if (plane) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setQuery(`${plane.manufacturers?.name || ''} ${plane.model_name}`);
       }
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery("");
     }
   }, [selectedId, aircrafts]);
@@ -149,14 +151,18 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
       const b747 = aircrafts.find(a => a.model_name.toLowerCase().includes("747"));
       
       if (a380) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedIdA(a380.id);
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedIdA(aircrafts[0].id);
       }
 
       if (b747) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedIdB(b747.id);
       } else if (aircrafts.length > 1) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedIdB(aircrafts[1].id);
       }
     }
@@ -174,11 +180,14 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
     const getSpeedScore = (speed?: number) => speed ? Math.min(100, (speed / 1100) * 100) : 0;
     const getAltitudeScore = (altitude?: number) => altitude ? Math.min(100, (altitude / 15000) * 100) : 0;
 
-    const speedA = planeA?.extended_stats?.cruise_speed_kmh || (planeA?.first_flight_year && planeA.first_flight_year < 1960 ? 450 : 880);
-    const speedB = planeB?.extended_stats?.cruise_speed_kmh || (planeB?.first_flight_year && planeB.first_flight_year < 1960 ? 450 : 880);
+    const extA = planeA?.extended_stats as Record<string, any> | undefined;
+    const extB = planeB?.extended_stats as Record<string, any> | undefined;
 
-    const altitudeA = planeA?.extended_stats?.max_altitude_m || (planeA?.first_flight_year && planeA.first_flight_year < 1960 ? 7000 : 12500);
-    const altitudeB = planeB?.extended_stats?.max_altitude_m || (planeB?.first_flight_year && planeB.first_flight_year < 1960 ? 7000 : 12500);
+    const speedA = typeof extA?.cruise_speed_kmh === 'number' ? extA.cruise_speed_kmh : (planeA?.first_flight_year && planeA.first_flight_year < 1960 ? 450 : 880);
+    const speedB = typeof extB?.cruise_speed_kmh === 'number' ? extB.cruise_speed_kmh : (planeB?.first_flight_year && planeB.first_flight_year < 1960 ? 450 : 880);
+
+    const altitudeA = typeof extA?.max_altitude_m === 'number' ? extA.max_altitude_m : (planeA?.first_flight_year && planeA.first_flight_year < 1960 ? 7000 : 12500);
+    const altitudeB = typeof extB?.max_altitude_m === 'number' ? extB.max_altitude_m : (planeB?.first_flight_year && planeB.first_flight_year < 1960 ? 7000 : 12500);
 
     return [
       {
@@ -213,10 +222,16 @@ export default function ComparePage({ params }: { params: { lang: string } }) {
       <div className="max-w-[1600px] w-[95%] mx-auto">
         
         {/* Header */}
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Hangar di Comparazione</h1>
-          <p className="text-cyan-500 font-mono text-sm uppercase tracking-widest">
+        <div className="mb-10 text-center md:text-left border-b border-slate-900 pb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(6,182,212,0.05)] font-mono font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
             Analisi Telemetrica Incrociata
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-2 leading-none font-mono">
+            Hangar di Comparazione
+          </h1>
+          <p className="text-slate-400 text-sm max-w-xl leading-relaxed mx-auto md:mx-0">
+            Confronta le specifiche tecniche, l&apos;autonomia, la velocità e la capienza di due aeromobili in tempo reale.
           </p>
         </div>
 

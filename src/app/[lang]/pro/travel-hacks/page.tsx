@@ -126,7 +126,7 @@ export default function TravelHacksPage() {
             Strategia Accumulo Miglia
           </h1>
           <p className="text-slate-500 text-xs md:text-sm max-w-2xl mx-auto leading-relaxed">
-            Massimizza ogni centesimo speso per finanziare la tua passione aeronautica. Confronta le migliori carte di credito co-branded e simula l'accumulo miglia annuale.
+            Massimizza ogni centesimo speso per finanziare la tua passione aeronautica. Confronta le migliori carte di credito co-branded e simula l&apos;accumulo miglia annuale.
           </p>
         </div>
 
@@ -252,8 +252,8 @@ export default function TravelHacksPage() {
                     : `✗ Non è la rotta ottimale. Singapore Airlines (B) offriva il rendimento maggiore.`}
                 </p>
               ) : (
-                <p className="text-[10px] text-slate-500">
-                  Seleziona un'opzione ed effettua il check di rotta per convalidare la telemetria.
+                <p className="text-[10px] text-slate-505">
+                  Seleziona un&apos;opzione ed effettua il check di rotta per convalidare la telemetria.
                 </p>
               )}
             </div>
@@ -360,8 +360,8 @@ export default function TravelHacksPage() {
         </div>
 
         {/* 3. FOOTER INFO */}
-        <div className="border border-slate-900 bg-slate-900/10 p-6 rounded-2xl text-center text-[11px] text-slate-500 max-w-xl mx-auto">
-          ⚠️ <strong>Nota di Esclusione Responsabilità:</strong> Tutte le carte di credito, i loghi, i marchi, i rapporti di conversione punti/miglia e i bonus descritti in questo modulo sono simulazioni fittizie create a scopo dimostrativo all'interno della roadmap AirDex e non costituiscono offerte reali o consulenze finanziarie.
+        <div className="border border-slate-900 bg-slate-900/10 p-6 rounded-2xl text-center text-[11px] text-slate-505 max-w-xl mx-auto">
+          ⚠️ <strong>Nota di Esclusione Responsabilità:</strong> Tutte le carte di credito, i loghi, i marchi, i rapporti di conversione punti/miglia e i bonus descritti in questo modulo sono simulazioni fittizie create a scopo dimostrativo all&apos;interno della roadmap AirDex e non costituiscono offerte reali o consulenze finanziarie.
         </div>
 
       </div>

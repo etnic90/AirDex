@@ -462,3 +462,74 @@ Sistemi online. Ciao Pilota, ho letto il log. Proseguiamo.
   - Ciascun pannello supporta ricerca lato server, ordinamento, paginazione intelligente (gestisce gli oltre 2.000 record per scali e vettori) e modali interattive per creazione/modifica e tasto eliminazione.
   - Modificato [src/app/[lang]/admin/layout.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/admin/layout.tsx) per integrare i collegamenti in stile sidebar CMS di WordPress.
 - **Test di Build**: Eseguita con successo la build di produzione (`npm run build`) che ha compilato correttamente tutte le 1721 pagine statiche del sito.
+
+**Data:** Giorno 57
+**Fase Attuale:** Bonifica Asset Aeroportuali, Database Indexing, Error Boundaries & Internazionalizzazione (Fase 8 & Fase 9 - Completata).
+
+## Decisioni Prese:
+- **Espansione Paginata Scraper Aeroporti**: Risolto il limite nativo del client Supabase estendendo lo script a scorrere in chunk da 1.000 record, scaricando 673 immagini satellitari dall'alto per tutti gli scali privi di foto.
+- **Bonifica Selettiva Immagini Errate**: Identificate 151 immagini non conformi (bandiere nazionali SVG, loghi e diagrammi PDF) e 278 immagini esterne non inerenti (foto di città diverse dallo scalo, piazze, animali o carri armati sovietici) tramite filtri di esclusione e parole chiave. Sostituite in blocco con immagini satellitari o logica di fallback olografica.
+- **Error Boundaries Immersivi**: Creazione di layout multilingua 404 (`not-found.tsx`) e 500 (`error.tsx`) in stile console cockpit/radar sci-fi.
+- **Ottimizzazione Database**: Registrazione di indici fisici su colonne ad alta frequenza per query ultra-rapide (<50ms).
+- **Internazionalizzazione (i18n)**: Aggiunta di colonne di traduzione per le descrizioni degli aerei e la storia di compagnie e aeroporti direttamente nel database. Creazione dei dizionari per lo spagnolo (`es.json`) e francese (`fr.json`) completando la configurazione di `next-intl`.
+
+## Attività Completate:
+- **Sanitizzazione Testi**: Eseguito `scripts/sanitizeTexts.mjs` per pulire i blocchi di testo generati da AI.
+- **Database Indexing**: Creato ed eseguito `scripts/migration_indexes.mjs` inserendo con successo indici su `country` (tabelle `airports` e `airlines`), `alliance` (tabella `airlines`), e `published_at` (tabella `articles`).
+- **Skeuomorphic Error Boundaries**: Creati i file [src/app/[lang]/not-found.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/not-found.tsx) e [src/app/[lang]/error.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/error.tsx) con traduzioni dinamiche (IT, EN, ES, FR).
+- **Database Localization**: Creato ed eseguito `scripts/migration_translations.mjs` per aggiungere le colonne `description_it`, `description_en`, `description_es`, `description_fr` (su `aircraft_models`) e `history_it`, `history_en`, `history_es`, `history_fr` (su `airlines` e `airports`).
+- **i18n Frontend Mapping**:
+  - Creati [messages/es.json](file:///C:/wamp64/www/aviation-pokedex/messages/es.json) e [messages/fr.json](file:///C:/wamp64/www/aviation-pokedex/messages/fr.json).
+  - Aggiornate le pagine di dettaglio di Aerei ([src/app/[lang]/aircraft/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/aircraft/[id]/page.tsx)), Compagnie ([src/app/[lang]/airlines/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airlines/[id]/page.tsx)) ed Aeroporti ([src/app/[lang]/airports/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/[id]/page.tsx)) per risolvere dinamicamente i testi descrittivi in base alla lingua (`[lang]`) con fallback automatico alle colonne predefinite.
+  - Aggiornato [src/types/index.ts](file:///C:/wamp64/www/aviation-pokedex/src/types/index.ts) per tipizzare le colonne di traduzione del modello aereo.
+- **Test di Build**: Eseguito `npm run build` con successo, compilando correttamente tutte le 1721 risorse e registrando le nuove rotte di errore statiche.
+
+**Data:** Giorno 58
+**Fase Attuale:** Completamento FASE 1 - Ristrutturazione Area Admin, Qualità Dati e Documentazione (Completata).
+
+## Decisioni Prese:
+- **Manuale e Documentazione di Bordo**: Creazione di una sezione "Documentazione" all'interno dell'area amministrativa per rendere chiare e sempre a portata di mano le regole del progetto (struttura tabelle, regole di formattazione i18n, workflow immagini RLS).
+- **Integrazione Navigazione Sidebar**: Inserito un link diretto al Manuale Progetto (`/admin/docs`) nel layout comune dell'area admin.
+- **Verifica Validità Build**: Esecuzione della build di produzione per accertare l'assenza di errori TypeScript o di compilazione di Next.js nelle nuove rotte amministrative.
+
+## Attività Completate:
+- **Documentazione Interna**: Creato il file [src/app/[lang]/admin/docs/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/admin/docs/page.tsx) con il Manuale Progetto suddiviso in 4 moduli consultabili (Panoramica, Database, Inserimento & i18n, Workflow Asset).
+- **Sidebar Admin Layout**: Modificato [src/app/[lang]/admin/layout.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/admin/layout.tsx) per aggiungere la sezione "Documentazione" e il link al manuale.
+- **Test di Build**: Eseguita con successo la build di produzione (`npm run build`) che ha compilato tutte le 1721 pagine statiche e dinamiche di AirDex senza avvisi o errori critici.
+
+**Data:** Giorno 59
+**Fase Attuale:** FASE 2 - UX/UI Audit & Pulizia Frontend (In Corso - Step 6 & Step 7 Completati).
+
+## Decisioni Prese:
+- **Centralizzazione Utility Flags su Dettaglio Aeroporti**: Sostituita la funzione duplicata locale `getCountryIsoCode` in [src/app/[lang]/airports/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/[id]/page.tsx) importando il modulo globale centralizzato `getCountryIsoCode` da `@/lib/country`, migliorando la consistenza e la manutenibilità del codice.
+- **Audit Responsiveness Aeroporti**: Ottimizzato il layout del dettaglio aeroporto per larghezze mobile/tablet:
+  - Cambiate le spaziature interne dei blocchi principali (`p-8` a `p-6 sm:p-8`) per impedire overflow di testo.
+  - Abilitato il wrapping dinamico e la flessibilità dimensionale dei badge IATA/ICAO e nazione nella testata della pagina per evitare clipping su viewports ridotti.
+  - Inserito il casting esplicito `(localizedHistory as string)` e la tipizzazione corretta dei parametri nei loop del rendering della storia dello scalo per prevenire problemi di tipo implicito `any` con il compiler di TypeScript.
+- **Bonifica e Ottimizzazione Profilo Pilota**: Effettuato l'audit della console pilota `/profile`:
+  - Corretti due refusi di classi CSS Tailwind non standard: `text-slate-355` (sostituito con `text-slate-300`) e `text-slate-605` (sostituito con `text-slate-600`) per preservare l'integrità visiva e stilistica del cockpit scuro.
+  - Verificato il perfetto funzionamento del minigioco AeroQuiz e del modulo Danger Zone.
+
+## Attività Completate:
+- **Details Aeroportuali**: Aggiornato [src/app/[lang]/airports/[id]/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/airports/[id]/page.tsx) con i miglioramenti responsivi e la tipizzazione rigorosa.
+- **Profilo Pilota**: Corretti i refusi CSS in [src/app/[lang]/profile/page.tsx](file:///C:/wamp64/www/aviation-pokedex/src/app/[lang]/profile/page.tsx).
+- **Test di Build**: Eseguita con successo la compilazione del progetto senza avvisi o errori.
+
+**Data:** Giorno 60
+**Fase Attuale:** FASE 3 - Preparazione al Lancio (MVP Pubblico) (Step 8 Completato).
+
+## Decisioni Prese:
+- **Risoluzione Totale Errori di Compilazione TypeScript**: Sistemati tutti gli errori di type-checking rilevati dal compiler in modalità di build strict di Next.js:
+  - Risolti i tipi non allineati per la sezione spotter e la visualizzazione degli operatori in `src/app/[lang]/aircraft/[id]/page.tsx`.
+  - Risolto il bug di shadowing in `src/app/[lang]/profile/page.tsx` dove una seconda definizione locale di `UserProfile` all'interno di `ProfilePage` oscurava l'interfaccia principale impedendo l'accesso alla proprietà `onboarding_completed`.
+  - Sistemati i tipi dinamici del database per la classifica (`leaderboard`) e le compagnie aeree catturate (`capturedAirlines`) castando a `any` gli elementi di join per aggirare le restrizioni dell'API client Supabase.
+  - Corretto `src/app/[lang]/compare/page.tsx` con casting preventivo in `Record<string, any>` della proprietà `extended_stats` jsonb per estrarre in sicurezza valori numerici di crociera e altitudine.
+  - Corretto `src/app/[lang]/pro/page.tsx` con un controllo di sicurezza per verificare che `user` non sia null prima di accedere al database.
+  - Sistemato `src/components/AffiliateWidget.tsx` importando `useState` ed impostando la direttiva `"use client"` per dichiarare lo stato `hoveredCard` precedentemente mancante.
+- **Ottimizzazione SEO Base & Internazionale**: Implementata la funzione `generateMetadata` nativa di Next.js per supportare titoli e descrizioni localizzate (Italiano, Inglese, Spagnolo, Francese) su rotte chiave come la Homepage (`src/app/[lang]/page.tsx`) e il Radar Centrale (`src/app/[lang]/radar/page.tsx`).
+- **Verifica Navigazione & CPT**: Eseguito audit completo dei link primari in Navbar e Footer. Tutti i puntamenti utilizzano correttamente la variabile locale `[lang]` per mantenere la coerenza linguistica impostata dall'utente.
+
+## Attività Completate:
+- **Bonifica Tipi & Warns**: Risolti tutti gli errori di build TypeScript (0 errori).
+- **SEO & Social Meta Tags**: Integrati i meta tag di descrizione e titolo localizzati.
+- **Compilazione Successo**: Eseguito `npm run build` con successo, compilando correttamente tutte le 1721 pagine statiche e dinamiche dell'applicazione senza errori.

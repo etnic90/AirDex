@@ -62,6 +62,10 @@ interface AirlineDetail {
   alliance: string | null;
   main_hub: string | null;
   history: string | null;
+  history_it?: string | null;
+  history_en?: string | null;
+  history_es?: string | null;
+  history_fr?: string | null;
   slogan: string | null;
   headquarters: string | null;
   destinations_count: number | null;
@@ -124,52 +128,117 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
     fetchDeepData();
   }, [supabase, id]);
 
-  // MOTORE DI PARSING AUTOMATICO DEL TESTO PER PARAGRAFI E NAVIGAZIONE CIRCOLARE
-  const renderLinkedHistoryParagraphs = useMemo(() => {
-    if (!airline?.history || allModels.length === 0) {
-      return airline?.history 
-        ? airline.history.split(/\n\s*\n/).map((p, idx) => ({ index: idx, nodes: [p.trim()] }))
-        : [];
+  const findMatchingLink = (val: string): string | null => {
+    const cleanVal = val.trim().toLowerCase();
+    if (!cleanVal || cleanVal.length < 2) return null;
+
+    // 1. Check aircraft models
+    for (const plane of allModels) {
+      const pName = plane.model_name.toLowerCase();
+      if (cleanVal === pName || (cleanVal.length > 5 && pName.includes(cleanVal)) || (pName.length > 5 && cleanVal.includes(pName))) {
+        return `/${lang}/aircraft/${plane.id}`;
+      }
     }
 
-    const paragraphs = airline.history.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-    const sortedModels = [...allModels].sort((a, b) => b.model_name.length - a.model_name.length);
+    return null;
+  };
 
-    return paragraphs.map((paragraphText, pIdx) => {
-      let text = paragraphText;
-      const replacements: { placeholder: string; component: React.ReactNode }[] = [];
-
-      sortedModels.forEach((model, index) => {
-        const regex = new RegExp(`\\b${model.model_name}\\b`, "gi");
-        if (regex.test(text)) {
-          const placeholder = `___PLANE_REF_${pIdx}_${index}___`;
-          text = text.replace(regex, placeholder);
-          replacements.push({
-            placeholder,
-            component: (
-              <Link 
-                key={placeholder}
-                href={`/${lang}/aircraft/${model.id}`}
-                className="text-cyan-400 font-bold border-b border-dashed border-cyan-500/50 hover:border-cyan-400 hover:bg-cyan-500/10 px-1.5 py-0.5 rounded transition-all font-mono inline-block shadow-[0_0_10px_rgba(6,182,212,0.05)] animate-pulse"
-              >
-                {model.model_name}
-              </Link>
-            )
-          });
+  const parseInlineFormatting = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        const cleanVal = part.slice(2, -2).trim();
+        const matchingLink = findMatchingLink(cleanVal);
+        if (matchingLink) {
+          return (
+            <Link 
+              key={idx} 
+              href={matchingLink} 
+              className="text-cyan-400 font-extrabold hover:text-cyan-300 hover:underline transition-colors underline-offset-4 decoration-cyan-500/50"
+            >
+              {cleanVal}
+            </Link>
+          );
         }
-      });
-
-      const parts = text.split(/(___PLANE_REF_\d+_\d+___)/g);
-      const nodes = parts.map((part) => {
-        const found = replacements.find(r => r.placeholder === part);
-        return found ? found.component : part;
-      });
-
-      return {
-        index: pIdx,
-        nodes
-      };
+        return <strong key={idx} className="text-cyan-300 font-extrabold">{cleanVal}</strong>;
+      }
+      return part;
     });
+  };
+
+  // MOTORE DI PARSING AUTOMATICO DEL TESTO PER PARAGRAFI E NAVIGAZIONE CIRCOLARE
+  const renderLinkedHistoryParagraphs = useMemo(() => {
+    const localizedHistory = airline ? ((airline[`history_${lang}` as keyof AirlineDetail] as string | null) || airline.history) : null;
+    if (!localizedHistory) return [];
+
+    const lines = localizedHistory.split('\n');
+    const result = [];
+    let currentParagraphLines: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('###')) {
+        if (currentParagraphLines.length > 0) {
+          result.push({
+            type: 'paragraph',
+            text: currentParagraphLines.join('\n')
+          });
+          currentParagraphLines = [];
+        }
+        result.push({
+          type: 'heading-3',
+          text: line.replace(/^###\s*/, '')
+        });
+      } else if (line.startsWith('##')) {
+        if (currentParagraphLines.length > 0) {
+          result.push({
+            type: 'paragraph',
+            text: currentParagraphLines.join('\n')
+          });
+          currentParagraphLines = [];
+        }
+        result.push({
+          type: 'heading-2',
+          text: line.replace(/^##\s*/, '')
+        });
+      } else if (line.startsWith('#')) {
+        if (currentParagraphLines.length > 0) {
+          result.push({
+            type: 'paragraph',
+            text: currentParagraphLines.join('\n')
+          });
+          currentParagraphLines = [];
+        }
+        result.push({
+          type: 'heading-1',
+          text: line.replace(/^#\s*/, '')
+        });
+      } else if (line === '') {
+        if (currentParagraphLines.length > 0) {
+          result.push({
+            type: 'paragraph',
+            text: currentParagraphLines.join('\n')
+          });
+          currentParagraphLines = [];
+        }
+      } else {
+        currentParagraphLines.push(lines[i]);
+      }
+    }
+
+    if (currentParagraphLines.length > 0) {
+      result.push({
+        type: 'paragraph',
+        text: currentParagraphLines.join('\n')
+      });
+    }
+
+    return result.map((item, idx) => ({
+      index: idx,
+      type: item.type,
+      nodes: parseInlineFormatting(item.text)
+    }));
   }, [airline, allModels, lang]);
 
   if (loading) {
@@ -369,22 +438,38 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
 
           {/* TAB 2: REGISTRO STORICO CON LINK PARSATI IN BOX DEDICATI */}
           {activeTab === "history" && (
-            <div className="flex flex-col gap-6 w-full font-sans">
+            <div className="w-full font-sans">
               {renderLinkedHistoryParagraphs.length > 0 ? (
-                renderLinkedHistoryParagraphs.map((paragraph) => (
-                  <div 
-                    key={paragraph.index}
-                    className="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/35 rounded-3xl p-8 backdrop-blur-sm transition-all duration-300 shadow-md relative overflow-hidden"
-                  >
-                    <div className="flex items-center gap-2 mb-3.5 font-mono text-xs uppercase tracking-wider text-slate-400 font-bold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/70"></span>
-                      Registro Storico // Sezione {String(paragraph.index + 1).padStart(2, "0")}
-                    </div>
-                    <div className="text-slate-100 text-base md:text-lg leading-relaxed text-left whitespace-pre-line">
-                      {paragraph.nodes}
-                    </div>
-                  </div>
-                ))
+                <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 sm:p-10 backdrop-blur-sm shadow-md space-y-6">
+                  {renderLinkedHistoryParagraphs.map((block) => {
+                    if (block.type === 'heading-1') {
+                      return (
+                        <h2 key={block.index} className="text-2xl sm:text-3xl font-black text-white mt-8 mb-4 border-b border-slate-800 pb-3 tracking-tight uppercase font-mono">
+                          {block.nodes}
+                        </h2>
+                      );
+                    }
+                    if (block.type === 'heading-2') {
+                      return (
+                        <h3 key={block.index} className="text-xl sm:text-2xl font-extrabold text-white mt-7 mb-3 tracking-tight font-mono">
+                          {block.nodes}
+                        </h3>
+                      );
+                    }
+                    if (block.type === 'heading-3') {
+                      return (
+                        <h4 key={block.index} className="text-lg sm:text-xl font-bold text-cyan-400 mt-6 mb-2 font-mono">
+                          {block.nodes}
+                        </h4>
+                      );
+                    }
+                    return (
+                      <p key={block.index} className="text-slate-305 text-base md:text-lg leading-relaxed text-left font-sans whitespace-pre-line last:mb-0">
+                        {block.nodes}
+                      </p>
+                    );
+                  })}
+                </div>
               ) : (
                 <div className="bg-slate-900/60 border border-slate-850 rounded-3xl p-8 text-center text-slate-500 font-mono text-xs shadow-inner">
                   Nessun registro storico registrato per questo vettore.

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import { AircraftModel } from "../../../types";
 import AircraftCard from "../../../components/AircraftCard";
+import RadarTacticalConsole from "./RadarTacticalConsole";
 
 export default function RadarClient({ lang }: { lang: string }) {
   const searchParams = useSearchParams();
@@ -31,6 +32,7 @@ export default function RadarClient({ lang }: { lang: string }) {
 
   // Reset del contatore elementi visibili quando cambiano i filtri
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisibleCount(18);
   }, [searchTerm, statusFilter, rarityFilter, eraFilter, minRange, minPassengers]);
 
@@ -143,7 +145,7 @@ export default function RadarClient({ lang }: { lang: string }) {
             >
               <option value="ALL">TUTTE LE EPOCHE</option>
               <option value="pioneers">1910 - 1945 (Pionieri)</option>
-              <option value="golden">1946 - 1957 (Età d'Oro)</option>
+              <option value="golden">1946 - 1957 (Età d&apos;Oro)</option>
               <option value="jetage">1958 - 1999 (Era Jet)</option>
               <option value="modern">2000 - Oggi (Era Moderna)</option>
             </select>
@@ -241,14 +243,14 @@ export default function RadarClient({ lang }: { lang: string }) {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 animate-pulse text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Vettori Identificati: <strong className="text-white ml-1 text-xl">{filteredAircrafts.length}</strong>
+            Aeromobili Trovati: <strong className="text-white ml-1 text-xl">{filteredAircrafts.length}</strong>
           </span>
         </div>
 
         {/* Griglia AircraftCard */}
         {filteredAircrafts.length > 0 ? (
           <div className="flex flex-col gap-8">
-            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
               {filteredAircrafts.slice(0, visibleCount).map((aircraft) => (
                 <AircraftCard key={aircraft.id} aircraft={aircraft} lang={lang} />
               ))}
@@ -259,7 +261,7 @@ export default function RadarClient({ lang }: { lang: string }) {
                 className="w-full mt-4 text-cyan-400 hover:text-white border border-cyan-800/80 hover:border-cyan-500 hover:bg-cyan-950/30 p-4.5 rounded-2xl text-sm font-mono uppercase tracking-widest transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] flex justify-center items-center gap-2 cursor-pointer font-bold"
               >
                 <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
-                Espandi Tracciamento Radar (+18 Aerei)
+                Carica Altri Aeromobili (+18)
               </button>
             )}
           </div>
@@ -268,8 +270,8 @@ export default function RadarClient({ lang }: { lang: string }) {
             <svg className="w-16 h-16 text-slate-605 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <p className="text-xl text-white font-black uppercase tracking-widest mb-2">Nessun Riscontro Radar</p>
-            <p className="text-slate-400 font-mono text-sm">Modifica i parametri di scansione per ampliare l'area di ricerca.</p>
+            <p className="text-xl text-white font-black uppercase tracking-widest mb-2">Nessun Riscontro Trovato</p>
+            <p className="text-slate-400 font-mono text-sm">Modifica i filtri del pannello sensori per aggiornare i risultati.</p>
           </div>
         )}
       </section>

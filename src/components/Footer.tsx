@@ -51,10 +51,10 @@ export default function Footer({ lang }: { lang: string }) {
                   Hangar
                 </Link>
                 <Link href={`/${lang}/radar`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                  Radar
+                  {isIt ? "Aerei" : "Aircraft"}
                 </Link>
                 <Link href={`/${lang}/airlines`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
-                  {isIt ? "Compagnie" : "Airlines"}
+                  {isIt ? "Aerolinee" : "Airlines"}
                 </Link>
                 <Link href={`/${lang}/airports`} className="text-slate-400 hover:text-cyan-400 transition-colors uppercase text-xs tracking-wider">
                   {isIt ? "Aeroporti" : "Airports"}
@@ -123,10 +123,6 @@ export default function Footer({ lang }: { lang: string }) {
             © {new Date().getFullYear()} AirDex OS. {isIt ? "Tutti i diritti riservati." : "All systems secured."}
           </div>
           <div className="flex items-center gap-4">
-            <Link href={`/${lang}/pro`} className="text-amber-500/80 hover:text-amber-400 font-bold uppercase transition-all">
-              AirDex PRO
-            </Link>
-            <span>|</span>
             <Link href={`/${lang}/stats`} className="text-slate-600 hover:text-cyan-400 transition-colors uppercase">
               {isIt ? "Telemetria" : "Telemetry"}
             </Link>

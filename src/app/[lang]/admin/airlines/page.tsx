@@ -18,6 +18,7 @@ interface Airline {
   alliance: string | null;
   main_hub: string | null;
   slogan: string | null;
+  image_needs_review?: boolean;
 }
 
 export default function AdminAirlinesManager() {
@@ -50,6 +51,7 @@ export default function AdminAirlinesManager() {
   const [alliance, setAlliance] = useState("");
   const [mainHub, setMainHub] = useState("");
   const [slogan, setSlogan] = useState("");
+  const [imageNeedsReview, setImageNeedsReview] = useState(false);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -87,6 +89,7 @@ export default function AdminAirlinesManager() {
   }, [supabase, currentPage, search]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAirlines();
   }, [fetchAirlines]);
 
@@ -109,6 +112,7 @@ export default function AdminAirlinesManager() {
     setAlliance("");
     setMainHub("");
     setSlogan("");
+    setImageNeedsReview(false);
     setView("edit");
   };
 
@@ -126,6 +130,7 @@ export default function AdminAirlinesManager() {
     setAlliance(airline.alliance || "");
     setMainHub(airline.main_hub || "");
     setSlogan(airline.slogan || "");
+    setImageNeedsReview(airline.image_needs_review || false);
     setView("edit");
   };
 
@@ -164,6 +169,7 @@ export default function AdminAirlinesManager() {
       alliance: alliance.trim() !== "" ? alliance.trim() : null,
       main_hub: mainHub.trim() !== "" ? mainHub.trim() : null,
       slogan: slogan.trim() !== "" ? slogan.trim() : null,
+      image_needs_review: imageNeedsReview,
     };
 
     if (editingAirline) {
@@ -391,6 +397,18 @@ export default function AdminAirlinesManager() {
                 <span>🖼️</span> Logo & Media
               </h3>
               <div className="space-y-4">
+                <div className="flex items-center gap-2.5 py-1.5 px-3 bg-red-950/20 border border-red-900/30 rounded-xl">
+                  <input
+                    type="checkbox"
+                    id="imageNeedsReview"
+                    checked={imageNeedsReview}
+                    onChange={(e) => setImageNeedsReview(e.target.checked)}
+                    className="w-4 h-4 rounded bg-slate-950 border-slate-800 text-red-500 focus:ring-red-500 focus:ring-offset-slate-900 focus:ring-2 cursor-pointer"
+                  />
+                  <label htmlFor="imageNeedsReview" className="text-red-400 font-mono text-[10px] font-bold uppercase tracking-wider cursor-pointer select-none">
+                    🚩 Segnala logo (Richiede revisione)
+                  </label>
+                </div>
                 <div className="space-y-1.5">
                   <label className="block text-slate-500 uppercase font-bold">Sito Web Compagnia</label>
                   <input
@@ -501,7 +519,14 @@ export default function AdminAirlinesManager() {
                         )}
                       </td>
                       <td className="p-4 font-sans max-w-xs font-medium">
-                        <span className="text-white font-bold block">{airline.name}</span>
+                        <span className="text-white font-bold block flex items-center gap-2">
+                          {airline.name}
+                          {airline.image_needs_review && (
+                            <span className="px-1.5 py-0.5 rounded bg-red-950 border border-red-500/40 text-red-400 text-[8px] font-black font-mono uppercase tracking-widest animate-pulse flex items-center gap-0.5">
+                              <span>🚩</span> REVISIONE
+                            </span>
+                          )}
+                        </span>
                         {airline.website && (
                           <a 
                             href={airline.website} 

@@ -7,8 +7,8 @@ interface SpotterPhoto {
   id: string;
   photographer_name: string;
   image_url: string;
-  registration_number?: string;
-  notes?: string;
+  registration_number?: string | null;
+  notes?: string | null;
   created_at: string;
   airlines?: { name: string } | null;
   airports?: { name: string; iata_code: string } | null;
@@ -40,7 +40,7 @@ export default function SpotterSection({
   airlinesList,
   airportsList,
 }: SpotterSectionProps) {
-  const [photos, setPhotos] = useState<SpotterPhoto[]>(initialPhotos);
+  const [photos] = useState<SpotterPhoto[]>(initialPhotos);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // STATI DEL FORM
@@ -127,9 +127,10 @@ export default function SpotterSection({
         setSuccessMsg("");
       }, 3000);
 
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setErrorMsg(err.message || "Si è verificato un errore durante l'upload.");
+      const error = err as Error;
+      setErrorMsg(error.message || "Si è verificato un errore durante l'upload.");
     } finally {
       setUploading(false);
     }
@@ -148,11 +149,11 @@ export default function SpotterSection({
             </svg>
             Archivio Avvistamenti Spotter
           </h3>
-          <p className="text-slate-500 text-xs font-mono mt-1">Immagini scattate dalla community in tutto il mondo</p>
+          <p className="text-slate-500 text-sm font-mono mt-1">Immagini scattate dalla community in tutto il mondo</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-5 py-2.5 rounded bg-cyan-600/10 hover:bg-cyan-500/20 text-cyan-400 font-bold font-mono text-xs uppercase tracking-widest border border-cyan-500/30 hover:border-cyan-500/60 transition-all cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+          className="px-5 py-2.5 rounded bg-cyan-600/10 hover:bg-cyan-500/20 text-cyan-400 font-bold font-mono text-sm uppercase tracking-widest border border-cyan-500/30 hover:border-cyan-500/60 transition-all cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]"
         >
           Invia Foto Spotter
         </button>
@@ -175,19 +176,19 @@ export default function SpotterSection({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 {photo.registration_number && (
-                  <span className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur-sm text-cyan-400 border border-cyan-800/50 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider">
+                  <span className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur-sm text-cyan-400 border border-cyan-800/50 px-2 py-0.5 rounded text-sm font-mono font-bold uppercase tracking-wider">
                     REG: {photo.registration_number}
                   </span>
                 )}
               </div>
 
               {/* Dati Telemetrici Foto */}
-              <div className="p-4 font-mono text-xs">
+              <div className="p-4 font-mono text-sm">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-slate-300 font-sans font-bold block">
                     📷 {photo.photographer_name}
                   </span>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-sm text-slate-500">
                     {new Date(photo.created_at).toLocaleDateString(lang)}
                   </span>
                 </div>
@@ -203,15 +204,15 @@ export default function SpotterSection({
                     {photo.airports?.name && (
                       <div className="truncate">
                         📍 <span className="text-slate-300 font-sans">{photo.airports.name}</span>{" "}
-                        <span className="text-cyan-400 text-[10px]">({photo.airports.iata_code})</span>
+                        <span className="text-cyan-400 text-sm">({photo.airports.iata_code})</span>
                       </div>
                     )}
                   </div>
                 )}
                 
                 {photo.notes && (
-                  <p className="mt-3 text-slate-500 font-sans text-xs italic line-clamp-2 leading-relaxed border-t border-slate-800/40 pt-2">
-                    "{photo.notes}"
+                  <p className="mt-3 text-slate-500 font-sans text-sm italic line-clamp-2 leading-relaxed border-t border-slate-800/40 pt-2">
+                    &quot;{photo.notes}&quot;
                   </p>
                 )}
               </div>
@@ -219,7 +220,7 @@ export default function SpotterSection({
           ))}
         </div>
       ) : (
-        <div className="border border-dashed border-slate-800 bg-slate-950/20 rounded-xl p-8 text-center text-slate-500 font-mono text-xs">
+        <div className="border border-dashed border-slate-800 bg-slate-950/20 rounded-xl p-8 text-center text-slate-500 font-mono text-sm">
           Nessuna foto spotter caricata per questo velivolo. Sii il primo a registrarne una!
         </div>
       )}
@@ -245,19 +246,19 @@ export default function SpotterSection({
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {errorMsg && (
-                <div className="p-3 bg-red-950/30 border border-red-800 text-red-400 text-xs font-mono rounded">
+                <div className="p-3 bg-red-950/30 border border-red-800 text-red-400 text-sm font-mono rounded">
                   ⚠️ {errorMsg}
                 </div>
               )}
               {successMsg && (
-                <div className="p-3 bg-emerald-950/30 border border-emerald-800 text-emerald-400 text-xs font-mono rounded animate-pulse">
+                <div className="p-3 bg-emerald-950/30 border border-emerald-800 text-emerald-400 text-sm font-mono rounded animate-pulse">
                   ✅ {successMsg}
                 </div>
               )}
 
               {/* Nome Fotografo */}
               <div>
-                <label className="block text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
+                <label className="block text-slate-400 text-sm font-mono font-bold uppercase tracking-wider mb-1">
                   Nome Spotter / Firma Foto *
                 </label>
                 <input
@@ -273,7 +274,7 @@ export default function SpotterSection({
               <div className="grid grid-cols-2 gap-4">
                 {/* Matricola (Reg) */}
                 <div>
-                  <label className="block text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
+                  <label className="block text-slate-400 text-sm font-mono font-bold uppercase tracking-wider mb-1">
                     Matricola (Reg Number)
                   </label>
                   <input
@@ -287,13 +288,13 @@ export default function SpotterSection({
 
                 {/* Selezione Compagnia */}
                 <div>
-                  <label className="block text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
+                  <label className="block text-slate-400 text-sm font-mono font-bold uppercase tracking-wider mb-1">
                     Compagnia Aerea
                   </label>
                   <select
                     value={selectedAirlineId}
                     onChange={(e) => setSelectedAirlineId(e.target.value)}
-                    className="w-full p-2.5 rounded bg-slate-950 text-white border border-slate-800 focus:border-cyan-500 focus:outline-none text-xs font-sans"
+                    className="w-full p-2.5 rounded bg-slate-950 text-white border border-slate-800 focus:border-cyan-500 focus:outline-none text-sm font-sans"
                   >
                     <option value="">Nessuna / Non rilevata</option>
                     {airlinesList.map((airline) => (
@@ -307,13 +308,13 @@ export default function SpotterSection({
 
               {/* Selezione Aeroporto */}
               <div>
-                <label className="block text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
+                <label className="block text-slate-400 text-sm font-mono font-bold uppercase tracking-wider mb-1">
                   Luogo di Avvistamento (Aeroporto)
                 </label>
                 <select
                   value={selectedAirportId}
                   onChange={(e) => setSelectedAirportId(e.target.value)}
-                  className="w-full p-2.5 rounded bg-slate-950 text-white border border-slate-800 focus:border-cyan-500 focus:outline-none text-xs font-sans"
+                  className="w-full p-2.5 rounded bg-slate-950 text-white border border-slate-800 focus:border-cyan-500 focus:outline-none text-sm font-sans"
                 >
                   <option value="">Sconosciuto / In Volo</option>
                   {airportsList.map((airport) => (
@@ -326,7 +327,7 @@ export default function SpotterSection({
 
               {/* Immagine */}
               <div>
-                <label className="block text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
+                <label className="block text-slate-400 text-sm font-mono font-bold uppercase tracking-wider mb-1">
                   File Immagine *
                 </label>
                 <input
@@ -334,13 +335,13 @@ export default function SpotterSection({
                   required
                   accept="image/*"
                   onChange={handleFileChange}
-                  className="w-full p-2 rounded bg-slate-950 text-slate-400 border border-slate-800 text-xs focus:outline-none"
+                  className="w-full p-2 rounded bg-slate-950 text-slate-400 border border-slate-800 text-sm focus:outline-none"
                 />
               </div>
 
               {/* Note */}
               <div>
-                <label className="block text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
+                <label className="block text-slate-400 text-sm font-mono font-bold uppercase tracking-wider mb-1">
                   Dettagli o Note dello scatto
                 </label>
                 <textarea
@@ -356,14 +357,14 @@ export default function SpotterSection({
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 rounded border border-slate-700 text-slate-400 font-mono text-xs uppercase hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
+                  className="flex-1 px-4 py-2.5 rounded border border-slate-700 text-slate-400 font-mono text-sm uppercase hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="flex-1 px-4 py-2.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-bold font-mono text-xs uppercase tracking-widest shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-bold font-mono text-sm uppercase tracking-widest shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                 >
                   {uploading ? (
                     <>

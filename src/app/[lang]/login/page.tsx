@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup" | "recovery">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [callsign, setCallsign] = useState(""); // Callsign facoltativo al signup
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"info" | "success" | "error">("info");
   const [privacyChecked, setPrivacyChecked] = useState(false);
@@ -42,17 +41,17 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email || !password) return;
     setLoading(true);
-    setMessage("Inizializzazione decrittazione firma radar...");
+    setMessage("Verifica credenziali in corso...");
     setMessageType("info");
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setMessage("Errore di autorizzazione: " + error.message);
+      setMessage("Errore di accesso: " + error.message);
       setMessageType("error");
       setLoading(false);
     } else {
-      setMessage("Firma digitale autenticata! Accesso in corso...");
+      setMessage("Accesso eseguito con successo! Caricamento in corso...");
       setMessageType("success");
       
       // Controlla se l'utente è admin ed effettua il redirect
@@ -71,7 +70,7 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    setMessage("Registrazione credenziali nel database radar...");
+    setMessage("Registrazione del profilo in corso...");
     setMessageType("info");
 
     // Registrazione utente
@@ -88,18 +87,15 @@ export default function LoginPage() {
       setMessageType("error");
       setLoading(false);
     } else {
-      setMessage("Firma radar salvata! Controlla la tua casella di posta per confermare.");
+      setMessage("Registrazione completata! Controlla la posta elettronica per verificare il tuo account.");
       setMessageType("success");
       setLoading(false);
       
       if (data.user) {
-        const profileUpdates: any = {
+        const profileUpdates = {
           privacy_accepted: true,
           newsletter_subscribed: newsletterChecked
         };
-        if (callsign.trim()) {
-          profileUpdates.pilot_callsign = callsign.toUpperCase();
-        }
         await supabase
           .from("user_profiles")
           .update(profileUpdates)
@@ -112,7 +108,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    setMessage("Invio link di reset della chiave radar...");
+    setMessage("Invio email di ripristino password...");
     setMessageType("info");
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -123,14 +119,14 @@ export default function LoginPage() {
       setMessage("Errore invio email: " + error.message);
       setMessageType("error");
     } else {
-      setMessage("Link di ripristino inviato! Controlla la posta elettronica.");
+      setMessage("Link inviato con successo! Controlla la tua casella email.");
       setMessageType("success");
     }
     setLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
-    setMessage("Collegamento con il database di sicurezza Google...");
+    setMessage("Reindirizzamento all'accesso Google...");
     setMessageType("info");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -139,7 +135,7 @@ export default function LoginPage() {
       }
     });
     if (error) {
-      setMessage("Errore OAuth: " + error.message);
+      setMessage("Errore Google OAuth: " + error.message);
       setMessageType("error");
     }
   };
@@ -148,7 +144,7 @@ export default function LoginPage() {
     return (
       <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-cyan-500 font-mono">
         <div className="w-16 h-16 border-4 border-cyan-900 border-t-cyan-400 rounded-full animate-spin mb-6"></div>
-        <p className="text-sm tracking-[0.3em] animate-pulse">REINDIRIZZAMENTO ALL'HANGAR...</p>
+        <p className="text-sm tracking-[0.3em] animate-pulse">REINDIRIZZAMENTO ALL&apos;HANGAR...</p>
       </main>
     );
   }
@@ -164,40 +160,34 @@ export default function LoginPage() {
         <div className="text-center mb-8 font-mono">
           <div className="text-cyan-400 text-xs font-black uppercase tracking-[0.3em] mb-2 flex items-center justify-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
-            Aviation AirDex Terminal
+            AirDex Aviation Portal
           </div>
-          <h1 className="text-3xl font-black text-white uppercase tracking-tight">
-            Terminal Accesso
+          <h1 className="text-2xl font-black text-white uppercase tracking-tight font-sans">
+            {mode === "signin" ? "Accedi ad AirDex" : mode === "signup" ? "Crea un Account" : "Ripristino Password"}
           </h1>
         </div>
 
-        {/* Tab Selector */}
-        <div className="flex bg-slate-950 p-1.5 rounded-xl border border-slate-900 mb-6 font-mono text-[10px] tracking-widest uppercase">
-          <button
-            onClick={() => { setMode("signin"); setMessage(""); }}
-            className={`flex-1 py-2 rounded-lg transition-all font-bold ${
-              mode === "signin" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            Accedi
-          </button>
-          <button
-            onClick={() => { setMode("signup"); setMessage(""); }}
-            className={`flex-1 py-2 rounded-lg transition-all font-bold ${
-              mode === "signup" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            Registrati
-          </button>
-          <button
-            onClick={() => { setMode("recovery"); setMessage(""); }}
-            className={`flex-1 py-2 rounded-lg transition-all font-bold ${
-              mode === "recovery" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            Reset
-          </button>
-        </div>
+        {/* Tab Selector (Solo Accedi e Registrati) */}
+        {mode !== "recovery" && (
+          <div className="flex bg-slate-950 p-1.5 rounded-xl border border-slate-900 mb-6 font-mono text-[10px] tracking-widest uppercase">
+            <button
+              onClick={() => { setMode("signin"); setMessage(""); }}
+              className={`flex-1 py-2 rounded-lg transition-all font-bold cursor-pointer ${
+                mode === "signin" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              Accedi
+            </button>
+            <button
+              onClick={() => { setMode("signup"); setMessage(""); }}
+              className={`flex-1 py-2 rounded-lg transition-all font-bold cursor-pointer ${
+                mode === "signup" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              Registrati
+            </button>
+          </div>
+        )}
 
         {/* Feedback log */}
         {message && (
@@ -210,28 +200,28 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={mode === "signin" ? handleSignIn : mode === "signup" ? handleSignUp : handleRecovery} className="space-y-4 font-mono">
+        <form onSubmit={mode === "signin" ? handleSignIn : mode === "signup" ? handleSignUp : handleRecovery} className="space-y-5">
           <div>
-            <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Canale Email</label>
+            <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-bold font-mono mb-2">Indirizzo E-mail</label>
             <input 
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="pilota@airdex.com"
-              className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-800"
+              placeholder="nome@esempio.com"
+              className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-700"
               required
             />
           </div>
           
           {mode !== "recovery" && (
             <div>
-              <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Chiave Accesso (Password)</label>
+              <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-bold font-mono mb-2">Password</label>
               <input 
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-800"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-700"
                 required
               />
             </div>
@@ -239,18 +229,6 @@ export default function LoginPage() {
 
           {mode === "signup" && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Callsign Pilota (Opzionale)</label>
-                <input 
-                  type="text" 
-                  value={callsign}
-                  onChange={(e) => setCallsign(e.target.value)}
-                  placeholder="ES. I-MAVERICK"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-800"
-                />
-                <p className="text-[8px] text-slate-600 mt-1 leading-snug">Configura la tua firma radio per le trasmissioni.</p>
-              </div>
-
               {/* Privacy Consent */}
               <div className="flex items-start gap-3 mt-4 text-[10px] text-slate-400 select-none">
                 <input
@@ -258,11 +236,11 @@ export default function LoginPage() {
                   id="privacyChecked"
                   checked={privacyChecked}
                   onChange={(e) => setPrivacyChecked(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-800 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                  className="mt-0.5 rounded border-slate-850 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer"
                   required
                 />
                 <label htmlFor="privacyChecked" className="leading-snug cursor-pointer">
-                  Accetto l'Informativa sulla Privacy ed acconsento al trattamento dei dati. <span className="text-red-500 font-bold">*</span>
+                  Accetto l&apos;Informativa sulla Privacy ed acconsento al trattamento dei dati. <span className="text-red-500 font-bold">*</span>
                 </label>
               </div>
 
@@ -273,7 +251,7 @@ export default function LoginPage() {
                   id="newsletterChecked"
                   checked={newsletterChecked}
                   onChange={(e) => setNewsletterChecked(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-800 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                  className="mt-0.5 rounded border-slate-850 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer"
                 />
                 <label htmlFor="newsletterChecked" className="leading-snug cursor-pointer">
                   Desidero iscrivermi alla newsletter AvGeek per ricevere segnali radar e info travel hacks.
@@ -285,30 +263,51 @@ export default function LoginPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black py-3.5 rounded-xl transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-cyan-500/10"
+            className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-3.5 rounded-xl transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-cyan-500/10 cursor-pointer font-sans"
           >
             {loading && <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>}
             <span>
-              {mode === "signin" ? "Autentica Licenza" : mode === "signup" ? "Registra Nuova Licenza" : "Richiedi Ripristino"}
+              {mode === "signin" ? "Accedi" : mode === "signup" ? "Registrati" : "Invia link di ripristino"}
             </span>
           </button>
+
+          {mode === "signin" && (
+            <div className="text-center mt-3">
+              <button
+                type="button"
+                onClick={() => { setMode("recovery"); setMessage(""); }}
+                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer font-sans"
+              >
+                Hai dimenticato la password?
+              </button>
+            </div>
+          )}
+
+          {mode === "recovery" && (
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => { setMode("signin"); setMessage(""); }}
+                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer font-sans"
+              >
+                &larr; Torna all&apos;accesso
+              </button>
+            </div>
+          )}
         </form>
 
         {/* Divisore per Social Logins */}
-        <div className="relative my-8 font-mono">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-800"></div>
-          </div>
-          <div className="relative flex justify-center text-[9px] uppercase tracking-wider">
-            <span className="bg-slate-950 px-3 text-slate-500">Oppure firma con</span>
-          </div>
+        <div className="flex items-center my-6">
+          <div className="flex-1 border-t border-slate-800"></div>
+          <span className="px-3 text-xs text-slate-500 font-sans">Oppure accedi con</span>
+          <div className="flex-1 border-t border-slate-800"></div>
         </div>
 
         {/* Bottone Google OAuth */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/40 text-slate-300 font-mono py-3 rounded-xl transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-inner"
+          className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/40 text-slate-355 font-sans py-3 rounded-xl transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-inner cursor-pointer font-bold"
         >
           {/* Icona Google SVG */}
           <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -329,7 +328,7 @@ export default function LoginPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          Google Cloud Network
+          Accedi con Google
         </button>
 
         {/* Back Link */}

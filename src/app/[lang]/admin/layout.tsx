@@ -43,6 +43,16 @@ export default async function AdminLayout({
               <a href={`/${lang}/admin/spotters`} className="block text-slate-300 hover:text-cyan-400 font-mono text-sm transition-colors">
                 📸 Moderazione Spotter
               </a>
+              <a href={`/${lang}/admin/image-reviews`} className="block text-slate-300 hover:text-cyan-400 font-mono text-sm transition-colors flex items-center gap-1.5">
+                🚩 Revisione Immagini
+              </a>
+            </div>
+
+            <div className="space-y-2.5 border-t border-slate-800 pt-4 mt-4">
+              <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest block font-black mb-1">Documentazione</span>
+              <a href={`/${lang}/admin/docs`} className="block text-slate-300 hover:text-cyan-400 font-mono text-sm transition-colors flex items-center gap-1.5">
+                📖 Manuale Progetto
+              </a>
             </div>
           </nav>
         </aside>

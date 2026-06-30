@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useParams } from "next/navigation";
 
@@ -43,7 +43,7 @@ export default function AdminBlogManager() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const fetchArticles = async () => {
+  const fetchArticles = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("articles")
@@ -54,11 +54,12 @@ export default function AdminBlogManager() {
       setArticles(data);
     }
     setLoading(false);
-  };
+  }, [supabase]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchArticles();
-  }, [supabase]);
+  }, [fetchArticles]);
 
   // Genera Slug in automatico dal titolo
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

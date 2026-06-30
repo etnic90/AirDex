@@ -23,7 +23,7 @@ export default function NotFound() {
         </h2>
         
         <p className="text-slate-400 max-w-md mx-auto mb-10 font-mono text-sm leading-relaxed bg-slate-900/50 p-4 border-l-2 border-cyan-800">
-          [ERRORE DI TELEMETRIA] Impossibile localizzare l'aeromobile o la rotta richiesta nei nostri archivi. Il bersaglio potrebbe essere stato declassificato o i server di navigazione non sono allineati.
+          [ERRORE DI TELEMETRIA] Impossibile localizzare l&apos;aeromobile o la rotta richiesta nei nostri archivi. Il bersaglio potrebbe essere stato declassificato o i server di navigazione non sono allineati.
         </p>
         
         <Link href="/" className="px-8 py-3 bg-cyan-950/50 border border-cyan-700 text-cyan-400 font-mono uppercase tracking-widest text-sm hover:bg-cyan-900 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)]">

@@ -36,7 +36,7 @@ export default function Error({
         </h2>
         
         <p className="text-slate-400 max-w-md mx-auto mb-10 font-mono text-sm leading-relaxed bg-slate-900/50 p-4 border-l-2 border-red-800">
-          [CRITICITÀ CORE] I sensori hanno rilevato un'anomalia fatale durante l'elaborazione dei dati o la connessione al mainframe. I protocolli di sicurezza sono attivi.
+          [CRITICITÀ CORE] I sensori hanno rilevato un&apos;anomalia fatale durante l&apos;elaborazione dei dati o la connessione al mainframe. I protocolli di sicurezza sono attivi.
         </p>
         
         <button 

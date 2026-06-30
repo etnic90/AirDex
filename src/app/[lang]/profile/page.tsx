@@ -20,6 +20,15 @@ interface UserProfile {
   is_pro?: boolean | null;
   privacy_accepted?: boolean | null;
   newsletter_subscribed?: boolean | null;
+  username?: string;
+  avatar_url?: string;
+  created_at?: string;
+}
+
+interface QuizQuestion {
+  questionText: string;
+  correctAnswer: string;
+  options: string[];
 }
 
 const AVATARS = [
@@ -36,7 +45,7 @@ interface UserCapture {
   id: string;
   type: 'AIRCRAFT' | 'AIRLINE';
   target_id: string;
-  status: 'SPOTTED' | 'FLOWN';
+  status: 'SPOTTED' | 'FLOWN' | 'FAVORITE';
 }
 
 interface AircraftModel {
@@ -54,7 +63,33 @@ interface Airport {
   id: string;
   name: string;
   iata_code: string;
+  icao_code?: string;
+  country?: string;
 }
+
+const getCountryFlag = (countryName?: string) => {
+  if (!countryName) return "🌐";
+  const name = countryName.toLowerCase().trim();
+  if (name.includes("ital")) return "🇮🇹";
+  if (name.includes("united states") || name.includes("usa") || name.includes("stati uniti")) return "🇺🇸";
+  if (name.includes("united kingdom") || name.includes("uk") || name.includes("regno unito")) return "🇬🇧";
+  if (name.includes("france") || name.includes("francia")) return "🇫🇷";
+  if (name.includes("germany") || name.includes("germania")) return "🇩🇪";
+  if (name.includes("spain") || name.includes("spagna")) return "🇪🇸";
+  if (name.includes("japan") || name.includes("giappone")) return "🇯🇵";
+  if (name.includes("china") || name.includes("cina")) return "🇨🇳";
+  if (name.includes("canada")) return "🇨🇦";
+  if (name.includes("australia")) return "🇦🇺";
+  if (name.includes("brazil") || name.includes("brasile")) return "🇧🇷";
+  if (name.includes("netherlands") || name.includes("olanda") || name.includes("paesi bassi")) return "🇳🇱";
+  if (name.includes("switzerland") || name.includes("svizzera")) return "🇨🇭";
+  if (name.includes("turkey") || name.includes("turchia")) return "🇹🇷";
+  if (name.includes("united arab emirates") || name.includes("emirati arabi")) return "🇦🇪";
+  if (name.includes("qatar")) return "🇶🇦";
+  if (name.includes("ireland") || name.includes("irlanda")) return "🇮🇪";
+  if (name.includes("singapore")) return "🇸🇬";
+  return "✈️";
+};
 
 interface AirlineSearchItem {
   id: string;
@@ -76,27 +111,28 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [savingOnboarding, setSavingOnboarding] = useState(false);
 
-  // Stati Onboarding
-  const [onboardingStep, setOnboardingStep] = useState(1);
-  const [selectedAirport, setSelectedAirport] = useState("");
-  const [airlineQuery, setAirlineQuery] = useState("");
-  const [airlineSuggestions, setAirlineSuggestions] = useState<AirlineSearchItem[]>([]);
-  const [selectedAirline, setSelectedAirline] = useState<AirlineSearchItem | null>(null);
-  const [selectedDecade, setSelectedDecade] = useState("");
-  const [pilotCallsign, setPilotCallsign] = useState("");
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [capturedAirlines, setCapturedAirlines] = useState<any[]>([]);
-  const [showAvatarEditor, setShowAvatarEditor] = useState(false);
-  const [showProBlockModal, setShowProBlockModal] = useState(false);
-  const [playsToday, setPlaysToday] = useState(0);
+
+
+// Stati Onboarding
+const [onboardingStep, setOnboardingStep] = useState(1);
+const [selectedAirport, setSelectedAirport] = useState("");
+const [airlineQuery, setAirlineQuery] = useState("");
+const [airlineSuggestions, setAirlineSuggestions] = useState<AirlineSearchItem[]>([]);
+const [selectedAirline, setSelectedAirline] = useState<AirlineSearchItem | null>(null);
+const [selectedDecade, setSelectedDecade] = useState("");
+const [pilotCallsign, setPilotCallsign] = useState("");
+const [leaderboard, setLeaderboard] = useState<Record<string, unknown>[]>([]);
+const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+const [isAdmin, setIsAdmin] = useState(false);
+const [capturedAirlines, setCapturedAirlines] = useState<Record<string, unknown>[]>([]);
+const [showAvatarEditor, setShowAvatarEditor] = useState(false);
+const [showProBlockModal, setShowProBlockModal] = useState(false);
+const [playsToday, setPlaysToday] = useState(0);
 
   // Stati Autenticazione Integrata
   const [authMode, setAuthMode] = useState<"signin" | "signup" | "recovery">("signin");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
-  const [authCallsign, setAuthCallsign] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [authMessageType, setAuthMessageType] = useState<"info" | "success" | "error">("info");
   const [authPrivacyChecked, setAuthPrivacyChecked] = useState(false);
@@ -115,25 +151,26 @@ export default function ProfilePage() {
     ).slice(0, 6);
   }, [airports, airportQuery]);
 
+  // Stati Dashboard
+  const [activeTab, setActiveTab] = useState<"teca" | "airlines" | "quiz" | "settings">("teca");
+  const [tecaShowAll, setTecaShowAll] = useState(true);
+  const [tecaSearch, setTecaSearch] = useState("");
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const action = params.get("action");
       if (action === "signup") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAuthMode("signup");
       }
 
       const tab = params.get("tab");
       if (tab === "settings" || tab === "airlines" || tab === "quiz" || tab === "teca") {
-        setActiveTab(tab as any);
+        setActiveTab(tab);
       }
     }
   }, [user]);
-
-  // Stati Dashboard
-  const [activeTab, setActiveTab] = useState<"teca" | "airlines" | "quiz" | "settings">("teca");
-  const [tecaShowAll, setTecaShowAll] = useState(true);
-  const [tecaSearch, setTecaSearch] = useState("");
 
   // Stati Settings
   const [editCallsign, setEditCallsign] = useState("");
@@ -153,7 +190,7 @@ export default function ProfilePage() {
 
   // Stati Quiz
   const [quizState, setQuizState] = useState<"idle" | "playing" | "ended">("idle");
-  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [quizScore, setQuizScore] = useState(0);
   const [quizTimeLeft, setQuizTimeLeft] = useState(15);
@@ -161,6 +198,80 @@ export default function ProfilePage() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
   const quizTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Gamification & Powerups
+  const [quizHistory, setQuizHistory] = useState<("correct" | "incorrect" | "unanswered")[]>(Array(10).fill("unanswered"));
+  const [usedAutopilot, setUsedAutopilot] = useState(false);
+  const [usedFuelDump, setUsedFuelDump] = useState(false);
+  const [hiddenOptions, setHiddenOptions] = useState<string[]>([]);
+  const [quizAudioEnabled, setQuizAudioEnabled] = useState(true);
+
+  const playQuizSound = (type: "correct" | "incorrect" | "tick" | "timeout" | "victory") => {
+    if (!quizAudioEnabled) return;
+    try {
+      const ctx = new (window.AudioContext || (window as unknown as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === "correct") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08); // E5
+        osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16); // G5
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      } else if (type === "incorrect") {
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(220.00, ctx.currentTime); // A3
+        osc.frequency.setValueAtTime(146.83, ctx.currentTime + 0.12); // D3
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } else if (type === "victory") {
+        osc.type = "triangle";
+        const freqs = [523.25, 659.25, 783.99, 1046.50];
+        freqs.forEach((f, idx) => {
+          osc.frequency.setValueAtTime(f, ctx.currentTime + idx * 0.1);
+        });
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+      } else if (type === "tick") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(1000, ctx.currentTime);
+        gain.gain.setValueAtTime(0.015, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      }
+    } catch (e) {
+      console.warn("Audio Context error", e);
+    }
+  };
+
+  const triggerAutopilotPowerup = () => {
+    if (usedAutopilot || quizState !== "playing" || selectedAnswer !== null) return;
+    const currentQuestion = quizQuestions[currentQuestionIdx];
+    const correctAns = currentQuestion.correctAnswer;
+    const incorrectOptions = currentQuestion.options.filter((opt: string) => opt !== correctAns);
+    const toHide = incorrectOptions.sort(() => 0.5 - Math.random()).slice(0, 2);
+    setHiddenOptions(toHide);
+    setUsedAutopilot(true);
+    playQuizSound("tick");
+  };
+
+  const triggerFuelDumpPowerup = () => {
+    if (usedFuelDump || quizState !== "playing" || selectedAnswer !== null) return;
+    setQuizTimeLeft(prev => prev + 10);
+    setUsedFuelDump(true);
+    playQuizSound("tick");
+  };
 
   // 1. Caricamento Iniziale Dati
   const initializeProfile = useCallback(async () => {
@@ -223,12 +334,12 @@ export default function ProfilePage() {
     // Carica Aeroporti (per onboarding)
     const { data: airportsData } = await supabase
       .from("airports")
-      .select("id, name, iata_code")
+      .select("id, name, iata_code, icao_code, country")
       .order("name");
     setAirports(airportsData || []);
 
     // Recupera High Score dal DB (con fallback su localStorage)
-    const dbHighScore = (profileData as any)?.quiz_high_score || 0;
+    const dbHighScore = (profileData as unknown as UserProfile)?.quiz_high_score || 0;
     const savedScore = localStorage.getItem(`airdex_quiz_highscore_${session.user.id}`);
     const localHighScore = savedScore ? parseInt(savedScore, 10) : 0;
     const maxHighScore = Math.max(dbHighScore, localHighScore);
@@ -278,6 +389,7 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     initializeProfile();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -301,17 +413,17 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!authEmail || !authPassword) return;
     setAuthLoading(true);
-    setAuthMessage("Inizializzazione decrittazione firma radar...");
+    setAuthMessage("Verifica credenziali in corso...");
     setAuthMessageType("info");
 
     const { data, error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
 
     if (error) {
-      setAuthMessage("Errore di autorizzazione: " + error.message);
+      setAuthMessage("Errore di accesso: " + error.message);
       setAuthMessageType("error");
       setAuthLoading(false);
     } else {
-      setAuthMessage("Firma digitale autenticata! Caricamento hangar...");
+      setAuthMessage("Accesso eseguito con successo! Caricamento in corso...");
       setAuthMessageType("success");
     }
   };
@@ -325,7 +437,7 @@ export default function ProfilePage() {
       return;
     }
     setAuthLoading(true);
-    setAuthMessage("Registrazione credenziali nel database radar...");
+    setAuthMessage("Registrazione del profilo in corso...");
     setAuthMessageType("info");
 
     const { data, error } = await supabase.auth.signUp({
@@ -341,19 +453,16 @@ export default function ProfilePage() {
       setAuthMessageType("error");
       setAuthLoading(false);
     } else {
-      setAuthMessage("Firma radar salvata! Controlla la tua casella di posta per confermare la licenza.");
+      setAuthMessage("Registrazione completata! Controlla la posta elettronica per verificare il tuo account.");
       setAuthMessageType("success");
       setAuthLoading(false);
       
       if (data.user) {
-        const profileUpdates: any = {
+        const profileUpdates = {
           privacy_accepted: true,
           newsletter_subscribed: authNewsletterChecked,
           onboarding_completed: false
         };
-        if (authCallsign.trim()) {
-          profileUpdates.pilot_callsign = authCallsign.toUpperCase();
-        }
         await supabase
           .from("user_profiles")
           .update(profileUpdates)
@@ -366,7 +475,7 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!authEmail) return;
     setAuthLoading(true);
-    setAuthMessage("Invio link di reset della chiave radar...");
+    setAuthMessage("Invio email di ripristino password...");
     setAuthMessageType("info");
 
     const { error } = await supabase.auth.resetPasswordForEmail(authEmail, {
@@ -377,14 +486,14 @@ export default function ProfilePage() {
       setAuthMessage("Errore invio email: " + error.message);
       setAuthMessageType("error");
     } else {
-      setAuthMessage("Link di ripristino inviato! Controlla la posta elettronica.");
+      setAuthMessage("Link inviato con successo! Controlla la tua casella email.");
       setAuthMessageType("success");
     }
     setAuthLoading(false);
   };
 
   const handleAuthGoogleSignIn = async () => {
-    setAuthMessage("Collegamento con il database di sicurezza Google...");
+    setAuthMessage("Reindirizzamento all'accesso Google...");
     setAuthMessageType("info");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -393,7 +502,7 @@ export default function ProfilePage() {
       }
     });
     if (error) {
-      setAuthMessage("Errore OAuth: " + error.message);
+      setAuthMessage("Errore Google OAuth: " + error.message);
       setAuthMessageType("error");
     }
   };
@@ -425,6 +534,7 @@ export default function ProfilePage() {
   // Cerca Compagnie Aeree in Impostazioni
   useEffect(() => {
     if (editAirlineQuery.trim().length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditAirlineSuggestions([]);
       return;
     }
@@ -545,6 +655,7 @@ export default function ProfilePage() {
   // 2. Cerca Compagnie Aeree in Onboarding
   useEffect(() => {
     if (airlineQuery.trim().length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAirlineSuggestions([]);
       return;
     }
@@ -601,7 +712,7 @@ export default function ProfilePage() {
   };
 
   // 3. Gestione Catture (Toggle Spotted/Flown)
-  const toggleCapture = async (targetId: string, type: 'AIRCRAFT' | 'AIRLINE', status: 'SPOTTED' | 'FLOWN') => {
+  const toggleCapture = async (targetId: string, type: 'AIRCRAFT' | 'AIRLINE', status: 'SPOTTED' | 'FLOWN' | 'FAVORITE') => {
     if (!user) return;
     const existing = captures.find(c => c.target_id === targetId && c.type === type && c.status === status);
 
@@ -657,6 +768,7 @@ export default function ProfilePage() {
 
     const spottedCount = captures.filter(c => c.type === "AIRCRAFT" && c.status === "SPOTTED").length;
     const flownCount = captures.filter(c => c.type === "AIRCRAFT" && c.status === "FLOWN").length;
+    const favoriteCount = captures.filter(c => c.type === "AIRCRAFT" && c.status === "FAVORITE").length;
 
     const uniqueCapturedAirlines = new Set(
       captures.filter(c => c.type === "AIRLINE").map(c => c.target_id)
@@ -669,6 +781,7 @@ export default function ProfilePage() {
       totalAircraft,
       spottedCount,
       flownCount,
+      favoriteCount,
       airlinesCount
     };
   }, [captures, aircraftModels]);
@@ -757,24 +870,15 @@ export default function ProfilePage() {
   const startQuiz = () => {
     if (aircraftModels.length < 5 || !user) return;
 
-    if (!profile?.is_pro) {
-      const todayStr = new Date().toISOString().split("T")[0];
-      const storageKey = `airdex_quiz_plays_${user.id}_${todayStr}`;
-      const plays = parseInt(localStorage.getItem(storageKey) || "0", 10);
-      if (plays >= 3) {
-        setShowProBlockModal(true);
-        return;
-      }
-      const newPlays = plays + 1;
-      localStorage.setItem(storageKey, String(newPlays));
-      setPlaysToday(newPlays);
-    }
-
     setQuizScore(0);
     setCurrentQuestionIdx(0);
     setSelectedAnswer(null);
     setIsAnswerCorrect(null);
     setQuizTimeLeft(15);
+    setQuizHistory(Array(10).fill("unanswered"));
+    setUsedAutopilot(false);
+    setUsedFuelDump(false);
+    setHiddenOptions([]);
     
     // Genera 10 domande casuali basate sulla flotta reale
     const generatedQuestions = [];
@@ -840,37 +944,28 @@ export default function ProfilePage() {
     setQuizState("playing");
   };
 
-  // Timer del Quiz
-  useEffect(() => {
-    if (quizState !== "playing") return;
-
-    quizTimerRef.current = setInterval(() => {
-      setQuizTimeLeft(prev => {
-        if (prev <= 1) {
-          // Tempo scaduto! Procedi al prossimo
-          handleAnswerSelect("");
-          return 15;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (quizTimerRef.current) clearInterval(quizTimerRef.current);
-    };
-  }, [quizState, currentQuestionIdx]);
-
   const handleAnswerSelect = (option: string) => {
     if (selectedAnswer !== null) return; // Impedisce risposte multiple
 
     if (quizTimerRef.current) clearInterval(quizTimerRef.current);
     setSelectedAnswer(option);
     
-    const correct = option === quizQuestions[currentQuestionIdx].correctAnswer;
+    const currentQuestion = quizQuestions[currentQuestionIdx] as { correctAnswer?: string } | undefined;
+    const correct = option === currentQuestion?.correctAnswer;
     setIsAnswerCorrect(correct);
+
+    // Aggiorna cronologia risposte
+    setQuizHistory(prev => {
+      const next = [...prev];
+      next[currentQuestionIdx] = correct ? "correct" : "incorrect";
+      return next;
+    });
 
     if (correct) {
       setQuizScore(prev => prev + 10);
+      playQuizSound("correct");
+    } else {
+      playQuizSound("incorrect");
     }
 
     // Attendi 2 secondi e passa alla prossima o finisci
@@ -878,11 +973,13 @@ export default function ProfilePage() {
       setSelectedAnswer(null);
       setIsAnswerCorrect(null);
       setQuizTimeLeft(15);
+      setHiddenOptions([]);
       
       if (currentQuestionIdx < quizQuestions.length - 1) {
         setCurrentQuestionIdx(prev => prev + 1);
       } else {
         setQuizState("ended");
+        playQuizSound("victory");
         // Verifica ed eventuale salvataggio High Score
         const finalScore = quizScore + (correct ? 10 : 0);
         if (finalScore > quizHighScore) {
@@ -903,14 +1000,34 @@ export default function ProfilePage() {
                 }
               });
           }
-        } else {
-          fetchLeaderboard();
         }
       }
-    }, 1800);
+    }, 2000);
   };
 
-  // Caricamento in corso
+  // Timer del Quiz
+  useEffect(() => {
+    if (quizState !== "playing") return;
+
+    quizTimerRef.current = setInterval(() => {
+      setQuizTimeLeft(prev => {
+        if (prev <= 1) {
+          // Tempo scaduto! Procedi al prossimo
+          handleAnswerSelect("");
+          return 15;
+        }
+        if (prev <= 6) {
+          playQuizSound("tick");
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (quizTimerRef.current) clearInterval(quizTimerRef.current);
+    };
+  }, [quizState, currentQuestionIdx, quizAudioEnabled]);
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-cyan-500">
@@ -923,50 +1040,46 @@ export default function ProfilePage() {
   // Accesso Negato: Schermata di Login e Registrazione integrata
   if (!user || !profile) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
+      <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans">
         {/* Sfondo Griglia Radar */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="w-full max-w-md bg-slate-900/60 border border-slate-800 rounded-3xl p-8 backdrop-blur-xl relative z-10 shadow-2xl">
-          {/* Header Terminale */}
+          {/* Header Portale */}
           <div className="text-center mb-8 font-mono">
-            <div className="text-cyan-400 text-xs font-black uppercase tracking-[0.3em] mb-2 flex items-center justify-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
-              Aviation AirDex Terminal
+            <div className="text-cyan-400 text-xs font-black uppercase tracking-[0.2em] mb-2 flex items-center justify-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+              AirDex Aviation Portal
             </div>
-            <h1 className="text-3xl font-black text-white uppercase tracking-tight">
-              Accesso Hangar
+            <h1 className="text-2xl font-black text-white uppercase tracking-tight font-sans">
+              {authMode === "signin" ? "Accedi ad AirDex" : authMode === "signup" ? "Crea un Account" : "Ripristino Password"}
             </h1>
           </div>
 
-          {/* Tab Selector */}
-          <div className="flex bg-slate-950 p-1.5 rounded-xl border border-slate-900 mb-6 font-mono text-[10px] tracking-widest uppercase">
-            <button
-              onClick={() => { setAuthMode("signin"); setAuthMessage(""); }}
-              className={`flex-1 py-2 rounded-lg transition-all font-bold ${
-                authMode === "signin" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
-              }`}
-            >
-              Accedi
-            </button>
-            <button
-              onClick={() => { setAuthMode("signup"); setAuthMessage(""); }}
-              className={`flex-1 py-2 rounded-lg transition-all font-bold ${
-                authMode === "signup" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
-              }`}
-            >
-              Registrati
-            </button>
-            <button
-              onClick={() => { setAuthMode("recovery"); setAuthMessage(""); }}
-              className={`flex-1 py-2 rounded-lg transition-all font-bold ${
-                authMode === "recovery" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
-              }`}
-            >
-              Reset
-            </button>
-          </div>
+          {/* Tab Selector (Solo Accedi e Registrati) */}
+          {authMode !== "recovery" && (
+            <div className="flex bg-slate-950 p-1.5 rounded-xl border border-slate-900 mb-6 font-mono text-[10px] tracking-widest uppercase">
+              <button
+                type="button"
+                onClick={() => { setAuthMode("signin"); setAuthMessage(""); }}
+                className={`flex-1 py-2 rounded-lg transition-all font-bold cursor-pointer ${
+                  authMode === "signin" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                Accedi
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAuthMode("signup"); setAuthMessage(""); }}
+                className={`flex-1 py-2 rounded-lg transition-all font-bold cursor-pointer ${
+                  authMode === "signup" ? "bg-slate-900 text-cyan-400 shadow-md border border-slate-850" : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                Registrati
+              </button>
+            </div>
+          )}
 
           {/* Feedback log */}
           {authMessage && (
@@ -979,28 +1092,28 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <form onSubmit={authMode === "signin" ? handleAuthSignIn : authMode === "signup" ? handleAuthSignUp : handleAuthRecovery} className="space-y-4 font-mono">
+          <form onSubmit={authMode === "signin" ? handleAuthSignIn : authMode === "signup" ? handleAuthSignUp : handleAuthRecovery} className="space-y-5">
             <div>
-              <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Canale Email</label>
+              <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-bold font-mono mb-2">Indirizzo E-mail</label>
               <input 
                 type="email" 
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
-                placeholder="pilota@airdex.com"
-                className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-850"
+                placeholder="nome@esempio.com"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-700"
                 required
               />
             </div>
             
             {authMode !== "recovery" && (
-              <div>
-                <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Chiave Accesso (Password)</label>
+              <div className="space-y-2">
+                <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-bold font-mono mb-2">Password</label>
                 <input 
                   type="password" 
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-850"
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-700"
                   required
                 />
               </div>
@@ -1008,18 +1121,6 @@ export default function ProfilePage() {
 
             {authMode === "signup" && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-slate-400 text-[10px] uppercase tracking-widest font-black mb-2">Callsign Pilota (Opzionale)</label>
-                  <input 
-                    type="text" 
-                    value={authCallsign}
-                    onChange={(e) => setAuthCallsign(e.target.value)}
-                    placeholder="ES. I-MAVERICK"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-slate-850"
-                  />
-                  <p className="text-[8px] text-slate-600 mt-1 leading-snug">Configura la tua firma radio per le trasmissioni.</p>
-                </div>
-
                 {/* Privacy Consent */}
                 <div className="flex items-start gap-3 mt-4 text-[10px] text-slate-400 select-none">
                   <input
@@ -1027,11 +1128,11 @@ export default function ProfilePage() {
                     id="authPrivacyChecked"
                     checked={authPrivacyChecked}
                     onChange={(e) => setAuthPrivacyChecked(e.target.checked)}
-                    className="mt-0.5 rounded border-slate-850 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                    className="mt-0.5 rounded border-slate-850 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer"
                     required
                   />
                   <label htmlFor="authPrivacyChecked" className="leading-snug cursor-pointer">
-                    Accetto l'Informativa sulla Privacy ed acconsento al trattamento dei dati. <span className="text-red-500 font-bold">*</span>
+                    Accetto l&apos;Informativa sulla Privacy ed acconsento al trattamento dei dati. <span className="text-red-500 font-bold">*</span>
                   </label>
                 </div>
 
@@ -1042,7 +1143,7 @@ export default function ProfilePage() {
                     id="authNewsletterChecked"
                     checked={authNewsletterChecked}
                     onChange={(e) => setAuthNewsletterChecked(e.target.checked)}
-                    className="mt-0.5 rounded border-slate-850 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none"
+                    className="mt-0.5 rounded border-slate-850 bg-slate-950 text-cyan-500 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer"
                   />
                   <label htmlFor="authNewsletterChecked" className="leading-snug cursor-pointer">
                     Desidero iscrivermi alla newsletter AvGeek per ricevere segnali radar e info travel hacks.
@@ -1054,30 +1155,50 @@ export default function ProfilePage() {
             <button 
               type="submit" 
               disabled={authLoading}
-              className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black py-3.5 rounded-xl transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-cyan-500/10 cursor-pointer"
+              className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold py-3.5 rounded-xl transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-cyan-500/10 cursor-pointer font-sans"
             >
               {authLoading && <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>}
               <span>
-                {authMode === "signin" ? "Autentica Licenza" : authMode === "signup" ? "Registra Nuova Licenza" : "Richiedi Ripristino"}
+                {authMode === "signin" ? "Accedi" : authMode === "signup" ? "Registrati" : "Invia link di ripristino"}
               </span>
             </button>
+
+            {authMode === "signin" && (
+              <div className="text-center mt-3">
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode("recovery"); setAuthMessage(""); }}
+                  className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer font-sans"
+                >
+                  Hai dimenticato la password?
+                </button>
+              </div>
+            )}
+            
+            {authMode === "recovery" && (
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode("signin"); setAuthMessage(""); }}
+                  className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer font-sans"
+                >
+                  &larr; Torna all&apos;accesso
+                </button>
+              </div>
+            )}
           </form>
 
           {/* Divisore per Social Logins */}
-          <div className="relative my-8 font-mono">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-800"></div>
-            </div>
-            <div className="relative flex justify-center text-[9px] uppercase tracking-wider">
-              <span className="bg-slate-950 px-3 text-slate-500">Oppure firma con</span>
-            </div>
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-slate-800"></div>
+            <span className="px-3 text-xs text-slate-500 font-sans">Oppure accedi con</span>
+            <div className="flex-1 border-t border-slate-800"></div>
           </div>
 
-          {/* Bottone Google OAuth */}
           <button
             type="button"
             onClick={handleAuthGoogleSignIn}
-            className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/40 text-slate-300 font-mono py-3 rounded-xl transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-inner cursor-pointer"
+            className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/40 text-slate-300 font-sans py-3 rounded-xl transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-inner cursor-pointer font-bold"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path
@@ -1097,13 +1218,13 @@ export default function ProfilePage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            Google Cloud Network
+            Accedi con Google
           </button>
 
           {/* Back Link */}
           <div className="text-center mt-8 font-mono text-[9px] uppercase tracking-widest">
             <Link href={`/${lang}`} className="text-slate-500 hover:text-cyan-400 transition-colors">
-              &larr; Ritorna alla Hangar Homepage
+              &larr; Ritorna alla Homepage
             </Link>
           </div>
         </div>
@@ -1133,13 +1254,44 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* Stepper Checklist */}
+          <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-900/80 mb-6 font-mono text-[9px] uppercase tracking-widest gap-2 select-none">
+            <span className={`flex-1 py-2 text-center rounded-xl border transition-all ${
+              onboardingStep === 1 
+                ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/5 font-bold" 
+                : pilotCallsign && selectedAirport 
+                  ? "border-slate-800/65 text-slate-400 bg-slate-900/40" 
+                  : "border-transparent text-slate-600"
+            }`}>
+              {pilotCallsign && selectedAirport ? "✓ 01. Licenza" : "01. Licenza"}
+            </span>
+            <span className={`flex-1 py-2 text-center rounded-xl border transition-all ${
+              onboardingStep === 2 
+                ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/5 font-bold" 
+                : selectedAirline 
+                  ? "border-slate-800/65 text-slate-400 bg-slate-900/40" 
+                  : "border-transparent text-slate-600"
+            }`}>
+              {selectedAirline ? "✓ 02. Vettore" : "02. Vettore"}
+            </span>
+            <span className={`flex-1 py-2 text-center rounded-xl border transition-all ${
+              onboardingStep === 3 
+                ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/5 font-bold" 
+                : selectedDecade 
+                  ? "border-slate-800/65 text-slate-400 bg-slate-900/40" 
+                  : "border-transparent text-slate-600"
+            }`}>
+              {selectedDecade ? "✓ 03. Epoca" : "03. Epoca"}
+            </span>
+          </div>
+
           {/* STEP 1: Aeroporto Base */}
           {onboardingStep === 1 && (
             <div>
               <h2 className="text-lg font-bold text-white mb-2 font-mono flex items-center gap-2">
                 <span className="text-emerald-400">01.</span> REGISTRA LICENZA E AEROPORTO BASE
               </h2>
-              <p className="text-xs text-slate-400 mb-6 font-mono">Imposta il tuo nome radar e seleziona l'hub di base per gli avvistamenti.</p>
+              <p className="text-xs text-slate-400 mb-6 font-mono">Imposta il tuo nome radar e seleziona l&apos;hub di base per gli avvistamenti.</p>
               
               {/* Pilot Callsign Input */}
               <div className="mb-6 font-mono">
@@ -1153,7 +1305,7 @@ export default function ProfilePage() {
                   placeholder="ES. I-MIRKO, SKYWALKER-77, MAVERICK"
                   className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition-all placeholder:text-slate-800"
                 />
-                <p className="text-[9px] text-slate-500 mt-1.5 leading-snug">
+                <p className="text-[9px] text-slate-550 mt-1.5 leading-snug">
                   Il tuo nome in codice per le comunicazioni ATC e per scalare le classifiche.
                 </p>
               </div>
@@ -1176,19 +1328,19 @@ export default function ProfilePage() {
                         setSelectedAirport("");
                         setAirportQuery("");
                       }}
-                      className="text-xs text-red-400 hover:text-red-300 hover:underline cursor-pointer"
+                      className="text-xs text-red-400 hover:text-red-300 hover:underline cursor-pointer font-bold"
                     >
                       Resetta Cerca
                     </button>
                   </div>
                 ) : (
-                  <div className="relative">
+                  <div className="relative font-sans">
                     <input
                       type="text"
                       value={airportQuery}
                       onChange={(e) => setAirportQuery(e.target.value)}
                       placeholder="Cerca aeroporto per nome o IATA (es. Malpensa, JFK, FCO)..."
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition-all placeholder:text-slate-800"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition-all placeholder:text-slate-705"
                     />
                     
                     {airportQuery.trim() !== "" && (
@@ -1201,14 +1353,25 @@ export default function ProfilePage() {
                               setSelectedAirport(`${airport.name} (${airport.iata_code})`);
                               setAirportQuery("");
                             }}
-                            className="w-full text-left p-3 border-b border-slate-900 hover:bg-slate-900/60 text-slate-355 flex items-center justify-between transition-colors cursor-pointer"
+                            className="w-full text-left p-3.5 border-b border-slate-900 hover:bg-slate-900/60 text-slate-300 flex items-center justify-between transition-colors cursor-pointer"
                           >
-                            <span className="font-bold text-white">{airport.name}</span>
-                            <span className="text-[10px] text-emerald-455 font-mono border border-slate-800 bg-slate-900 px-2 py-0.5 rounded">{airport.iata_code}</span>
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-sm select-none">{getCountryFlag(airport.country)}</span>
+                              <div>
+                                <span className="font-bold text-white block">{airport.name}</span>
+                                <span className="text-[9px] text-slate-500 font-mono uppercase font-bold">{airport.country || "Estero"}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                              {airport.icao_code && (
+                                <span className="text-slate-500 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-850">{airport.icao_code}</span>
+                              )}
+                              <span className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">{airport.iata_code}</span>
+                            </div>
                           </button>
                         ))}
                         {filteredAirports.length === 0 && (
-                          <div className="p-3 text-slate-600 text-center">Nessun aeroporto trovato</div>
+                          <div className="p-3 text-slate-600 text-center font-mono">Nessun aeroporto trovato</div>
                         )}
                       </div>
                     )}
@@ -1528,7 +1691,7 @@ export default function ProfilePage() {
           <div className="lg:col-span-8 flex flex-col gap-6">
             
             {/* Statistiche Collezioni */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-slate-900/20 border border-slate-900 rounded-2xl p-4 relative overflow-hidden">
                 <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Completamento</span>
                 <span className="text-2xl font-black text-white font-mono block">{stats.aircraftPercentage}%</span>
@@ -1545,6 +1708,12 @@ export default function ProfilePage() {
                 <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Volati ✈️</span>
                 <span className="text-2xl font-black text-purple-400 font-mono block">{stats.flownCount}</span>
                 <span className="text-[8px] text-slate-600 font-mono block mt-1">Registrati come FLOWN</span>
+              </div>
+
+              <div className="bg-slate-900/20 border border-slate-900 rounded-2xl p-4 relative overflow-hidden">
+                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Preferiti ⭐</span>
+                <span className="text-2xl font-black text-amber-400 font-mono block">{stats.favoriteCount}</span>
+                <span className="text-[8px] text-slate-600 font-mono block mt-1">Registrati come FAVORITE</span>
               </div>
 
               <div className="bg-slate-900/20 border border-slate-900 rounded-2xl p-4 relative overflow-hidden">
@@ -1627,12 +1796,13 @@ export default function ProfilePage() {
                     {filteredTeca.map((model) => {
                       const isSpotted = captures.some(c => c.target_id === model.id && c.type === "AIRCRAFT" && c.status === "SPOTTED");
                       const isFlown = captures.some(c => c.target_id === model.id && c.type === "AIRCRAFT" && c.status === "FLOWN");
+                      const isFavorite = captures.some(c => c.target_id === model.id && c.type === "AIRCRAFT" && c.status === "FAVORITE");
                       
                       return (
                         <div 
                           key={model.id}
                           className={`bg-slate-900/10 border p-4 rounded-2xl flex items-center justify-between transition-colors shadow-sm ${
-                            isSpotted || isFlown ? "border-cyan-950 bg-cyan-950/5" : "border-slate-900 bg-slate-950/20"
+                            isSpotted || isFlown || isFavorite ? "border-cyan-950 bg-cyan-950/5" : "border-slate-900 bg-slate-950/20"
                           }`}
                         >
                           <div className="min-w-0 pr-2">
@@ -1653,7 +1823,7 @@ export default function ProfilePage() {
                             <button
                               onClick={() => toggleCapture(model.id, "AIRCRAFT", "SPOTTED")}
                               title="Segna come avvistato"
-                              className={`p-2.5 rounded-xl border text-[10px] transition-all font-mono ${
+                              className={`p-2.5 rounded-xl border text-[10px] transition-all font-mono cursor-pointer ${
                                 isSpotted 
                                   ? "bg-cyan-500/20 border-cyan-500 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.15)]" 
                                   : "bg-slate-950 border-slate-900 text-slate-600 hover:border-slate-800"
@@ -1665,13 +1835,25 @@ export default function ProfilePage() {
                             <button
                               onClick={() => toggleCapture(model.id, "AIRCRAFT", "FLOWN")}
                               title="Segna come volato"
-                              className={`p-2.5 rounded-xl border text-[10px] transition-all font-mono ${
+                              className={`p-2.5 rounded-xl border text-[10px] transition-all font-mono cursor-pointer ${
                                 isFlown 
                                   ? "bg-purple-500/20 border-purple-500 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.15)]" 
                                   : "bg-slate-950 border-slate-900 text-slate-600 hover:border-slate-800"
                               }`}
                             >
                               ✈️ <span className="hidden sm:inline ml-1">Flown</span>
+                            </button>
+                            {/* Favorite Button */}
+                            <button
+                              onClick={() => toggleCapture(model.id, "AIRCRAFT", "FAVORITE")}
+                              title="Aggiungi ai preferiti"
+                              className={`p-2.5 rounded-xl border text-[10px] transition-all font-mono cursor-pointer ${
+                                isFavorite 
+                                  ? "bg-amber-500/20 border-amber-500 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.15)]" 
+                                  : "bg-slate-950 border-slate-900 text-slate-600 hover:border-slate-800"
+                              }`}
+                            >
+                              ⭐ <span className="hidden sm:inline ml-1">Favorite</span>
                             </button>
                           </div>
                         </div>
@@ -1696,7 +1878,7 @@ export default function ProfilePage() {
                 {captures.filter(c => c.type === "AIRLINE").length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {captures.filter(c => c.type === "AIRLINE").map((capture) => {
-                      const airline = capturedAirlines.find(a => a.id === capture.target_id);
+                      const airline = capturedAirlines.find(a => a.id === capture.target_id) as any;
                       if (!airline) {
                         return (
                           <div key={capture.id} className="bg-slate-900/10 border border-slate-900 p-4 rounded-2xl flex items-center justify-between text-xs font-mono animate-pulse">
@@ -1726,7 +1908,9 @@ export default function ProfilePage() {
                           
                           <div className="flex gap-2 items-center">
                             <span className={`px-2 py-1 rounded text-[9px] font-bold ${
-                              capture.status === "SPOTTED" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                              capture.status === "SPOTTED" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : 
+                              capture.status === "FLOWN" ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" :
+                              "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                             }`}>
                               {capture.status}
                             </span>
@@ -1772,11 +1956,6 @@ export default function ProfilePage() {
                             >
                               Inizializza Addestramento
                             </button>
-                            {!profile?.is_pro && (
-                              <span className="text-[10px] text-slate-500 text-center md:text-left">
-                                Giocate rimanenti oggi: <strong className="text-cyan-400">{Math.max(0, 3 - playsToday)} / 3</strong>
-                              </span>
-                            )}
                           </div>
                         ) : (
                           <div className="flex items-center gap-3 font-mono text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-xl">
@@ -1803,7 +1982,7 @@ export default function ProfilePage() {
                       ) : (
                         <div className="flex flex-col gap-2.5">
                           {leaderboard.length > 0 ? (
-                            leaderboard.map((pilot, idx) => (
+                            leaderboard.map((pilot: any, idx) => (
                               <div 
                                 key={idx} 
                                 className={`flex justify-between items-center py-2 px-3 rounded-xl font-mono text-xs border ${
@@ -1948,23 +2127,76 @@ export default function ProfilePage() {
                 {quizState === "playing" && quizQuestions.length > 0 && (
                   <div className="font-mono">
                     {/* Header Quiz */}
-                    <div className="flex justify-between items-center border-b border-slate-900 pb-3 mb-6 text-xs text-slate-500">
+                    <div className="flex justify-between items-center border-b border-slate-900 pb-3 mb-6 text-xs text-slate-550">
                       <span>DOMANDA: <strong className="text-white">{currentQuestionIdx + 1}/10</strong></span>
                       <span className="flex items-center gap-2">
-                        SCORE: <strong className="text-emerald-400">{quizScore}</strong>
+                        SCORE: <strong className="text-emerald-450">{quizScore}</strong>
                       </span>
-                      <span className={`font-bold px-2 py-0.5 rounded ${
-                        quizTimeLeft < 5 ? "bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse" : "bg-slate-950 text-cyan-400"
-                      }`}>
-                        TEMPO: {quizTimeLeft}s
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setQuizAudioEnabled(!quizAudioEnabled)}
+                          className="text-[10px] uppercase text-slate-500 hover:text-cyan-400 transition-colors cursor-pointer font-bold"
+                        >
+                          {quizAudioEnabled ? "🔊 AUDIO" : "🔇 MUTO"}
+                        </button>
+                        <span className={`font-bold px-2 py-0.5 rounded ${
+                          quizTimeLeft < 5 ? "bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse" : "bg-slate-950 text-cyan-400"
+                        }`}>
+                          TEMPO: {quizTimeLeft}s
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Matrice di Indicatori di Risposta */}
+                    <div className="flex gap-2.5 justify-center mb-6">
+                      {quizHistory.map((status, idx) => (
+                        <span 
+                          key={idx}
+                          className={`w-3 h-3 rounded-full border transition-all ${
+                            status === "correct" ? "bg-emerald-500 border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.4)]" :
+                            status === "incorrect" ? "bg-red-500 border-red-400 shadow-[0_0_8px_rgba(220,38,38,0.4)]" :
+                            currentQuestionIdx === idx ? "bg-cyan-500 border-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.4)]" :
+                            "bg-slate-950 border-slate-800"
+                          }`}
+                          title={`Domanda ${idx + 1}`}
+                        />
+                      ))}
                     </div>
 
                     {/* Testo Domanda */}
-                    <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-6 text-center mb-6 min-h-[90px] flex items-center justify-center">
-                      <p className="text-sm md:text-base font-bold text-slate-100 leading-relaxed">
+                    <div className="bg-slate-950/60 border border-slate-900 rounded-2xl p-6 text-center mb-6 min-h-[90px] flex items-center justify-center relative">
+                      <p className="text-sm md:text-base font-bold text-slate-100 leading-relaxed font-sans">
                         {quizQuestions[currentQuestionIdx].questionText}
                       </p>
+                    </div>
+
+                    {/* Power-ups Panel */}
+                    <div className="flex gap-4 mb-6">
+                      <button
+                        type="button"
+                        onClick={triggerAutopilotPowerup}
+                        disabled={usedAutopilot || selectedAnswer !== null}
+                        className={`flex-1 py-3 px-4 rounded-xl border font-sans text-xs uppercase font-extrabold tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                          usedAutopilot 
+                            ? "bg-slate-950 border-slate-900 text-slate-600 cursor-not-allowed" 
+                            : "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50"
+                        }`}
+                      >
+                        🤖 Autopilota 50/50 {usedAutopilot ? "[USATO]" : ""}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={triggerFuelDumpPowerup}
+                        disabled={usedFuelDump || selectedAnswer !== null}
+                        className={`flex-1 py-3 px-4 rounded-xl border font-sans text-xs uppercase font-extrabold tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                          usedFuelDump 
+                            ? "bg-slate-950 border-slate-900 text-slate-600 cursor-not-allowed" 
+                            : "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/50"
+                        }`}
+                      >
+                        ⛽ Fuel Dump (+10s) {usedFuelDump ? "[USATO]" : ""}
+                      </button>
                     </div>
 
                     {/* Opzioni di Risposta */}
@@ -1972,6 +2204,7 @@ export default function ProfilePage() {
                       {quizQuestions[currentQuestionIdx].options.map((option: string, idx: number) => {
                         const isSelected = selectedAnswer === option;
                         const isCorrectOption = option === quizQuestions[currentQuestionIdx].correctAnswer;
+                        const isHidden = hiddenOptions.includes(option);
                         
                         let optionStyle = "border-slate-800 bg-slate-950/40 text-slate-300 hover:border-slate-700 hover:bg-slate-900/30";
                         if (selectedAnswer !== null) {
@@ -1982,6 +2215,17 @@ export default function ProfilePage() {
                           } else {
                             optionStyle = "border-slate-900 bg-slate-950 text-slate-600 opacity-40";
                           }
+                        }
+
+                        if (isHidden) {
+                          return (
+                            <div 
+                              key={idx} 
+                              className="p-4 rounded-xl border border-slate-950 bg-slate-950/20 text-slate-600 font-mono text-xs text-center opacity-30 flex items-center justify-center select-none"
+                            >
+                              [ DISATTIVATO DALL&apos;AUTOPILOTA ]
+                            </div>
+                          );
                         }
 
                         return (
@@ -2143,14 +2387,14 @@ export default function ProfilePage() {
                         className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer text-slate-300"
                       >
                         <option value="">Seleziona decennio...</option>
-                        <option value="Anni '60">Anni '60 (Primi Jet)</option>
-                        <option value="Anni '70">Anni '70 (Widebody/Concorde)</option>
-                        <option value="Anni '80">Anni '80 (Consolidamento)</option>
-                        <option value="Anni '95">Anni '95 (Modernizzazione)</option>
+                        <option value="Anni '60">Anni &apos;60 (Primi Jet)</option>
+                        <option value="Anni '70">Anni &apos;70 (Widebody/Concorde)</option>
+                        <option value="Anni '80">Anni &apos;80 (Consolidamento)</option>
+                        <option value="Anni '95">Anni &apos;95 (Modernizzazione)</option>
                         <option value="Anni 2010">Anni 2010 (Efficienza Ecologica)</option>
                         <option value="Anni 2020">Anni 2020 (Sostenibilità)</option>
                       </select>
-                      <p className="text-[9px] text-slate-600 mt-1.5 leading-snug">L'era aeronautica preferita.</p>
+                      <p className="text-[9px] text-slate-600 mt-1.5 leading-snug">L&apos;era aeronautica preferita.</p>
                     </div>
                   </div>
 
@@ -2203,7 +2447,7 @@ export default function ProfilePage() {
                     <p className="text-[10px] text-slate-500 mt-1">Aggiorna la tua chiave di accesso digitale al terminale.</p>
                     {user?.app_metadata?.provider === "google" && (
                       <p className="text-[9px] text-amber-500/80 mt-1 leading-snug">
-                        Nota: Se hai effettuato l'accesso con Google, puoi configurare una password qui per abilitare l'accesso tradizionale via email.
+                        Nota: Se hai effettuato l&apos;accesso con Google, puoi configurare una password qui per abilitare l&apos;accesso tradizionale via email.
                       </p>
                     )}
                   </div>
@@ -2253,12 +2497,12 @@ export default function ProfilePage() {
 
                   <div className="bg-red-950/10 border border-red-900/30 rounded-2xl p-5 text-xs text-slate-400 space-y-4">
                     <p className="leading-relaxed text-red-400/90">
-                      <strong>ATTENZIONE:</strong> Questa operazione è irreversibile. Lo smantellamento dell'hangar comporta:
+                      <strong>ATTENZIONE:</strong> Questa operazione è irreversibile. Lo smantellamento dell&apos;hangar comporta:
                     </p>
                     <ul className="list-disc list-inside space-y-1.5 text-slate-500 pl-2">
                       <li>La cancellazione di tutte le catture registrate (<strong className="text-slate-400">Spotted / Flown</strong>)</li>
                       <li>La cancellazione dei punteggi massimi ottenuti nel simulatore di addestramento</li>
-                      <li>La rimozione della tua chiave d'accesso e della tua firma radar nel database</li>
+                      <li>La rimozione della tua chiave d&apos;accesso e della tua firma radar nel database</li>
                     </ul>
 
                     {/* Checkbox 1 */}

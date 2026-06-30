@@ -71,9 +71,16 @@ export default function QuickEditorPage() {
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [targetAircraftId, setTargetAircraftId] = useState<string | null>(null);
   
+  interface CropArea {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }
+
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -113,7 +120,7 @@ export default function QuickEditorPage() {
     e.target.value = '';
   };
 
-  const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+  const onCropComplete = useCallback((croppedArea: unknown, croppedAreaPixels: CropArea) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
@@ -180,10 +187,10 @@ export default function QuickEditorPage() {
   };
 
   const sortedAircrafts = useMemo(() => {
-    let sortableItems = [...aircrafts];
+    const sortableItems = [...aircrafts];
     sortableItems.sort((a, b) => {
-      let valA: any = sortKey === "manufacturer" ? a.manufacturers?.name || "" : a[sortKey] || "";
-      let valB: any = sortKey === "manufacturer" ? b.manufacturers?.name || "" : b[sortKey] || "";
+      const valA = (sortKey === "manufacturer" ? a.manufacturers?.name || "" : a[sortKey] || "") as string | number;
+      const valB = (sortKey === "manufacturer" ? b.manufacturers?.name || "" : b[sortKey] || "") as string | number;
 
       let comparison = 0;
       if (valA < valB) comparison = -1;
@@ -212,7 +219,7 @@ export default function QuickEditorPage() {
     }
   };
 
-  const SortIcon = ({ columnKey }: { columnKey: SortKey }) => {
+  const renderSortIcon = (columnKey: SortKey) => {
     if (sortKey !== columnKey) return <span className="ml-1 opacity-20 group-hover:opacity-100">↕</span>;
     return sortOrder === "asc" ? <span className="ml-1 text-cyan-400">↑</span> : <span className="ml-1 text-cyan-400">↓</span>;
   };
@@ -234,7 +241,7 @@ export default function QuickEditorPage() {
         <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 backdrop-blur-sm">
           <div>
             <h2 className="text-xl font-black text-white uppercase tracking-widest mb-1">Quick Editor</h2>
-            <p className="text-slate-400 text-xs font-mono">Gestione massiva dell'Opera Omnia</p>
+            <p className="text-slate-400 text-xs font-mono">Gestione massiva dell&apos;Opera Omnia</p>
           </div>
           <span className="bg-cyan-950 text-cyan-400 border border-cyan-800 px-4 py-2 rounded text-xs font-mono shadow-[0_0_10px_rgba(6,182,212,0.2)]">
             Totale Record: <strong className="text-white ml-1">{aircrafts.length}</strong>
@@ -247,22 +254,22 @@ export default function QuickEditorPage() {
               <tr className="text-slate-400 font-mono text-xs uppercase tracking-wider border-b border-slate-800">
                 <th className="p-4 w-20">Foto</th>
                 <th className="p-4 cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort("manufacturer")}>
-                  Costruttore <SortIcon columnKey="manufacturer" />
+                  Costruttore {renderSortIcon("manufacturer")}
                 </th>
                 <th className="p-4 cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort("model_name")}>
-                  Modello <SortIcon columnKey="model_name" />
+                  Modello {renderSortIcon("model_name")}
                 </th>
                 <th className="p-4 cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort("type")}>
-                  Tipo <SortIcon columnKey="type" />
+                  Tipo {renderSortIcon("type")}
                 </th>
                 <th className="p-4 cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort("first_flight_year")}>
-                  Anno <SortIcon columnKey="first_flight_year" />
+                  Anno {renderSortIcon("first_flight_year")}
                 </th>
                 <th className="p-4 cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort("rarity")}>
-                  Rarità <SortIcon columnKey="rarity" />
+                  Rarità {renderSortIcon("rarity")}
                 </th>
                 <th className="p-4 cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort("status")}>
-                  Status <SortIcon columnKey="status" />
+                  Status {renderSortIcon("status")}
                 </th>
                 <th className="p-4 text-right">Azioni</th>
               </tr>

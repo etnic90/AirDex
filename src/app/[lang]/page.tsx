@@ -3,6 +3,38 @@ import AircraftCard from "../../components/AircraftCard";
 import { AircraftModel } from "../../types";
 import SearchAutocomplete from "../../components/SearchAutocomplete";
 import Link from "next/link";
+import Image from "next/image";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  const isIt = lang === "it";
+  const isEs = lang === "es";
+  const isFr = lang === "fr";
+
+  let title = "AirDex - Civil Aviation Encyclopedia & Radar Telemetry";
+  let description = "Explore the comprehensive civil aviation encyclopedia. Track operational telemetry, search dynamic fleets, and compare aircraft details.";
+
+  if (isIt) {
+    title = "AirDex - Enciclopedia dell'Aviazione Civile & Telemetria Radar";
+    description = "Esplora l'enciclopedia dell'aviazione civile. Monitora le telemetrie operative, ricerca le flotte commerciali e confronta le specifiche degli aerei.";
+  } else if (isEs) {
+    title = "AirDex - Enciclopedia de la Aviación Civil y Telemetría Radar";
+    description = "Explore la enciclopedia de aviación civil. Monitoree las telemetrías operativas, busque flotas comerciales y compare las especificaciones de los aviones.";
+  } else if (isFr) {
+    title = "AirDex - Encyclopédie de l'Aviation Civile & Télémétrie Radar";
+    description = "Explorez l'encyclopédie de l'aviation civile. Surveillez les télémétries opérationnelles, recherchez les flottes commerciales et comparez les spécifications des avions.";
+  }
+
+  return {
+    title,
+    description,
+  };
+}
 
 export const revalidate = 60; // Sincronizzazione automatica cache DB ogni 60 secondi
 
@@ -10,14 +42,15 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const resolvedParams = await params;
   const lang = resolvedParams.lang;
 
-  // 1. Estrazione parallela dal Cockpit di Supabase (Ora con 6 query simultanee)
+  // 1. Estrazione parallela dal Cockpit di Supabase
   const [
     { data: recentNews },
-    { data: featuredAircraft },
+    { data: featuredCandidatesData },
     { count: totalCount },
     { count: activeCount },
     { count: legendaryCount },
-    { data: searchIndexData } // <-- 6a Query: Recupera i dati minimi per l'indice di ricerca
+    { data: searchIndexData }, // <-- 6a Query: Recupera i dati minimi per l'indice di ricerca
+    { data: exploreAircraftData } // <-- 7a Query: Recupera modelli per la sezione di esplorazione
   ] = await Promise.all([
     // Ultime 3 news pubblicate
     supabase
@@ -26,26 +59,52 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
       .eq("is_published", true)
       .order("published_at", { ascending: false })
       .limit(3),
-    // Aereo del Giorno: Estraiamo un aereo epico o leggendario per la vetrina premium
+    // Aereo del Giorno: Otteniamo tutti gli ID idonei per una selezione deterministica basata sulla data
     supabase
       .from("aircraft_models")
-      .select(`*, manufacturers (*)`)
-      .or("rarity.eq.LEGENDARY,rarity.eq.EPIC")
-      .limit(1)
-      .single(),
+      .select("id")
+      .not("house_livery_url", "is", null)
+      .not("house_livery_url", "eq", "")
+      .not("house_livery_url", "eq", "NOT_FOUND_WIKI"),
     // Statistiche generali per i contatori di telemetria
     supabase.from("aircraft_models").select("*", { count: "exact", head: true }),
     supabase.from("aircraft_models").select("*", { count: "exact", head: true }).eq("status", "ACTIVE"),
     supabase.from("aircraft_models").select("*", { count: "exact", head: true }).eq("rarity", "LEGENDARY"),
     // Index di ricerca: Scarica solo i dati necessari a fare il filtro istantaneo lato client
-    supabase.from("aircraft_models").select("id, model_name, manufacturers(name)")
+    supabase.from("aircraft_models").select("id, model_name, manufacturers(name)"),
+    // Modelli aerei con foto per la sezione Esplora (pool più grande per scelta deterministica giornaliera)
+    supabase
+      .from("aircraft_models")
+      .select(`*, manufacturers (*)`)
+      .not("house_livery_url", "is", null)
+      .not("house_livery_url", "eq", "")
+      .not("house_livery_url", "eq", "NOT_FOUND_WIKI")
+      .limit(80)
   ]);
 
   const recentNewsList = recentNews || [];
-  const aereoDelGiorno = featuredAircraft as unknown as AircraftModel | null;
+  
+  // Aereo del Giorno deterministico che cambia ogni giorno:
+  const featuredCandidates = featuredCandidatesData || [];
+  let aereoDelGiorno: AircraftModel | null = null;
+  
+  if (featuredCandidates.length > 0) {
+    const today = new Date();
+    const daysSinceEpoch = Math.floor(today.getTime() / 86400000);
+    const dailyIndex = daysSinceEpoch % featuredCandidates.length;
+    const dailyId = featuredCandidates[dailyIndex].id;
+    
+    // Fetch full data for the daily plane
+    const { data: dailyPlane } = await supabase
+      .from("aircraft_models")
+      .select(`*, manufacturers (*)`)
+      .eq("id", dailyId)
+      .single();
+    aereoDelGiorno = dailyPlane as unknown as AircraftModel;
+  }
 
   // Formattiamo i dati della sesta query in un array pulito per l'autocomplete
-  const searchIndex = (searchIndexData as any[])?.map(item => ({
+  const searchIndex = (searchIndexData as unknown as Array<{ id: string; model_name: string; manufacturers: { name: string } | null }>)?.map(item => ({
     id: item.id,
     model_name: item.model_name,
     manufacturer: item.manufacturers?.name || "Sconosciuto"
@@ -55,6 +114,61 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const totale = totalCount || 0;
   const attivi = activeCount || 0;
   const storici = totale - attivi;
+
+  // Gestione dinamica dei colori per l'Aereo del Giorno
+  const rarityColorsText: Record<string, string> = {
+    COMMON: 'text-slate-400',
+    UNCOMMON: 'text-green-400',
+    RARE: 'text-blue-400',
+    EPIC: 'text-purple-400',
+    LEGENDARY: 'text-amber-400',
+  };
+
+  const rarityBorders: Record<string, string> = {
+    COMMON: 'border-slate-800 hover:border-slate-700',
+    UNCOMMON: 'border-green-950/80 hover:border-green-500/50',
+    RARE: 'border-blue-950/80 hover:border-blue-500/50',
+    EPIC: 'border-purple-950/80 hover:border-purple-500/50',
+    LEGENDARY: 'border-amber-950/80 hover:border-amber-550 hover:shadow-[0_0_35px_rgba(245,158,11,0.1)]',
+  };
+
+  const rarityGlows: Record<string, string> = {
+    COMMON: 'bg-slate-500/5',
+    UNCOMMON: 'bg-emerald-500/10',
+    RARE: 'bg-blue-500/10',
+    EPIC: 'bg-purple-500/10',
+    LEGENDARY: 'bg-amber-500/10',
+  };
+
+  const rarityTextColor = aereoDelGiorno?.rarity && rarityColorsText[aereoDelGiorno.rarity]
+    ? rarityColorsText[aereoDelGiorno.rarity]
+    : 'text-slate-300';
+
+  const featuredBorder = aereoDelGiorno?.rarity && rarityBorders[aereoDelGiorno.rarity]
+    ? rarityBorders[aereoDelGiorno.rarity]
+    : 'border-slate-800';
+
+  const featuredGlow = aereoDelGiorno?.rarity && rarityGlows[aereoDelGiorno.rarity]
+    ? rarityGlows[aereoDelGiorno.rarity]
+    : 'bg-cyan-500/10';
+
+  // Seeded deterministic random explore list (3 elements, changes daily)
+  const seededRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const todayDate = new Date();
+  const daysSinceEpochDate = Math.floor(todayDate.getTime() / 86400000);
+
+  const exploreAircraftList = (exploreAircraftData || [])
+    .map((item, index) => {
+      const itemSeed = daysSinceEpochDate + index;
+      return { item, rand: seededRandom(itemSeed) };
+    })
+    .sort((a, b) => a.rand - b.rand)
+    .map(x => x.item)
+    .slice(0, 3) as unknown as AircraftModel[];
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden pb-24">
@@ -71,47 +185,32 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
       {/* ------------------ HERO SECTION ------------------ */}
       <section className="relative z-10 pt-36 pb-16 px-4 max-w-7xl mx-auto flex flex-col items-center text-center">
-        <div className="inline-block mb-6 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.1)]">
+        <div className="inline-block mb-6 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.15)]">
           <span className="text-cyan-400 font-mono text-xs uppercase tracking-[0.25em] flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping shadow-[0_0_10px_#22d3ee]"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping shadow-[0_0_10px_#22d3ee]"></span>
             Sincronizzazione Avionica Globale Attiva
           </span>
         </div>
         
-        <h1 className="text-5xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-500 tracking-tight mb-6 uppercase">
+        <h1 className="text-5xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-500 tracking-tight mb-6">
           AirDex Main Core
         </h1>
         <p className="text-slate-300 font-sans text-lg md:text-xl max-w-2xl mx-auto tracking-wide mb-12 leading-relaxed">
-          L'enciclopedia definitiva e il registro di telemetria per l'aviazione civile mondiale.
+          L&apos;enciclopedia definitiva e il registro di telemetria per l&apos;aviazione civile mondiale.
         </p>
         
         {/* BARRA DI RICERCA PREDITTIVA */}
         <SearchAutocomplete lang={lang} searchIndex={searchIndex} />
 
-        {/* Live System Console Status Ticker */}
-        <div className="w-full max-w-5xl mt-6 mb-12 p-3.5 bg-slate-900/60 backdrop-blur-sm border border-slate-800/80 rounded-2xl flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400 relative overflow-hidden group shadow-inner">
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent"></div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-emerald-400 uppercase font-black tracking-wider">ADS-B Connection:</span>
-            <span className="text-slate-200 font-extrabold uppercase animate-pulse">Live Radar Network Active</span>
-          </div>
-          <div className="flex gap-5">
-            <span>PACKETS: <strong className="text-slate-300">100% SECURE</strong></span>
-            <span className="hidden md:inline">LATENCY: <strong className="text-cyan-400">12ms</strong></span>
-            <span className="hidden sm:inline">NODES: <strong className="text-purple-400">2,171 TELEMETRIES</strong></span>
-          </div>
-        </div>
-
-        {/* TELEMETRIA DASHBOARD (STATISTICHE AVANZATE) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-5xl relative">
+        {/* TELEMETRIA DASHBOARD (STATISTICHE AVANZATE - LARGHEZZA 7XL ALLINEATA) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl relative mt-16">
           {[
             { label: "Vettori in Archivio", value: totale, sub: "OPERA OMNIA", color: "text-white", border: "border-slate-800 bg-slate-900/90" },
             { label: "Servizio di Linea Attivo", value: attivi, sub: "IN AIRSPACE NOW", color: "text-emerald-400", border: "border-slate-800 bg-slate-900/90" },
             { label: "Flotta Storica Ritirata", value: storici, sub: "CHRONO REPOSITORY", color: "text-amber-500", border: "border-slate-800 bg-slate-900/90" },
             { label: "Classe Leggendaria", value: legendaryCount || 0, color: "text-purple-400", sub: "MAX RARITY TIER", border: "border-slate-800 bg-slate-900/90" }
           ].map((stat, i) => (
-            <div key={i} className={`border rounded-2xl p-7 md:p-8 backdrop-blur-xl hover:border-cyan-500/70 hover:shadow-[0_0_25px_rgba(6,182,212,0.15)] transition-all group/stat relative overflow-hidden shadow-lg ${stat.border}`}>
+            <div key={i} className={`border rounded-2xl p-5 md:p-8 backdrop-blur-xl hover:border-cyan-500/70 hover:shadow-[0_0_25px_rgba(6,182,212,0.15)] transition-all group/stat relative overflow-hidden shadow-lg ${stat.border}`}>
               <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800 group-hover/stat:bg-cyan-500 transition-colors"></div>
               <span className={`text-4xl font-black font-mono block tracking-tight ${stat.color}`}>{stat.value.toLocaleString()}</span>
               <span className="text-slate-300 text-sm font-extrabold block mt-2.5 uppercase tracking-wide font-sans">{stat.label}</span>
@@ -124,7 +223,10 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
       {/* ------------------ SEZIONE: AEREO DEL GIORNO ------------------ */}
       {aereoDelGiorno && (
         <section className="relative z-10 px-4 max-w-7xl mx-auto py-16 animate-fade-in">
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 md:p-12 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+          <div className={`bg-slate-900/90 border rounded-3xl p-8 md:p-12 backdrop-blur-xl shadow-2xl relative overflow-hidden group transition-all duration-300 ${featuredBorder}`}>
+            {/* Spot sfumato olografico per rarità */}
+            <div className={`absolute -right-12 -top-12 w-48 h-48 rounded-full blur-3xl transition-all duration-500 pointer-events-none z-0 ${featuredGlow}`}></div>
+            
             {/* Corner Indicators stile HUD aeronautico */}
             <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-cyan-500/40"></div>
             <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-cyan-500/40"></div>
@@ -137,7 +239,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
               <div className="lg:col-span-5 space-y-6">
                 <div>
                   <span className="text-cyan-550 font-sans text-xs uppercase tracking-[0.25em] font-black block mb-2">
-                    // DAILY FLIGHT PLAN FEATURED
+                    {"// DAILY FLIGHT PLAN FEATURED"}
                   </span>
                   <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight uppercase">
                     {aereoDelGiorno.model_name}
@@ -150,14 +252,14 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
                 <div className="p-6 bg-slate-950/90 border border-slate-850 rounded-2xl font-sans text-sm space-y-3.5 text-slate-300 font-semibold shadow-inner">
                   <div className="flex justify-between"><span className="text-slate-450 uppercase text-xs font-bold tracking-wider">Propulsione</span> <span className="text-white font-black font-mono">{aereoDelGiorno.engines}</span></div>
                   <div className="flex justify-between"><span className="text-slate-450 uppercase text-xs font-bold tracking-wider">Status Operativo</span> <span className={aereoDelGiorno.status === 'ACTIVE' ? 'text-emerald-400 font-extrabold font-mono text-xs' : 'text-amber-500 font-extrabold font-mono text-xs'}>{aereoDelGiorno.status}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-450 uppercase text-xs font-bold tracking-wider">Indice di Rarità</span> <span className="text-purple-400 font-black font-mono text-xs">{aereoDelGiorno.rarity}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-450 uppercase text-xs font-bold tracking-wider">Indice di Rarità</span> <span className={`${rarityTextColor} font-black font-mono text-xs`}>{aereoDelGiorno.rarity}</span></div>
                 </div>
 
                 {/* Grafici statistici live per gli appassionati */}
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm font-mono text-slate-350 mb-1 font-bold">
-                      <span>RAGGIO D'AZIONE MASSIMO</span>
+                      <span>RAGGIO D&apos;AZIONE MASSIMO</span>
                       <span className="text-cyan-400 font-bold">{aereoDelGiorno.range_km?.toLocaleString()} KM</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
@@ -189,9 +291,11 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
               <div className="lg:col-span-7 w-full h-64 md:h-96 rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 relative shadow-2xl">
                 {aereoDelGiorno.house_livery_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img 
+                  <Image 
                     src={aereoDelGiorno.house_livery_url} 
                     alt={aereoDelGiorno.model_name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
                   />
                 ) : (
@@ -211,6 +315,26 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
           </div>
         </section>
       )}
+
+      {/* ------------------ SEZIONE: HANGAR DI ESPLORAZIONE ------------------ */}
+      <section className="relative z-10 px-4 max-w-7xl mx-auto py-16">
+        <div className="mb-8">
+          <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+            <span className="w-1.5 h-6 bg-cyan-500 rounded"></span>
+            Hangar di Esplorazione
+          </h2>
+          <p className="text-slate-400 font-mono text-xs mt-1 uppercase tracking-wider">
+            Scopri una selezione casuale della nostra flotta. Clicca su una scheda per avviare l&apos;acquisizione dati.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+          {exploreAircraftList.map((aircraft) => (
+            <AircraftCard key={aircraft.id} aircraft={aircraft} lang={lang} />
+          ))}
+        </div>
+      </section>
+
       {/* ------------------ SEZIONE: NAVIGATORE ERE STORICHE ------------------ */}
       <section className="relative z-10 px-4 max-w-7xl mx-auto py-16">
         <div className="mb-8">
@@ -218,7 +342,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             <span className="w-1.5 h-6 bg-cyan-500 rounded"></span>
             Cronologia Vettori per Epoca
           </h2>
-          <p className="text-slate-450 font-mono text-xs mt-1 uppercase tracking-wider">Esplorazione filtrata attraverso le grandi rivoluzioni dell'ingegneria aeronautica civili.</p>
+          <p className="text-slate-450 font-mono text-xs mt-1 uppercase tracking-wider">Esplorazione filtrata attraverso le grandi rivoluzioni dell&apos;ingegneria aeronautica civili.</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -237,9 +361,11 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
                 {/* Immagine di Epoca con sovrapposizione olografica */}
                 <div className="h-32 w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-850 relative mb-5 shadow-inner">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
+                  <Image 
                     src={epoch.img} 
                     alt={epoch.title} 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
                     className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500" 
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
@@ -278,7 +404,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800 group-hover:bg-purple-500 transition-colors"></div>
             <div>
               <span className="text-purple-400 font-mono text-xs uppercase tracking-widest font-black block mb-3">
-                // REGISTRO OPERATORI DI LINEA
+                {"// REGISTRO OPERATORI DI LINEA"}
               </span>
               <h3 className="text-3xl font-black text-white uppercase tracking-wider mb-4 group-hover:text-purple-450 transition-colors font-mono">
                 Compagnie Aeree
@@ -300,7 +426,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800 group-hover:bg-cyan-500 transition-colors"></div>
             <div>
               <span className="text-cyan-400 font-mono text-xs uppercase tracking-widest font-black block mb-3">
-                // INFRASTRUTTURE & HUB INTERNAZIONALI
+                {"// INFRASTRUTTURE & HUB INTERNAZIONALI"}
               </span>
               <h3 className="text-3xl font-black text-white uppercase tracking-wider mb-4 group-hover:text-cyan-405 transition-colors font-mono">
                 Aeroporti Globali
@@ -337,7 +463,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         {/* Griglia che ospita i 3 box delle news */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {recentNewsList.length > 0 ? (
-            recentNewsList.map((article: any) => {
+            recentNewsList.map((article: { id: string; slug: string; title: string; content: string; cover_image_url: string | null; published_at: string | null }) => {
               const dateStr = article.published_at 
                 ? new Date(article.published_at).toLocaleDateString(lang, { day: 'numeric', month: 'short', year: 'numeric' })
                 : "N/D";
@@ -352,9 +478,11 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
                     <div className="h-48 w-full bg-slate-950 relative overflow-hidden">
                       {article.cover_image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img 
+                        <Image 
                           src={article.cover_image_url} 
                           alt={article.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
                           className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                         />
                       ) : (
@@ -386,7 +514,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
             })
           ) : (
             <p className="text-slate-500 font-mono text-xs animate-pulse tracking-widest py-10 col-span-full text-center">
-              &gt; NESSUN ARTICOLO DISPONIBILE NELL'ARCHIVIO EDITORIALE.
+              &gt; NESSUN ARTICOLO DISPONIBILE NELL&apos;ARCHIVIO EDITORIALE.
             </p>
           )}
         </div>
