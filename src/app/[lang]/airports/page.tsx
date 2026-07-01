@@ -13,6 +13,7 @@ export async function generateStaticParams() {
     { lang: "it" },
     { lang: "es" },
     { lang: "fr" },
+    { lang: "de" },
   ];
 }
 

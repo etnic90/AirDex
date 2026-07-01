@@ -2,7 +2,7 @@ import { getRequestConfig } from 'next-intl/server';
 import path from 'path';
 import fs from 'fs';
 
-const locales = ['en', 'it'];
+const locales = ['en', 'it', 'es', 'fr', 'de'];
 
 export default getRequestConfig(async (params) => {
   let locale = params.locale as string;

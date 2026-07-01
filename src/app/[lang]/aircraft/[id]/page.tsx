@@ -81,7 +81,7 @@ export async function generateStaticParams() {
 
   if (!aircrafts) return [];
 
-  const locales = ['en', 'it', 'es', 'fr'];
+  const locales = ['en', 'it', 'es', 'fr', 'de'];
   
   return aircrafts.flatMap((aircraft) =>
     locales.map((lang) => ({

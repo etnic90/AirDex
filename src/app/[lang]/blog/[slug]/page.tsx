@@ -40,7 +40,7 @@ export async function generateStaticParams() {
 
   if (!articles) return [];
 
-  const locales = ['en', 'it', 'es', 'fr'];
+  const locales = ['en', 'it', 'es', 'fr', 'de'];
 
   return articles.flatMap((article) =>
     locales.map((lang) => ({

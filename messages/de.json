@@ -1,0 +1,13 @@
+{
+  "Navigation": {
+    "radar": "Radar",
+    "fleet": "Flotte",
+    "login": "Anmelden"
+  },
+  "Aircraft": {
+    "max_pax": "Max. Kapazität",
+    "first_flight": "Erstflug",
+    "engines": "Triebwerke",
+    "range": "Reichweite"
+  }
+}

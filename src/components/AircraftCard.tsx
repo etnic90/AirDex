@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AircraftModel } from "../types"; 
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 interface AircraftCardProps {
   aircraft: AircraftModel;
@@ -12,7 +13,9 @@ interface AircraftCardProps {
 
 export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const manufacturerName = aircraft.manufacturers?.name || 'Sconosciuto';
+  const t = useTranslations("Aircraft");
+  const manufacturerName = aircraft.manufacturers?.name || 
+    (lang === 'it' ? 'Sconosciuto' : lang === 'es' ? 'Desconocido' : lang === 'fr' ? 'Inconnu' : lang === 'de' ? 'Unbekannt' : 'Unknown');
   
   // Strategia Immagini: Fallback gerarchico
   const imageUrl = aircraft.house_livery_url || aircraft.launch_customer_livery_url;
@@ -117,19 +120,19 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
 
         <div className="space-y-3 text-cyan-100 relative z-10">
           <div className="flex justify-between border-b border-slate-800/80 pb-3 items-center">
-            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">Motori</span>
+            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">{t("engines")}</span>
             <span className="text-white text-right font-black font-mono truncate max-w-[200px] text-sm md:text-base">{aircraft.engines || 'N/A'}</span>
           </div>
           <div className="flex justify-between border-b border-slate-800/80 pb-3 items-center">
-            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">Capienza Max</span>
+            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">{t("max_pax")}</span>
             <span className="text-white text-right font-black font-mono text-sm md:text-base">{aircraft.max_passengers ? `${aircraft.max_passengers} PAX` : 'N/A'}</span>
           </div>
           <div className="flex justify-between border-b border-slate-800/80 pb-3 items-center">
-            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">Autonomia</span>
+            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">{t("range")}</span>
             <span className="text-white text-right font-black font-mono text-sm md:text-base">{aircraft.range_km ? `${aircraft.range_km.toLocaleString()} km` : 'N/A'}</span>
           </div>
           <div className="flex justify-between pb-1 items-center">
-            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">Primo Volo</span>
+            <span className="text-slate-450 font-bold uppercase text-xs tracking-wider font-sans">{t("first_flight")}</span>
             <span className="text-white text-right font-black font-mono text-sm md:text-base">{aircraft.first_flight_year || 'N/A'}</span>
           </div>
         </div>
