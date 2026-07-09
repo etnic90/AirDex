@@ -83,19 +83,20 @@ interface FleetItem {
     model_name: string;
     type: string;
     rarity: string;
+    slug: string;
     manufacturers: { name: string };
   };
 }
 
-export default function AirlineDetailPage({ params }: { params: Promise<{ lang: string; id: string }> }) {
+export default function AirlineDetailPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   // UNWRAP DEI PARAMETRI ASINCRONI PER NEXT.JS 15
   const unwrappedParams = React.use(params);
   const lang = unwrappedParams.lang;
-  const id = unwrappedParams.id;
+  const slug = unwrappedParams.slug;
 
   const [airline, setAirline] = useState<AirlineDetail | null>(null);
   const [fleet, setFleet] = useState<FleetItem[]>([]);
-  const [allModels, setAllModels] = useState<{ id: string; model_name: string }[]>([]);
+  const [allModels, setAllModels] = useState<{ id: string; model_name: string; slug: string }[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [activeTab, setActiveTab] = useState<"overview" | "history" | "fleet">("overview");
@@ -107,26 +108,29 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
 
   useEffect(() => {
     const fetchDeepData = async () => {
-      const { data: modelsData } = await supabase.from("aircraft_models").select("id, model_name");
-      if (modelsData) setAllModels(modelsData);
+      const { data: modelsData } = await supabase.from("aircraft_models").select("id, model_name, slug");
+      if (modelsData) setAllModels(modelsData as any[]);
 
-      const { data: airlineData } = await supabase.from("airlines").select("*").eq("id", id).single();
+      const { data: airlineData } = await supabase.from("airlines").select("*").eq("slug", slug).single();
 
-      const { data: fleetData } = await supabase
-        .from("airline_fleet")
-        .select(`
-          status, qty,
-          aircraft_models (id, model_name, type, rarity, manufacturers ( name ))
-        `)
-        .eq("airline_id", id);
+      if (airlineData) {
+        setAirline(airlineData as AirlineDetail);
 
-      if (airlineData) setAirline(airlineData as AirlineDetail);
-      if (fleetData) setFleet(fleetData as unknown as FleetItem[]);
+        const { data: fleetData } = await supabase
+          .from("airline_fleet")
+          .select(`
+            status, qty,
+            aircraft_models (id, model_name, type, rarity, slug, manufacturers ( name ))
+          `)
+          .eq("airline_id", airlineData.id);
+
+        if (fleetData) setFleet(fleetData as unknown as FleetItem[]);
+      }
       setLoading(false);
     };
 
     fetchDeepData();
-  }, [supabase, id]);
+  }, [supabase, slug]);
 
   const findMatchingLink = (val: string): string | null => {
     const cleanVal = val.trim().toLowerCase();
@@ -136,7 +140,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
     for (const plane of allModels) {
       const pName = plane.model_name.toLowerCase();
       if (cleanVal === pName || (cleanVal.length > 5 && pName.includes(cleanVal)) || (pName.length > 5 && cleanVal.includes(pName))) {
-        return `/${lang}/aircraft/${plane.id}`;
+        return `/${lang}/aircraft/${plane.slug}`;
       }
     }
 
@@ -338,7 +342,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
 
         {/* Pulsante Registrazione AirDex */}
         <div className="mb-8 w-full max-w-sm">
-          <CaptureButtons targetId={id} type="AIRLINE" lang={lang} />
+          <CaptureButtons targetId={airline.id} type="AIRLINE" lang={lang} />
         </div>
 
         {/* BARRA DEI COMANDI INTERATTIVI */}
@@ -493,7 +497,7 @@ export default function AirlineDetailPage({ params }: { params: Promise<{ lang: 
                     return (
                       <Link 
                         key={model.id}
-                        href={`/${lang}/aircraft/${model.id}`}
+                        href={`/${lang}/aircraft/${model.slug}`}
                         className="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/65 p-6 rounded-2xl flex items-center justify-between transition-all duration-300 hover:bg-slate-900/80 group shadow-md hover:shadow-[0_0_25px_rgba(6,182,212,0.15)] hover:-translate-y-1 relative overflow-hidden"
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-gradient-to-b group-hover:from-cyan-500 group-hover:to-purple-500 transition-colors"></div>

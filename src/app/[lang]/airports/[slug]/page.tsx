@@ -184,19 +184,20 @@ interface HubAirline {
     iata_code: string;
     website: string | null;
     logo_url: string | null;
+    slug: string;
   };
 }
 
 export default function AirportDetailPage() {
   const params = useParams();
   const lang = params?.lang || "en";
-  const id = params?.id || "";
+  const slug = params?.slug || "";
 
   const [airport, setAirport] = useState<AirportDetail | null>(null);
   const [hubAirlines, setHubAirlines] = useState<HubAirline[]>([]);
   const [loading, setLoading] = useState(true);
-  const [allAirlines, setAllAirlines] = useState<{ id: string; name: string }[]>([]);
-  const [allModels, setAllModels] = useState<{ id: string; model_name: string }[]>([]);
+  const [allAirlines, setAllAirlines] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [allModels, setAllModels] = useState<{ id: string; model_name: string; slug: string }[]>([]);
   
   const [activeTab, setActiveTab] = useState<"overview" | "runways" | "airlines" | "history">("overview");
 
@@ -207,23 +208,27 @@ export default function AirportDetailPage() {
 
   useEffect(() => {
     const fetchAirportData = async () => {
-      const { data: airportData } = await supabase.from("airports").select("*").eq("id", id).single();
-      const { data: hubsData } = await supabase
-        .from("airline_hubs")
-        .select(`hub_type, airlines ( id, name, iata_code, website, logo_url )`)
-        .eq("airport_id", id);
+      const { data: airportData } = await supabase.from("airports").select("*").eq("slug", slug).single();
+      
+      if (airportData) {
+        setAirport(airportData as AirportDetail);
 
-      if (airportData) setAirport(airportData as AirportDetail);
-      if (hubsData) setHubAirlines(hubsData as unknown as HubAirline[]);
+        const { data: hubsData } = await supabase
+          .from("airline_hubs")
+          .select(`hub_type, airlines ( id, name, iata_code, website, logo_url, slug )`)
+          .eq("airport_id", airportData.id);
+
+        if (hubsData) setHubAirlines(hubsData as unknown as HubAirline[]);
+      }
 
       // Fetch all airlines with paginated requests to bypass the 1000 limit
-      let airlinesList: { id: string; name: string }[] = [];
+      let airlinesList: { id: string; name: string; slug: string }[] = [];
       let start = 0;
       const size = 1000;
       while (true) {
         const { data: chunk } = await supabase
           .from("airlines")
-          .select("id, name")
+          .select("id, name, slug")
           .order("name")
           .range(start, start + size - 1);
         if (!chunk || chunk.length === 0) break;
@@ -234,13 +239,13 @@ export default function AirportDetailPage() {
       setAllAirlines(airlinesList);
 
       // Fetch all aircraft models
-      const { data: modelsData } = await supabase.from("aircraft_models").select("id, model_name");
-      if (modelsData) setAllModels(modelsData);
+      const { data: modelsData } = await supabase.from("aircraft_models").select("id, model_name, slug");
+      if (modelsData) setAllModels(modelsData as any[]);
 
       setLoading(false);
     };
     fetchAirportData();
-  }, [supabase, id]);
+  }, [supabase, slug]);
 
   const findMatchingLink = (val: string): string | null => {
     const cleanVal = val.trim().toLowerCase();
@@ -250,7 +255,7 @@ export default function AirportDetailPage() {
     for (const plane of allModels) {
       const pName = plane.model_name.toLowerCase();
       if (cleanVal === pName || (cleanVal.length > 5 && pName.includes(cleanVal)) || (pName.length > 5 && cleanVal.includes(pName))) {
-        return `/${lang}/aircraft/${plane.id}`;
+        return `/${lang}/aircraft/${plane.slug}`;
       }
     }
 
@@ -258,7 +263,7 @@ export default function AirportDetailPage() {
     for (const airline of allAirlines) {
       const aName = airline.name.toLowerCase();
       if (cleanVal === aName || (cleanVal.length > 4 && aName.includes(cleanVal)) || (aName.length > 4 && cleanVal.includes(aName))) {
-        return `/${lang}/airlines/${airline.id}`;
+        return `/${lang}/airlines/${airline.slug}`;
       }
     }
 
@@ -640,7 +645,7 @@ export default function AirportDetailPage() {
                       const logoSrc = airline.logo_url || (airline.website ? `https://logo.clearbit.com/${airline.website}` : null);
 
                       return (
-                        <Link key={index} href={`/${lang}/airlines/${airline.id}`} className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between hover:bg-slate-800/50 hover:border-emerald-500/50 transition-all group overflow-hidden shadow-md">
+                        <Link key={index} href={`/${lang}/airlines/${airline.slug}`} className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between hover:bg-slate-800/50 hover:border-emerald-500/50 transition-all group overflow-hidden shadow-md">
                           <div className="flex items-center gap-4 min-w-0">
                             <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center p-2 shrink-0 shadow-sm overflow-hidden">
                               <AirlineLogo src={logoSrc} alt={airline.name} airlineName={airline.name} />

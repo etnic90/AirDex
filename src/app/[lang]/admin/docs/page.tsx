@@ -97,9 +97,9 @@ export default function AdminDocsPage() {
                   <h3 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest">Architettura di Routing</h3>
                   <ul className="text-xs text-slate-400 space-y-2 font-mono list-disc list-inside">
                     <li>`/` : Home page dinamica</li>
-                    <li>`/[lang]/aircraft/[id]` : Scheda tecnica aereo</li>
-                    <li>`/[lang]/airlines/[id]` : Profilo flotta e hub</li>
-                    <li>`/[lang]/airports/[id]` : Telemetria scalo</li>
+                    <li>`/[lang]/aircraft/[slug]` : Scheda tecnica aereo</li>
+                    <li>`/[lang]/airlines/[slug]` : Profilo flotta e hub</li>
+                    <li>`/[lang]/airports/[slug]` : Telemetria scalo</li>
                     <li>`/[lang]/admin` : Pannello di moderazione ed editing</li>
                   </ul>
                 </div>

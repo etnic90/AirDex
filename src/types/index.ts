@@ -30,5 +30,5 @@ export interface AircraftModel {
   description_fr?: string;
   trivia?: string[];
   extended_stats?: Record<string, unknown>;
-   
+  slug: string;
 }

@@ -56,6 +56,7 @@ interface AircraftModel {
   max_passengers: number | null;
   range_km: number | null;
   first_flight_year: number | null;
+  slug: string;
   manufacturers: { name: string } | null;
 }
 
@@ -327,7 +328,7 @@ const [playsToday, setPlaysToday] = useState(0);
     // Carica Aerei (per Teca e Domande Quiz)
     const { data: modelsData } = await supabase
       .from("aircraft_models")
-      .select("id, model_name, type, rarity, max_passengers, range_km, first_flight_year, manufacturers(name)")
+      .select("id, model_name, type, rarity, max_passengers, range_km, first_flight_year, slug, manufacturers(name)")
       .order("model_name");
     setAircraftModels((modelsData || []) as unknown as AircraftModel[]);
 
@@ -1810,7 +1811,7 @@ const [playsToday, setPlaysToday] = useState(0);
                               {model.manufacturers?.name || "Aero"}
                             </span>
                             <Link 
-                              href={`/${lang}/aircraft/${model.id}`}
+                              href={`/${lang}/aircraft/${model.slug}`}
                               className="text-white font-black text-xs hover:text-cyan-400 transition-colors block mt-0.5 truncate"
                             >
                               {model.model_name}

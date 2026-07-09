@@ -52,7 +52,7 @@ export default function AircraftCard({ aircraft, lang }: AircraftCardProps) {
     : 'text-emerald-500/80 border-emerald-900/50 bg-emerald-950/30';
 
   return (
-    <Link href={`/${lang}/aircraft/${aircraft.id}`} className="block transition-transform hover:scale-[1.03] w-full">
+    <Link href={`/${lang}/aircraft/${aircraft.slug}`} className="block transition-transform hover:scale-[1.03] w-full">
       <div className={`relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border transition-all duration-300 overflow-hidden group ${cardBorderAndGlow}`}>
         {/* Spot sfumato olografico per rarità */}
         <div className={`absolute -right-8 -top-8 w-28 h-28 rounded-full blur-2xl transition-all duration-500 pointer-events-none z-0 ${raritySpotClass}`}></div>

@@ -16,6 +16,7 @@ interface Airport {
   elevation_ft: number;
   annual_passengers_mio?: number | null;
   image_url?: string | null;
+  slug: string;
 }
 
 const getAirportFallbackImage = (airport: { name?: string | null; runways_count?: number | null; elevation_ft?: number | null; country?: string | null }) => {
@@ -309,7 +310,7 @@ export default function AirportsClient({
                         </div>
 
                         <Link 
-                          href={`/${lang}/airports/${airport.id}`}
+                          href={`/${lang}/airports/${airport.slug}`}
                           className="w-full py-3.5 rounded-2xl bg-slate-950 border border-slate-850 hover:border-emerald-500/30 text-slate-400 hover:text-emerald-400 font-mono text-xs uppercase tracking-widest font-black transition-all flex justify-center items-center gap-2 group-hover:bg-slate-900/40 cursor-pointer shadow-sm"
                         >
                           Torre Controllo

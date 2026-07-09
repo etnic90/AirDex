@@ -7,6 +7,7 @@ type SearchItem = {
   id: string;
   model_name: string;
   manufacturer: string;
+  slug: string;
 };
 
 interface SearchAutocompleteProps {
@@ -61,9 +62,9 @@ export default function SearchAutocomplete({ lang, searchIndex }: SearchAutocomp
   };
 
   // Click sul suggerimento (Click = Vai alla singola pagina dell'aereo)
-  const handleSelect = (id: string) => {
+  const handleSelect = (slug: string) => {
     setIsOpen(false);
-    router.push(`/${lang}/aircraft/${id}`);
+    router.push(`/${lang}/aircraft/${slug}`);
   };
 
   return (
@@ -89,7 +90,7 @@ export default function SearchAutocomplete({ lang, searchIndex }: SearchAutocomp
           INTERCETTA
         </button>
       </form>
-
+ 
       {/* DROPDOWN RISULTATI PREDITTIVI */}
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 w-full mt-2 bg-slate-900/95 border border-cyan-900/50 rounded-xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl z-30 animate-in fade-in slide-in-from-top-2">
@@ -101,7 +102,7 @@ export default function SearchAutocomplete({ lang, searchIndex }: SearchAutocomp
               <li key={item.id}>
                 <button
                   type="button"
-                  onClick={() => handleSelect(item.id)}
+                  onClick={() => handleSelect(item.slug)}
                   className="w-full text-left px-5 py-3 hover:bg-slate-800 flex justify-between items-center group transition-colors border-b border-slate-800/50 last:border-0"
                 >
                   <span className="font-bold text-white group-hover:text-cyan-400 transition-colors">

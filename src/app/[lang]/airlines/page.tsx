@@ -26,7 +26,7 @@ export default async function AirlinesPage({
 
   // PostgREST ha un limite fisso di 1000 righe per chiamata.
   // Selezioniamo solo le colonne richieste per ridurre il carico di banda del 90% ed evitare timeout sul server.
-  const fields = "id, name, iata_code, icao_code, country, founded_year, closed_year, logo_url, alliance, main_hub, slogan, website, callsign";
+  const fields = "id, name, iata_code, icao_code, country, founded_year, closed_year, logo_url, alliance, main_hub, slogan, website, callsign, slug";
   const [chunk1, chunk2, chunk3, chunk4] = await Promise.all([
     supabase.from("airlines").select(fields).range(0, 999),
     supabase.from("airlines").select(fields).range(1000, 1999),

@@ -43,14 +43,14 @@ const getCountryCode = (countryName?: string): string | null => {
 export async function generateMetadata({ 
   params 
 }: { 
-  params: Promise<{ lang: string, id: string }> 
+  params: Promise<{ lang: string, slug: string }> 
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { slug } = await params;
   
   const { data: aircraft } = await supabase
     .from('aircraft_models')
     .select('model_name, manufacturers(name)')
-    .eq('id', id)
+    .eq('slug', slug)
     .single();
 
   if (!aircraft) {
@@ -77,7 +77,7 @@ export async function generateMetadata({
 export async function generateStaticParams() {
   const { data: aircrafts } = await supabase
     .from('aircraft_models')
-    .select('id');
+    .select('slug');
 
   if (!aircrafts) return [];
 
@@ -86,25 +86,25 @@ export async function generateStaticParams() {
   return aircrafts.flatMap((aircraft) =>
     locales.map((lang) => ({
       lang: lang,
-      id: aircraft.id,
+      slug: aircraft.slug,
     }))
   );
 }
 
 // Caching for linkable entities to avoid redundant database queries during static generation
 let cachedLinkableData: {
-  planes: { id: string; model_name: string }[];
-  airlines: { id: string; name: string; iata_code: string | null }[];
-  airports: { id: string; name: string; iata_code: string | null }[];
+  planes: { id: string; model_name: string; slug: string }[];
+  airlines: { id: string; name: string; iata_code: string | null; slug: string }[];
+  airports: { id: string; name: string; iata_code: string | null; slug: string }[];
 } | null = null;
 
 async function getLinkableData() {
   if (cachedLinkableData) return cachedLinkableData;
   
   const [planesRes, airlinesRes, airportsRes] = await Promise.all([
-    supabase.from('aircraft_models').select('id, model_name'),
-    supabase.from('airlines').select('id, name, iata_code'),
-    supabase.from('airports').select('id, name, iata_code')
+    supabase.from('aircraft_models').select('id, model_name, slug'),
+    supabase.from('airlines').select('id, name, iata_code, slug'),
+    supabase.from('airports').select('id, name, iata_code, slug')
   ]);
   
   cachedLinkableData = {
@@ -122,9 +122,9 @@ async function getLinkableData() {
 export default async function AircraftPage({ 
   params 
 }: { 
-  params: Promise<{ lang: string, id: string }> 
+  params: Promise<{ lang: string, slug: string }> 
 }) {
-  const { lang, id } = await params;
+  const { lang, slug } = await params;
 
   // Abilita il rendering statico per next-intl
   setRequestLocale(lang);
@@ -136,7 +136,7 @@ export default async function AircraftPage({
   const { data, error } = await supabase
     .from('aircraft_models')
     .select('*, manufacturers(*)') 
-    .eq('id', id)
+    .eq('slug', slug)
     .single();
 
   if (error || !data) {
@@ -152,9 +152,9 @@ export default async function AircraftPage({
     .select(`
       qty,
       status,
-      airlines ( id, name, iata_code, website, logo_url, country )
+      airlines ( id, name, iata_code, website, logo_url, country, slug )
     `)
-    .eq('aircraft_model_id', id);
+    .eq('aircraft_model_id', data.id);
 
   interface OperatorItem {
     qty: number;
@@ -166,6 +166,7 @@ export default async function AircraftPage({
       website: string | null;
       logo_url: string | null;
       country: string | null;
+      slug: string;
     } | null;
   }
 
@@ -186,7 +187,7 @@ export default async function AircraftPage({
       airlines ( name ),
       airports ( name, iata_code )
     `)
-    .eq('aircraft_id', id)
+    .eq('aircraft_id', data.id)
     .eq('status', 'APPROVED')
     .order('created_at', { ascending: false });
 
@@ -283,22 +284,22 @@ export default async function AircraftPage({
     // 1. Mappature speciali per modelli famosi o sigle corte
     if (cleanVal.includes("747")) {
       const match = linkableData.planes.find(p => p.model_name.includes("747-400"));
-      if (match) return `/${lang}/aircraft/${match.id}`;
+      if (match) return `/${lang}/aircraft/${match.slug}`;
     }
     if (cleanVal.includes("dc-10") || cleanVal.includes("dc10")) {
       const match = linkableData.planes.find(p => p.model_name.includes("DC-10-30"));
-      if (match) return `/${lang}/aircraft/${match.id}`;
+      if (match) return `/${lang}/aircraft/${match.slug}`;
     }
     if (cleanVal.includes("tristar") || cleanVal.includes("l-1011-1") || (cleanVal.includes("l-1011") && !cleanVal.includes("-100"))) {
       const match = linkableData.planes.find(p => p.model_name.includes("L-1011-1"));
-      if (match) return `/${lang}/aircraft/${match.id}`;
+      if (match) return `/${lang}/aircraft/${match.slug}`;
     }
 
     // 2. Controllo aerei esatti
     for (const plane of linkableData.planes) {
       const pName = plane.model_name.toLowerCase();
       if (cleanVal === pName || (cleanVal.length > 5 && pName.includes(cleanVal)) || (pName.length > 5 && cleanVal.includes(pName))) {
-        return `/${lang}/aircraft/${plane.id}`;
+        return `/${lang}/aircraft/${plane.slug}`;
       }
     }
 
@@ -314,7 +315,7 @@ export default async function AircraftPage({
         (cleanVal.length > 4 && aName.includes(cleanVal)) ||
         (aName.length > 4 && cleanVal.includes(aName))
       ) {
-        return `/${lang}/airlines/${airline.id}`;
+        return `/${lang}/airlines/${airline.slug}`;
       }
     }
 
@@ -329,7 +330,7 @@ export default async function AircraftPage({
         (cleanVal.length > 5 && apName.includes(cleanVal)) ||
         (apName.length > 5 && cleanVal.includes(apName))
       ) {
-        return `/${lang}/airports/${airport.id}`;
+        return `/${lang}/airports/${airport.slug}`;
       }
     }
 
@@ -608,7 +609,7 @@ export default async function AircraftPage({
           <div className="lg:col-span-4 space-y-8">
             
             <div className="w-full">
-              <CaptureButtons targetId={id} type="AIRCRAFT" lang={lang} />
+              <CaptureButtons targetId={aircraft.id} type="AIRCRAFT" lang={lang} />
             </div>
 
             {/* PANNELLO TELEMETRIA HUD */}
@@ -697,7 +698,7 @@ export default async function AircraftPage({
         {/* SEZIONE SPOTTER CARICAMENTI E GALLERIA (100% Width) */}
         <div className="w-full border-t border-slate-900 mt-14 pt-10">
           <SpotterSection
-            aircraftId={id}
+            aircraftId={aircraft.id}
             lang={lang}
             initialPhotos={initialPhotos}
             airlinesList={airlinesList || []}
@@ -733,7 +734,7 @@ export default async function AircraftPage({
                     return (
                       <Link 
                         key={`${airline.id}-${idx}`}
-                        href={`/${lang}/airlines/${airline.id}`}
+                        href={`/${lang}/airlines/${airline.slug}`}
                         className="bg-slate-900/20 border border-slate-800/80 hover:border-purple-500/40 p-5 rounded-xl flex items-center gap-4 transition-all duration-300 hover:bg-slate-900/40 group shadow-md hover:-translate-y-0.5 relative overflow-hidden"
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-transparent group-hover:bg-purple-500 transition-colors" />
@@ -800,7 +801,7 @@ export default async function AircraftPage({
                     return (
                       <Link 
                         key={`${airline.id}-${idx}`}
-                        href={`/${lang}/airlines/${airline.id}`}
+                        href={`/${lang}/airlines/${airline.slug}`}
                         className="bg-slate-900/10 border border-slate-900 hover:border-slate-700/60 p-5 rounded-xl flex items-center gap-4 transition-all duration-300 hover:bg-slate-900/20 group shadow-md hover:-translate-y-0.5 relative overflow-hidden"
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-transparent group-hover:bg-slate-500 transition-colors" />

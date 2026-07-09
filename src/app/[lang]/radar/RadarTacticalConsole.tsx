@@ -613,7 +613,7 @@ export default function RadarTacticalConsole({
 
           {selectedTarget && (
             <Link 
-              href={`/${lang}/aircraft/${selectedTarget.aircraft.id}`}
+              href={`/${lang}/aircraft/${selectedTarget.aircraft.slug}`}
               className={`w-full mt-2 inline-flex items-center justify-center font-mono text-[10px] font-black uppercase tracking-widest py-3 border rounded-xl transition-all shadow-md cursor-pointer ${
                 consoleTheme === "cyan" ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20" :
                 consoleTheme === "amber" ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20" :

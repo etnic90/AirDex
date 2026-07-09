@@ -71,7 +71,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     supabase.from("aircraft_models").select("*", { count: "exact", head: true }).eq("status", "ACTIVE"),
     supabase.from("aircraft_models").select("*", { count: "exact", head: true }).eq("rarity", "LEGENDARY"),
     // Index di ricerca: Scarica solo i dati necessari a fare il filtro istantaneo lato client
-    supabase.from("aircraft_models").select("id, model_name, manufacturers(name)"),
+    supabase.from("aircraft_models").select("id, model_name, slug, manufacturers(name)"),
     // Modelli aerei con foto per la sezione Esplora (pool più grande per scelta deterministica giornaliera)
     supabase
       .from("aircraft_models")
@@ -104,10 +104,11 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   }
 
   // Formattiamo i dati della sesta query in un array pulito per l'autocomplete
-  const searchIndex = (searchIndexData as unknown as Array<{ id: string; model_name: string; manufacturers: { name: string } | null }>)?.map(item => ({
+  const searchIndex = (searchIndexData as unknown as Array<{ id: string; model_name: string; slug: string; manufacturers: { name: string } | null }>)?.map(item => ({
     id: item.id,
     model_name: item.model_name,
-    manufacturer: item.manufacturers?.name || "Sconosciuto"
+    manufacturer: item.manufacturers?.name || "Sconosciuto",
+    slug: item.slug
   })) || [];
 
   // Calcolo dati storici
@@ -281,7 +282,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
                 </div>
 
                 <div className="pt-2">
-                  <Link href={`/${lang}/aircraft/${aereoDelGiorno.id}`} className="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-mono text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-colors w-full md:w-auto">
+                  <Link href={`/${lang}/aircraft/${aereoDelGiorno.slug}`} className="inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-mono text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl transition-colors w-full md:w-auto">
                     Apri Scheda Telemetrica Completa &rarr;
                   </Link>
                 </div>

@@ -23,14 +23,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 2. Aerei Dinamici (SSG)
   const { data: aircrafts } = await supabase
     .from('aircraft_models')
-    .select('id');
+    .select('slug');
     
   const aircraftEntries: MetadataRoute.Sitemap = [];
   if (aircrafts) {
     for (const a of aircrafts) {
       for (const lang of locales) {
         aircraftEntries.push({
-          url: `${baseUrl}/${lang}/aircraft/${a.id}`,
+          url: `${baseUrl}/${lang}/aircraft/${a.slug}`,
           lastModified: new Date(),
           changeFrequency: 'weekly',
           priority: 0.7,
@@ -62,14 +62,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 4. Compagnie Dinamiche (Airlines)
   const { data: airlines } = await supabase
     .from('airlines')
-    .select('id');
+    .select('slug');
     
   const airlineEntries: MetadataRoute.Sitemap = [];
   if (airlines) {
     for (const a of airlines) {
       for (const lang of locales) {
         airlineEntries.push({
-          url: `${baseUrl}/${lang}/airlines/${a.id}`,
+          url: `${baseUrl}/${lang}/airlines/${a.slug}`,
           lastModified: new Date(),
           changeFrequency: 'monthly',
           priority: 0.5,
@@ -81,14 +81,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 5. Aeroporti Dinamici (Airports)
   const { data: airports } = await supabase
     .from('airports')
-    .select('id');
+    .select('slug');
     
   const airportEntries: MetadataRoute.Sitemap = [];
   if (airports) {
     for (const a of airports) {
       for (const lang of locales) {
         airportEntries.push({
-          url: `${baseUrl}/${lang}/airports/${a.id}`,
+          url: `${baseUrl}/${lang}/airports/${a.slug}`,
           lastModified: new Date(),
           changeFrequency: 'monthly',
           priority: 0.5,

@@ -280,7 +280,7 @@ export default function TimelineClient({
                           </div>
                           
                           <Link 
-                            href={`/${lang}/aircraft/${aircraft.id}`}
+                            href={`/${lang}/aircraft/${aircraft.slug}`}
                             className="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest hover:underline flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>Dettagli</span>

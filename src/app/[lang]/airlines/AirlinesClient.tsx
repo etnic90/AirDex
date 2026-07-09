@@ -20,6 +20,7 @@ interface Airline {
   alliance: string | null;
   main_hub: string | null;
   slogan: string | null;
+  slug: string;
 }
 
 export default function AirlinesClient({ 
@@ -468,7 +469,7 @@ export default function AirlinesClient({
 
                   {/* Bottone Ispeziona Flotta */}
                   <Link 
-                    href={`/${lang}/airlines/${airline.id}`}
+                    href={`/${lang}/airlines/${airline.slug}`}
                     className="w-full py-3.5 rounded-3xl bg-slate-950 border border-slate-900 hover:border-emerald-500/35 hover:bg-slate-900/40 text-slate-400 hover:text-white font-mono text-xs uppercase tracking-widest font-black transition-all flex justify-center items-center gap-2 group/btn relative z-10 shadow-inner"
                   >
                     Visualizza Dettagli
