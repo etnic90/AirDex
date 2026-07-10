@@ -14,7 +14,7 @@ interface BreadcrumbsProps {
 }
 
 export default function Breadcrumbs({ items, lang }: BreadcrumbsProps) {
-  const baseUrl = "https://airdex.org";
+  const baseUrl = "https://www.airdex.org";
 
   // Costruisce la lista strutturata per Schema.org JSON-LD
   const breadcrumbListJson = {

@@ -28,18 +28,18 @@ export async function generateMetadata({
     title: `${article.title} | AirDex Blog`,
     description: excerpt,
     alternates: {
-      canonical: `https://airdex.org/${lang}/blog/${slug}`,
+      canonical: `https://www.airdex.org/${lang}/blog/${slug}`,
     },
     openGraph: {
       title: article.title,
       description: excerpt,
-      url: `https://airdex.org/${lang}/blog/${slug}`,
+      url: `https://www.airdex.org/${lang}/blog/${slug}`,
       siteName: "AirDex",
       locale: lang,
       type: "article",
       images: [
         {
-          url: "https://airdex.org/images/seo-banner.jpg",
+          url: "https://www.airdex.org/images/seo-banner.jpg",
           width: 1200,
           height: 630,
           alt: article.title,
@@ -50,7 +50,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: article.title,
       description: excerpt,
-      images: ["https://airdex.org/images/seo-banner.jpg"],
+      images: ["https://www.airdex.org/images/seo-banner.jpg"],
     }
   };
 }
@@ -125,7 +125,7 @@ export default async function ArticlePage({
             "author": [{
               "@type": "Person",
               "name": article.author || "AirDex Team",
-              "url": `https://airdex.org/${lang}/profile`
+              "url": `https://www.airdex.org/${lang}/profile`
             }]
           })
         }}

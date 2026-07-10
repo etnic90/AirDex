@@ -549,7 +549,7 @@ export default async function AircraftPage({
     "@context": "https://schema.org",
     "@type": "Product",
     "name": aircraft.model_name,
-    "image": imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `https://airdex.org${imageUrl}`) : undefined,
+    "image": imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `https://www.airdex.org${imageUrl}`) : undefined,
     "description": localizedDescription || `Technical specifications and historical details of the ${aircraft.model_name}.`,
     "brand": {
       "@type": "Brand",

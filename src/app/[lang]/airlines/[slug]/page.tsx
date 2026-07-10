@@ -47,18 +47,18 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `https://airdex.org/${lang}/airlines/${slug}`,
+      canonical: `https://www.airdex.org/${lang}/airlines/${slug}`,
     },
     openGraph: {
       title,
       description,
-      url: `https://airdex.org/${lang}/airlines/${slug}`,
+      url: `https://www.airdex.org/${lang}/airlines/${slug}`,
       siteName: "AirDex",
       locale: lang,
       type: "website",
       images: [
         {
-          url: airline.logo_url || "https://airdex.org/images/seo-banner.jpg",
+          url: airline.logo_url || "https://www.airdex.org/images/seo-banner.jpg",
           alt: `${airline.name} logo`,
         }
       ]
@@ -67,7 +67,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: [airline.logo_url || "https://airdex.org/images/seo-banner.jpg"],
+      images: [airline.logo_url || "https://www.airdex.org/images/seo-banner.jpg"],
     }
   };
 }
@@ -114,7 +114,7 @@ export default async function AirlineDetailPage({
     "name": airline.name,
     "alternateName": airline.iata_code || undefined,
     "logo": airline.logo_url || undefined,
-    "url": `https://airdex.org/${resolvedParams.lang}/airlines/${resolvedParams.slug}`,
+    "url": `https://www.airdex.org/${resolvedParams.lang}/airlines/${resolvedParams.slug}`,
     "slogan": airline.slogan || undefined,
     "foundingDate": airline.founded_year ? String(airline.founded_year) : undefined,
     "dissolutionDate": airline.closed_year ? String(airline.closed_year) : undefined,

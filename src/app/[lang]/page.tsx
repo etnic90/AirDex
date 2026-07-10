@@ -38,18 +38,18 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `https://airdex.org/${lang}`,
+      canonical: `https://www.airdex.org/${lang}`,
     },
     openGraph: {
       title,
       description,
-      url: `https://airdex.org/${lang}`,
+      url: `https://www.airdex.org/${lang}`,
       siteName: "AirDex",
       locale: lang,
       type: "website",
       images: [
         {
-          url: "https://airdex.org/images/seo-banner.jpg",
+          url: "https://www.airdex.org/images/seo-banner.jpg",
           width: 1200,
           height: 630,
           alt: "AirDex Hangar Portal",
@@ -60,7 +60,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: ["https://airdex.org/images/seo-banner.jpg"],
+      images: ["https://www.airdex.org/images/seo-banner.jpg"],
     }
   };
 }
