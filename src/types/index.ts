@@ -23,6 +23,8 @@ export interface AircraftModel {
   launch_customer_livery_url?: string;
   manufacturers?: Manufacturer;
   era?: string;
+  max_speed_kmh?: number;
+  service_ceiling_ft?: number;
   description?: string;
   description_it?: string;
   description_en?: string;

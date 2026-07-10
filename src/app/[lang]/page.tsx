@@ -15,6 +15,7 @@ export async function generateMetadata({
   const isIt = lang === "it";
   const isEs = lang === "es";
   const isFr = lang === "fr";
+  const isDe = lang === "de";
 
   let title = "AirDex - Civil Aviation Encyclopedia & Radar Telemetry";
   let description = "Explore the comprehensive civil aviation encyclopedia. Track operational telemetry, search dynamic fleets, and compare aircraft details.";
@@ -28,11 +29,39 @@ export async function generateMetadata({
   } else if (isFr) {
     title = "AirDex - Encyclopédie de l'Aviation Civile & Télémétrie Radar";
     description = "Explorez l'encyclopédie de l'aviation civile. Surveillez les télémétries opérationnelles, recherchez les flottes commerciales et comparez les spécifications des avions.";
+  } else if (isDe) {
+    title = "AirDex - Zivilluftfahrt-Enzyklopädie & Radartelemetrie";
+    description = "Erforschen Sie die umfassende Zivilluftfahrt-Enzyklopädie. Verfolgen Sie die Betriebstelemetrie, durchsuchen Sie die Flotten und vergleichen Sie Flugzeugspezifikationen.";
   }
 
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://airdex.org/${lang}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `https://airdex.org/${lang}`,
+      siteName: "AirDex",
+      locale: lang,
+      type: "website",
+      images: [
+        {
+          url: "https://airdex.org/images/seo-banner.jpg",
+          width: 1200,
+          height: 630,
+          alt: "AirDex Hangar Portal",
+        }
+      ]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://airdex.org/images/seo-banner.jpg"],
+    }
   };
 }
 

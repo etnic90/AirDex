@@ -1,393 +1,85 @@
-"use client";
+import type { Metadata } from "next";
+import { setRequestLocale } from 'next-intl/server';
+import CompareClient from "./CompareClient";
 
-import { useEffect, useState, useMemo, useRef } from "react";
-import { createBrowserClient } from "@supabase/ssr";
-import { 
-  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
-  ResponsiveContainer, Legend, Tooltip 
-} from "recharts";
-import { AircraftModel } from "../../../types";
-
-// --- SOTTO-COMPONENTE: Autocomplete Predittivo Olografico ---
-function AircraftAutocomplete({
-  label,
-  theme,
-  aircrafts,
-  selectedId,
-  onSelect
+export async function generateMetadata({
+  params,
 }: {
-  label: string;
-  theme: "cyan" | "purple";
-  aircrafts: AircraftModel[];
-  selectedId: string;
-  onSelect: (id: string) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  const isIt = lang === "it";
+  const isEs = lang === "es";
+  const isFr = lang === "fr";
+  const isDe = lang === "de";
 
-  const isCyan = theme === "cyan";
-  const labelColor = isCyan ? "text-cyan-500" : "text-purple-400";
-  const focusBorder = isCyan ? "focus:border-cyan-500" : "focus:border-purple-500";
-  const hoverBg = isCyan ? "hover:bg-cyan-900/40" : "hover:bg-purple-900/40";
+  let title = "Aircraft Comparison | AirDex";
+  let description = "Compare two civil aircraft models side by side. Overlay specifications like operating range, max passenger capacity, speed, and service ceiling on a polar chart.";
 
-  // Click fuori per chiudere la tendina
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Mantiene sincronizzato il testo quando viene scelto un aereo
-  useEffect(() => {
-    if (selectedId) {
-      const plane = aircrafts.find(a => a.id === selectedId);
-      if (plane) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setQuery(`${plane.manufacturers?.name || ''} ${plane.model_name}`);
-      }
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setQuery("");
-    }
-  }, [selectedId, aircrafts]);
-
-  // Motore di filtraggio istantaneo
-  const filtered = useMemo(() => {
-    if (!query) return aircrafts;
-    
-    // Se la query è esattamente il nome completo, mostra la lista intera
-    const selectedPlane = aircrafts.find(a => a.id === selectedId);
-    const selectedFullName = selectedPlane ? `${selectedPlane.manufacturers?.name || ''} ${selectedPlane.model_name}` : "";
-    if (query === selectedFullName) return aircrafts;
-
-    return aircrafts.filter(a => 
-      `${a.manufacturers?.name || ''} ${a.model_name}`.toLowerCase().includes(query.toLowerCase())
-    );
-  }, [query, aircrafts, selectedId]);
-
-  return (
-    <div className="relative" ref={wrapperRef}>
-      <label className={`block text-sm font-extrabold mb-3 uppercase tracking-wider ${labelColor}`}>
-        {label}
-      </label>
-      
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setIsOpen(true);
-          if (selectedId) onSelect(""); 
-        }}
-        onFocus={() => setIsOpen(true)}
-        placeholder="Digita per scansionare i registri..."
-        className={`w-full p-4 rounded-xl bg-slate-950 text-white border border-slate-800 font-mono text-sm transition-all focus:outline-none ${focusBorder}`}
-      />
-
-      {isOpen && (
-        <ul className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] custom-scrollbar">
-          {filtered.length > 0 ? (
-            filtered.map((a) => (
-              <li 
-                key={a.id}
-                onClick={() => {
-                  onSelect(a.id);
-                  setIsOpen(false);
-                }}
-                className={`p-3.5 cursor-pointer border-b border-slate-900 transition-colors ${hoverBg}`}
-              >
-                <div className="text-slate-400 text-xs font-mono">{a.manufacturers?.name || "Sconosciuto"}</div>
-                <div className="text-white font-extrabold text-sm mt-0.5">{a.model_name}</div>
-              </li>
-            ))
-          ) : (
-            <li className="p-4 text-slate-500 font-mono text-sm text-center">Nessun segnale rilevato</li>
-          )}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-// --- COMPONENTE PRINCIPALE ---
-export default function ComparePage({ params }: { params: { lang: string } }) {
-  const [aircrafts, setAircrafts] = useState<AircraftModel[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [selectedIdA, setSelectedIdA] = useState<string>("");
-  const [selectedIdB, setSelectedIdB] = useState<string>("");
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  useEffect(() => {
-    const fetchAircrafts = async () => {
-      const { data, error } = await supabase
-        .from("aircraft_models")
-        .select("id, model_name, range_km, max_passengers, first_flight_year, rarity, house_livery_url, extended_stats, manufacturers(name)")
-        .order("model_name", { ascending: true });
-
-      if (!error && data) {
-        setAircrafts(data as unknown as AircraftModel[]);
-      }
-      setLoading(false);
-    };
-
-    fetchAircrafts();
-  }, [supabase]);
-
-  // Seleziona i due aerei più famosi come default all'avvio
-  useEffect(() => {
-    if (aircrafts.length > 0 && !selectedIdA && !selectedIdB) {
-      // Top famosi: Airbus A380 e Boeing 747
-      const a380 = aircrafts.find(a => a.model_name.toLowerCase().includes("a380"));
-      const b747 = aircrafts.find(a => a.model_name.toLowerCase().includes("747"));
-      
-      if (a380) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedIdA(a380.id);
-      } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedIdA(aircrafts[0].id);
-      }
-
-      if (b747) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedIdB(b747.id);
-      } else if (aircrafts.length > 1) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedIdB(aircrafts[1].id);
-      }
-    }
-  }, [aircrafts, selectedIdA, selectedIdB]);
-
-  const planeA = useMemo(() => aircrafts.find(a => a.id === selectedIdA), [aircrafts, selectedIdA]);
-  const planeB = useMemo(() => aircrafts.find(a => a.id === selectedIdB), [aircrafts, selectedIdB]);
-
-  // Calcolo dati reali della telemetria per il grafico radar
-  const chartData = useMemo(() => {
-    if (!planeA && !planeB) return [];
-
-    const getPaxScore = (pax?: number) => pax ? Math.min(100, (pax / 850) * 100) : 0;
-    const getRangeScore = (range?: number) => range ? Math.min(100, (range / 18000) * 100) : 0;
-    const getSpeedScore = (speed?: number) => speed ? Math.min(100, (speed / 1100) * 100) : 0;
-    const getAltitudeScore = (altitude?: number) => altitude ? Math.min(100, (altitude / 15000) * 100) : 0;
-
-    const extA = planeA?.extended_stats as Record<string, any> | undefined;
-    const extB = planeB?.extended_stats as Record<string, any> | undefined;
-
-    const speedA = typeof extA?.cruise_speed_kmh === 'number' ? extA.cruise_speed_kmh : (planeA?.first_flight_year && planeA.first_flight_year < 1960 ? 450 : 880);
-    const speedB = typeof extB?.cruise_speed_kmh === 'number' ? extB.cruise_speed_kmh : (planeB?.first_flight_year && planeB.first_flight_year < 1960 ? 450 : 880);
-
-    const altitudeA = typeof extA?.max_altitude_m === 'number' ? extA.max_altitude_m : (planeA?.first_flight_year && planeA.first_flight_year < 1960 ? 7000 : 12500);
-    const altitudeB = typeof extB?.max_altitude_m === 'number' ? extB.max_altitude_m : (planeB?.first_flight_year && planeB.first_flight_year < 1960 ? 7000 : 12500);
-
-    return [
-      {
-        subject: "Autonomia",
-        A: planeA ? getRangeScore(planeA.range_km) : 0,
-        B: planeB ? getRangeScore(planeB.range_km) : 0,
-      },
-      {
-        subject: "Capienza PAX",
-        A: planeA ? getPaxScore(planeA.max_passengers) : 0,
-        B: planeB ? getPaxScore(planeB.max_passengers) : 0,
-      },
-      {
-        subject: "Velocità Crociera",
-        A: planeA ? getSpeedScore(speedA) : 0,
-        B: planeB ? getSpeedScore(speedB) : 0,
-      },
-      {
-        subject: "Quota Massima",
-        A: planeA ? getAltitudeScore(altitudeA) : 0,
-        B: planeB ? getAltitudeScore(altitudeB) : 0,
-      }
-    ];
-  }, [planeA, planeB]);
-
-  if (loading) {
-    return <div className="min-h-screen bg-slate-950 text-cyan-500 flex items-center justify-center font-mono animate-pulse">Avvio Hangar di Comparazione...</div>;
+  if (isIt) {
+    title = "Confronto Aeromobili | AirDex";
+    description = "Confronta due modelli di aeromobili civili fianco a fianco. Sovrapponi specifiche come autonomia operativa, capienza massima passeggeri, velocità e quota su grafico radar.";
+  } else if (isEs) {
+    title = "Comparación de Aeronaves | AirDex";
+    description = "Compare dos modelos de aviones civiles lado a lado. Superponga especificaciones como alcance operativo, capacidad máxima de pasajeros, velocidad y techo en un gráfico radar.";
+  } else if (isFr) {
+    title = "Comparatif d'Avions | AirDex";
+    description = "Comparez deux modèles d'aéronefs civils côte à côte. Superposez des spécifications comme la distance franchissable, le nombre de passagers, la vitesse et le plafond.";
+  } else if (isDe) {
+    title = "Flugzeugvergleich | AirDex";
+    description = "Vergleichen Sie zwei Zivilflugzeuge Seite an Seite. Überlagern Sie Spezifikationen wie Reichweite, Passagierkapazität, Geschwindigkeit und Dienstgipfelhöhe auf einem Radardiagramm.";
   }
 
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `https://airdex.org/${lang}/compare`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `https://airdex.org/${lang}/compare`,
+      siteName: "AirDex",
+      locale: lang,
+      type: "website",
+      images: [
+        {
+          url: "https://airdex.org/images/seo-banner.jpg",
+          width: 1200,
+          height: 630,
+          alt: "AirDex Aircraft Comparison Deck",
+        }
+      ]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://airdex.org/images/seo-banner.jpg"],
+    }
+  };
+}
+
+export async function generateStaticParams() {
+  return [
+    { lang: "en" },
+    { lang: "it" },
+    { lang: "es" },
+    { lang: "fr" },
+    { lang: "de" },
+  ];
+}
+
+export default async function ComparePage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const resolvedParams = await params;
+  setRequestLocale(resolvedParams.lang);
+
   return (
-    <main className="min-h-screen bg-slate-950 p-6 md:p-10 font-sans text-white">
-      <div className="max-w-[1600px] w-[95%] mx-auto">
-        
-        {/* Header */}
-        <div className="mb-10 text-center md:text-left border-b border-slate-900 pb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(6,182,212,0.05)] font-mono font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
-            Analisi Telemetrica Incrociata
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-2 leading-none font-mono">
-            Hangar di Comparazione
-          </h1>
-          <p className="text-slate-400 text-sm max-w-xl leading-relaxed mx-auto md:mx-0">
-            Confronta le specifiche tecniche, l&apos;autonomia, la velocità e la capienza di due aeromobili in tempo reale.
-          </p>
-        </div>
-
-        {/* Selettori Autocomplete Vettori */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 relative z-20">
-          <div className="bg-slate-900/90 p-8 rounded-3xl border-t-4 border-cyan-500 shadow-xl border border-slate-800 backdrop-blur-xl">
-            <AircraftAutocomplete 
-              label="Vettore Alpha" 
-              theme="cyan" 
-              aircrafts={aircrafts} 
-              selectedId={selectedIdA} 
-              onSelect={setSelectedIdA} 
-            />
-          </div>
-
-          <div className="bg-slate-900/90 p-8 rounded-3xl border-t-4 border-purple-500 shadow-xl border border-slate-800 backdrop-blur-xl">
-            <AircraftAutocomplete 
-              label="Vettore Bravo" 
-              theme="purple" 
-              aircrafts={aircrafts} 
-              selectedId={selectedIdB} 
-              onSelect={setSelectedIdB} 
-            />
-          </div>
-        </div>
-
-        {/* Area Dati */}
-        {(planeA || planeB) && (
-          <div className="flex flex-col gap-8 relative z-10">
-            
-            {/* Foto dei due aerei a confronto */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-900/90 p-6 rounded-3xl border border-slate-800 backdrop-blur-xl shadow-2xl">
-              {/* Foto Aereo A */}
-              <div className="bg-slate-950 rounded-2xl border border-slate-850 overflow-hidden relative h-56 md:h-72 group shadow-inner">
-                {planeA?.house_livery_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img 
-                    src={planeA.house_livery_url} 
-                    alt={planeA.model_name}
-                    className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 bg-slate-900/20 font-mono text-xs uppercase">
-                    Nessun dato fotografico in archivio
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-                <div className="absolute bottom-4 left-4 bg-slate-900/95 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-800 text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">
-                  {planeA ? `${planeA.manufacturers?.name || ''} ${planeA.model_name}` : "Vettore Alpha"}
-                </div>
-              </div>
-
-              {/* Foto Aereo B */}
-              <div className="bg-slate-950 rounded-2xl border border-slate-850 overflow-hidden relative h-56 md:h-72 group shadow-inner">
-                {planeB?.house_livery_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img 
-                    src={planeB.house_livery_url} 
-                    alt={planeB.model_name}
-                    className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 bg-slate-900/20 font-mono text-xs uppercase">
-                    Nessun dato fotografico in archivio
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-                <div className="absolute bottom-4 left-4 bg-slate-900/95 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-800 text-xs font-mono text-purple-400 font-bold uppercase tracking-wider">
-                  {planeB ? `${planeB.manufacturers?.name || ''} ${planeB.model_name}` : "Vettore Bravo"}
-                </div>
-              </div>
-            </div>
-
-            {/* Griglia Dati / Radar Chart */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 bg-slate-900/90 p-8 rounded-3xl border border-slate-800 backdrop-blur-xl shadow-2xl">
-              
-              {/* Ologramma Radar Chart */}
-              <div className="h-[400px] w-full flex items-center justify-center bg-slate-950 rounded-2xl border border-slate-850 shadow-[inset_0_0_40px_rgba(0,0,0,0.6)]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                    <PolarGrid stroke="#334155" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#e2e8f0', fontSize: 13, fontFamily: 'sans-serif', fontWeight: 'bold' }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', color: '#fff', fontFamily: 'monospace' }}
-                      itemStyle={{ color: '#06b6d4' }}
-                      formatter={() => ["", ""]}
-                    />
-                    {planeA && (
-                      <Radar name={planeA.model_name} dataKey="A" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.4} />
-                    )}
-                    {planeB && (
-                      <Radar name={planeB.model_name} dataKey="B" stroke="#a855f7" fill="#a855f7" fillOpacity={0.4} />
-                    )}
-                    <Legend wrapperStyle={{ fontFamily: 'sans-serif', fontSize: '13px', color: '#94a3b8', fontWeight: 'bold' }} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Tabella Dati Grezzi */}
-              <div className="flex flex-col justify-center gap-4">
-                <div className="grid grid-cols-3 gap-4 border-b border-slate-805 pb-4 text-xs font-mono font-bold text-slate-500 uppercase tracking-widest text-center">
-                  <div className="text-cyan-400 text-sm font-extrabold">{planeA?.model_name || "—"}</div>
-                  <div className="font-sans uppercase text-slate-400 font-bold">Parametro</div>
-                  <div className="text-purple-400 text-sm font-extrabold">{planeB?.model_name || "—"}</div>
-                </div>
-
-                {/* Riga: Autonomia */}
-                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
-                  <div className="text-white font-extrabold text-lg">{planeA?.range_km ? `${planeA.range_km.toLocaleString()} km` : "—"}</div>
-                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Autonomia</div>
-                  <div className="text-white font-extrabold text-lg">{planeB?.range_km ? `${planeB.range_km.toLocaleString()} km` : "—"}</div>
-                </div>
-
-                {/* Riga: Passeggeri */}
-                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
-                  <div className="text-white font-extrabold text-lg">{planeA?.max_passengers ? `${planeA.max_passengers} PAX` : "—"}</div>
-                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Capienza Max</div>
-                  <div className="text-white font-extrabold text-lg">{planeB?.max_passengers ? `${planeB.max_passengers} PAX` : "—"}</div>
-                </div>
-
-                {/* Riga: Velocità Crociera */}
-                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
-                  <div className="text-white font-extrabold text-lg">
-                    {planeA ? `${planeA.extended_stats?.cruise_speed_kmh || (planeA.first_flight_year && planeA.first_flight_year < 1960 ? 450 : 880)} km/h` : "—"}
-                  </div>
-                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Velocità Crociera</div>
-                  <div className="text-white font-extrabold text-lg">
-                    {planeB ? `${planeB.extended_stats?.cruise_speed_kmh || (planeB.first_flight_year && planeB.first_flight_year < 1960 ? 450 : 880)} km/h` : "—"}
-                  </div>
-                </div>
-
-                {/* Riga: Quota Massima */}
-                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
-                  <div className="text-white font-extrabold text-lg">
-                    {planeA ? `${(planeA.extended_stats?.max_altitude_m || (planeA.first_flight_year && planeA.first_flight_year < 1960 ? 7000 : 12500)).toLocaleString()} m` : "—"}
-                  </div>
-                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Quota Massima</div>
-                  <div className="text-white font-extrabold text-lg">
-                    {planeB ? `${(planeB.extended_stats?.max_altitude_m || (planeB.first_flight_year && planeB.first_flight_year < 1960 ? 7000 : 12500)).toLocaleString()} m` : "—"}
-                  </div>
-                </div>
-
-                {/* Riga: Anno Primo Volo */}
-                <div className="grid grid-cols-3 gap-4 p-4.5 text-center items-center bg-slate-950/60 rounded-xl border border-slate-800 hover:bg-slate-900/40 transition-colors shadow-inner font-mono">
-                  <div className="text-white font-extrabold text-lg">{planeA?.first_flight_year || "—"}</div>
-                  <div className="text-slate-400 text-sm font-sans uppercase font-bold">Primo Volo</div>
-                  <div className="text-white font-extrabold text-lg">{planeB?.first_flight_year || "—"}</div>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-        )}
-      </div>
-    </main>
+    <CompareClient lang={resolvedParams.lang} />
   );
 }

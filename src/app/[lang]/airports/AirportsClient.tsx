@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getCountryIsoCode } from "@/lib/country";
+import { getSanitizedPassengers } from "@/lib/airport-pax";
 
 interface Airport {
   id: string;
@@ -50,6 +51,39 @@ const getAirportFallbackImage = (airport: { name?: string | null; runways_count?
   return "/images/airports/regional_airport.jpg";
 };
 
+function AirportCardImage({ airport, fallbackSrc }: { airport: Airport; fallbackSrc: string }) {
+  const [imageSrc, setImageSrc] = useState(
+    airport.image_url && airport.image_url !== 'NOT_FOUND' && airport.image_url !== 'NOT_FOUND_WIKI' && airport.image_url.trim() !== ''
+      ? airport.image_url
+      : fallbackSrc
+  );
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setImageSrc(
+      airport.image_url && airport.image_url !== 'NOT_FOUND' && airport.image_url !== 'NOT_FOUND_WIKI' && airport.image_url.trim() !== ''
+        ? airport.image_url
+        : fallbackSrc
+    );
+    setHasError(false);
+  }, [airport.image_url, fallbackSrc]);
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={imageSrc}
+      alt={`Veduta aerea dello scalo di ${airport.city || ''} - ${airport.name} (${airport.iata_code || ''}/${airport.icao_code || ''})`}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-75 group-hover:opacity-90"
+      onError={() => {
+        if (!hasError) {
+          setHasError(true);
+          setImageSrc(fallbackSrc);
+        }
+      }}
+    />
+  );
+}
+
 export default function AirportsClient({ 
   initialAirports, 
   lang 
@@ -89,9 +123,18 @@ export default function AirportsClient({
     return list.sort();
   }, [initialAirports]);
 
-  // Logica di filtraggio e ordinamento
   const filteredAndSortedAirports = useMemo(() => {
-    const result = initialAirports.filter(a => {
+    const sanitized = initialAirports.map(airport => ({
+      ...airport,
+      annual_passengers_mio: getSanitizedPassengers(
+        airport.iata_code,
+        airport.name,
+        airport.runways_count,
+        airport.annual_passengers_mio || null
+      )
+    }));
+
+    const result = sanitized.filter(a => {
       const matchesSearch = 
         a.name.toLowerCase().includes(search.toLowerCase()) ||
         a.city.toLowerCase().includes(search.toLowerCase()) ||
@@ -252,13 +295,7 @@ export default function AirportsClient({
 
                     {/* Airport Cover Image */}
                     <div className="h-40 w-full bg-slate-950 relative overflow-hidden flex-shrink-0">
-                      <Image
-                        src={airport.image_url && airport.image_url !== 'NOT_FOUND' ? airport.image_url : getAirportFallbackImage(airport)}
-                        alt={airport.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      <AirportCardImage airport={airport} fallbackSrc={getAirportFallbackImage(airport)} />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
                       
                       {/* Code Badges & Flag overlapping image */}
@@ -271,12 +308,14 @@ export default function AirportsClient({
                         {/* Bandiera Nazione con Tooltip */}
                         <div className="relative group self-center border-t border-slate-800 pt-1.5 w-full flex justify-center">
                           <div className="w-6 h-4 rounded shadow-sm border border-slate-800 overflow-hidden bg-slate-950 flex items-center justify-center cursor-help">
-                            <Image 
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img 
                               src={`https://flagcdn.com/${getCountryIsoCode(airport.country)}.svg`} 
-                              alt={airport.country}
-                              width={24}
-                              height={16}
+                              alt={`Bandiera nazionale del paese ${airport.country}`}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
                             />
                           </div>
                           <span className="pointer-events-none absolute bottom-full mb-2 w-max bg-slate-900 border border-slate-800 text-[10px] uppercase font-mono tracking-widest text-slate-200 px-2 py-1 rounded shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">

@@ -127,8 +127,6 @@ const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 const [isAdmin, setIsAdmin] = useState(false);
 const [capturedAirlines, setCapturedAirlines] = useState<Record<string, unknown>[]>([]);
 const [showAvatarEditor, setShowAvatarEditor] = useState(false);
-const [showProBlockModal, setShowProBlockModal] = useState(false);
-const [playsToday, setPlaysToday] = useState(0);
 
   // Stati Autenticazione Integrata
   const [authMode, setAuthMode] = useState<"signin" | "signup" | "recovery">("signin");
@@ -379,12 +377,6 @@ const [playsToday, setPlaysToday] = useState(0);
         });
       }
     }
-
-    // Inizializza playsToday
-    const todayStr = new Date().toISOString().split("T")[0];
-    const storageKey = `airdex_quiz_plays_${session.user.id}_${todayStr}`;
-    const plays = parseInt(localStorage.getItem(storageKey) || "0", 10);
-    setPlaysToday(plays);
 
     setLoading(false);
   }, []);
@@ -1579,15 +1571,9 @@ const [playsToday, setPlaysToday] = useState(0);
                         <span className="text-[10px] text-cyan-400 font-mono uppercase tracking-[0.2em] block font-black">
                           {currentAvatar?.title}
                         </span>
-                        {profile.is_pro ? (
-                          <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black tracking-widest text-[8px] shadow-[0_0_12px_rgba(245,158,11,0.6)] animate-pulse uppercase border border-amber-300/30">
-                            PRO
-                          </span>
-                        ) : (
-                          <Link href={`/${lang}/pro`} className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-mono text-[8px] tracking-widest uppercase transition-all border border-slate-700/50 hover:border-cyan-500/50">
-                            CADET • UPGRADE
-                          </Link>
-                        )}
+                        <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono text-[8px] tracking-widest uppercase border border-slate-700/50">
+                          CADET
+                        </span>
                       </div>
                       <h4 className="text-white font-black uppercase text-base truncate max-w-[140px]" title={profile.pilot_callsign || "ATC PILOT"}>
                         {profile.pilot_callsign || "ATC PILOT"}
@@ -2556,58 +2542,6 @@ const [playsToday, setPlaysToday] = useState(0);
         </div>
 
       </div>
-
-      {/* MODAL BLOCK QUIZ PER LIMITE RAGGIUNTO */}
-      {showProBlockModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900/90 border border-amber-500/40 p-8 rounded-3xl max-w-md w-full relative shadow-[0_0_50px_rgba(245,158,11,0.15)] backdrop-blur-xl font-mono text-center">
-            
-            {/* Bottone Chiudi */}
-            <button 
-              onClick={() => setShowProBlockModal(false)}
-              className="absolute top-4 right-4 text-slate-500 hover:text-white text-lg transition-colors"
-            >
-              ✕
-            </button>
-
-            <div className="mb-6">
-              <span className="text-5xl block mb-4 animate-bounce">⚡</span>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-500 text-[10px] tracking-widest uppercase mb-4 font-black">
-                Firma Radar Limitata
-              </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-wider mb-2">Limite Giornaliero Raggiunto</h3>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                Hai consumato le tue <strong className="text-amber-400">3 sessioni giornaliere</strong> di addestramento incluse nella licenza base.
-              </p>
-            </div>
-
-            <div className="bg-slate-950/80 border border-slate-900 rounded-2xl p-4 text-left text-[11px] text-slate-400 mb-6 space-y-2.5">
-              <p className="flex items-center gap-2">
-                <span className="text-amber-500">★</span> Sblocca giocate illimitate con <strong className="text-white">Spotter PRO</strong>
-              </p>
-              <p className="flex items-center gap-2">
-                <span className="text-amber-500">★</span> Rimuovi ogni limitazione di telemetria e tracciamento
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Link
-                href={`/${lang}/pro`}
-                className="w-full text-center text-xs text-slate-950 uppercase tracking-widest font-black py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-              >
-                🚀 Aggiorna a Spotter PRO
-              </Link>
-              <button
-                onClick={() => setShowProBlockModal(false)}
-                className="w-full border border-slate-800 text-slate-500 py-3 rounded-xl hover:text-slate-350 hover:bg-slate-900/40 transition-all uppercase tracking-widest text-[10px] font-bold"
-              >
-                Ritorna al Terminale
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
 
     </main>
   );

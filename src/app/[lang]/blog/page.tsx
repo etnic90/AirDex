@@ -3,10 +3,64 @@ import Link from "next/link";
 import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "AirDex Blog | Aviation News & Tech Guides",
-  description: "Approfondimenti tecnici, analisi comparative e storie dal mondo dell'aviazione civile.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  const isIt = lang === "it";
+  const isEs = lang === "es";
+  const isFr = lang === "fr";
+  const isDe = lang === "de";
+
+  let title = "AirDex Blog | Aviation News & Tech Guides";
+  let description = "Technical insights, comparative analyses, and stories from the world of civil aviation.";
+
+  if (isIt) {
+    title = "Blog AirDex | News & Guide Aeronautiche";
+    description = "Approfondimenti tecnici, analisi comparative e storie dal mondo dell'aviazione civile.";
+  } else if (isEs) {
+    title = "Blog AirDex | Noticias y Guías de Aviación";
+    description = "Perspectivas técnicas, análisis comparativos e historias del mundo de la aviación civil.";
+  } else if (isFr) {
+    title = "Blog AirDex | Actualités & Guides de l'Aviation";
+    description = "Analyses techniques, études comparatives et récits du monde de l'aviation civile.";
+  } else if (isDe) {
+    title = "AirDex Blog | Luftfahrt-News & Technische Anleitungen";
+    description = "Technische Einblicke, vergleichende Analysen und Geschichten aus der Welt der zivilen Luftfahrt.";
+  }
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `https://airdex.org/${lang}/blog`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `https://airdex.org/${lang}/blog`,
+      siteName: "AirDex",
+      locale: lang,
+      type: "website",
+      images: [
+        {
+          url: "https://airdex.org/images/seo-banner.jpg",
+          width: 1200,
+          height: 630,
+          alt: "AirDex Aviation Blog",
+        }
+      ]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://airdex.org/images/seo-banner.jpg"],
+    }
+  };
+}
 
 export async function generateStaticParams() {
   return [

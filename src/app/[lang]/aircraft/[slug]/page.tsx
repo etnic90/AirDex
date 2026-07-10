@@ -8,8 +8,8 @@ import Link from "next/link";
 import AirlineLogo from "@/components/AirlineLogo";
 import SpotterSection from "@/components/SpotterSection";
 import CaptureButtons from "@/components/CaptureButtons";
-import AffiliateWidget from "@/components/AffiliateWidget";
-import MockAdBanner from "@/components/MockAdBanner";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import AircraftHeroImage from "@/components/AircraftHeroImage";
 
 const getCountryCode = (countryName?: string): string | null => {
   if (!countryName) return null;
@@ -45,7 +45,7 @@ export async function generateMetadata({
 }: { 
   params: Promise<{ lang: string, slug: string }> 
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { lang, slug } = await params;
   
   const { data: aircraft } = await supabase
     .from('aircraft_models')
@@ -61,12 +61,34 @@ export async function generateMetadata({
   const manufacturerObj = Array.isArray(aircraft.manufacturers) ? aircraft.manufacturers[0] : aircraft.manufacturers;
   const manufacturer = (manufacturerObj as unknown as { name: string } | null)?.name || 'Aviation';
 
+  const isIt = lang === "it";
+  const isEs = lang === "es";
+  const isFr = lang === "fr";
+  const isDe = lang === "de";
+
+  let title = `${aircraftName} | ${manufacturer} | AirDex Hangar`;
+  let description = `Technical specifications, history, and details of the ${aircraftName}. Discover all the data in the AirDex Aviation Hangar.`;
+
+  if (isIt) {
+    title = `${aircraftName} | ${manufacturer} | Hangar AirDex`;
+    description = `Specifiche tecniche, storia e dettagli del ${aircraftName}. Scopri tutti i dati nell'hangar dell'aviazione di AirDex.`;
+  } else if (isEs) {
+    title = `${aircraftName} | ${manufacturer} | Hangar AirDex`;
+    description = `Especificaciones técnicas, historia y detalles del ${aircraftName}. Descubre todos los datos en el hangar de aviación de AirDex.`;
+  } else if (isFr) {
+    title = `${aircraftName} | ${manufacturer} | Hangar AirDex`;
+    description = `Spécifications techniques, histoire et détails du ${aircraftName}. Découvrez toutes les données dans le hangar d'aviation d'AirDex.`;
+  } else if (isDe) {
+    title = `${aircraftName} | ${manufacturer} | AirDex Hangar`;
+    description = `Technische Spezifikationen, Geschichte und Details der ${aircraftName}. Entdecken Sie alle Daten im AirDex Luftfahrthangar.`;
+  }
+
   return {
-    title: `${aircraftName} | ${manufacturer} | AirDex Hangar`,
-    description: `Technical specifications, history, and details of the ${aircraftName}. Discover all the data in the AirDex Aviation Hangar.`,
+    title,
+    description,
     openGraph: {
       title: `${aircraftName} - Technical Data`,
-      description: `Deep dive into the ${aircraftName} specifications and history.`,
+      description: description,
     }
   };
 }
@@ -517,17 +539,63 @@ export default async function AircraftPage({
       );
     });
   };
+  const isIt = lang === "it";
+  const breadcrumbItems = [
+    { label: isIt ? "Catalogo" : "Catalogue", href: `/${lang}/radar` },
+    { label: aircraft.model_name }
+  ];
+
+  const aircraftJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": aircraft.model_name,
+    "image": imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `https://airdex.org${imageUrl}`) : undefined,
+    "description": localizedDescription || `Technical specifications and historical details of the ${aircraft.model_name}.`,
+    "brand": {
+      "@type": "Brand",
+      "name": aircraft.manufacturers?.name || "Aviation"
+    },
+    "additionalProperty": [
+      {
+        "@type": "PropertyValue",
+        "name": "Operating Range",
+        "value": `${aircraft.range_km} km`
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Passenger Capacity",
+        "value": aircraft.max_passengers
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "First Flight Year",
+        "value": aircraft.first_flight_year
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Status",
+        "value": aircraft.status
+      }
+    ]
+  };
 
   return (
-    <main className="min-h-screen bg-slate-950 pt-24 pb-12 text-slate-100 relative font-sans">
-      {/* Sfondo cockpit/radar globale */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-25 fixed">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-      </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aircraftJsonLd) }}
+      />
+      <main className="min-h-screen bg-slate-950 pt-24 pb-12 text-slate-100 relative font-sans">
+        {/* Sfondo cockpit/radar globale */}
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-25 fixed">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+        </div>
 
-      <div className="max-w-[1600px] w-[95%] mx-auto px-4 md:px-10 relative z-10">
-        
-        {/* HEADER PRINCIPALE DELL'AEREO */}
+        <div className="max-w-[1600px] w-[95%] mx-auto px-4 md:px-10 relative z-10">
+          
+          <Breadcrumbs items={breadcrumbItems} lang={lang} />
+          
+          {/* HEADER PRINCIPALE DELL'AEREO */}
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-8 gap-4 border-b border-slate-900 pb-8">
           <div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 tracking-tight">{aircraft.model_name}</h1>
@@ -572,9 +640,9 @@ export default async function AircraftPage({
             <div className="w-full h-64 md:h-[450px] bg-cyan-950/10 rounded-2xl flex flex-col items-center justify-center border border-cyan-900/30 relative overflow-hidden shadow-[inset_0_0_40px_rgba(6,182,212,0.08)] group">
               {imageUrl ? (
                 <>
-                  <img 
+                  <AircraftHeroImage 
                     src={imageUrl} 
-                    alt={`Livery ${aircraft.model_name}`} 
+                    alt={`Foto schema e livrea ufficiale del modello di aereo ${aircraft.manufacturers?.name || 'Aviation'} ${aircraft.model_name}`}
                     className="absolute inset-0 w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-opacity duration-500 z-10"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-20 pointer-events-none" />
@@ -850,25 +918,8 @@ export default async function AircraftPage({
           </div>
         )}
 
-        {/* SEZIONE COMPONENTI DI SPONSORIZZAZIONE E MONETIZZAZIONE BASSO GRID (Full Width) */}
-        <div className="mt-12 space-y-8 border-t border-slate-900 pt-8">
-          {/* Sponsor & Collectibles Affiliate Widget */}
-          <AffiliateWidget 
-            modelName={aircraft.model_name}
-            manufacturerName={aircraft.manufacturers?.name || "Aviation"}
-            rarity={aircraft.rarity}
-            status={aircraft.status}
-          />
-
-          {/* Sponsorizzato Radar Ads Banner */}
-          <MockAdBanner 
-            modelName={aircraft.model_name}
-            manufacturerName={aircraft.manufacturers?.name || "Aviation"}
-            operators={operators.map(item => item.airlines?.name).filter((name): name is string => typeof name === 'string')}
-          />
-        </div>
-
       </div>
     </main>
+    </>
   );
 }

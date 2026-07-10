@@ -3,13 +3,14 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ lang: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { lang, slug } = await params;
 
   const { data: article } = await supabase
     .from("articles")
@@ -26,10 +27,31 @@ export async function generateMetadata({
   return {
     title: `${article.title} | AirDex Blog`,
     description: excerpt,
+    alternates: {
+      canonical: `https://airdex.org/${lang}/blog/${slug}`,
+    },
     openGraph: {
       title: article.title,
       description: excerpt,
+      url: `https://airdex.org/${lang}/blog/${slug}`,
+      siteName: "AirDex",
+      locale: lang,
+      type: "article",
+      images: [
+        {
+          url: "https://airdex.org/images/seo-banner.jpg",
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        }
+      ]
     },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: excerpt,
+      images: ["https://airdex.org/images/seo-banner.jpg"],
+    }
   };
 }
 
@@ -126,13 +148,13 @@ export default async function ArticlePage({
         </div>
 
         {/* BREADCRUMB PATH */}
-        <div className="mb-6 text-xs font-mono text-slate-500 uppercase tracking-wider">
-          <Link href={`/${lang}`} className="hover:text-cyan-400">Core</Link>
-          <span className="mx-2">&gt;</span>
-          <Link href={`/${lang}/blog`} className="hover:text-cyan-400">Blog</Link>
-          <span className="mx-2">&gt;</span>
-          <span className="text-slate-400 truncate max-w-[200px] inline-block align-bottom">{article.slug}</span>
-        </div>
+        <Breadcrumbs
+          items={[
+            { label: "Blog", href: `/${lang}/blog` },
+            { label: article.title }
+          ]}
+          lang={lang}
+        />
 
         {/* STRUTTURA A 3 COLONNE: CONDIVIDI (1/12) + ARTICOLO (8/12) + CONSIGLIATI (3/12) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start w-full">
