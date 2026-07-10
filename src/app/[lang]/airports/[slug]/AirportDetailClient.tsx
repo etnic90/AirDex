@@ -496,7 +496,7 @@ export default function AirportDetailClient() {
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
                   METAR STRING LIVE
                 </div>
-                <code className="text-white block text-[11px] leading-relaxed break-all select-all font-bold">
+                <code className="text-white block text-[11px] leading-relaxed break-all select-all font-bold" suppressHydrationWarning>
                   {metarDecoded}
                 </code>
               </div>
