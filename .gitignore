@@ -44,5 +44,5 @@ next-env.d.ts
 scratch/
 
 # large media assets
-public/images/airports/
+public/images/airports/satellite/
 *.log
