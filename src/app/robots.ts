@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/*/admin/*', '/*/profile/*'],
     },
-    sitemap: 'https://airdex.com/sitemap.xml',
+    sitemap: 'https://airdex.org/sitemap.xml',
   };
 }

@@ -125,7 +125,7 @@ export default async function ArticlePage({
             "author": [{
               "@type": "Person",
               "name": article.author || "AirDex Team",
-              "url": `https://airdex.com/${lang}/profile`
+              "url": `https://airdex.org/${lang}/profile`
             }]
           })
         }}
