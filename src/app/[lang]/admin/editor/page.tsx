@@ -177,6 +177,61 @@ export default function QuickEditorPage() {
     }
   };
 
+  // 3. L'utente conferma l'elaborazione AI: genera il crop, invia all'API process-image, aggiorna DB
+  const handleUploadProcessedImage = async () => {
+    if (!imageToCrop || !croppedAreaPixels || !targetAircraftId) return;
+
+    setIsCropperOpen(false); // Chiudi la modale
+    setUploadingIds((prev) => [...prev, targetAircraftId]);
+
+    try {
+      // Ottieni il Blob WebP dal canvas
+      const croppedImageBlob = await getCroppedImg(imageToCrop, croppedAreaPixels);
+      if (!croppedImageBlob) throw new Error("Errore nella generazione dell'immagine");
+
+      const formData = new FormData();
+      formData.append("file", croppedImageBlob, "cropped.webp");
+      formData.append("aircraftId", targetAircraftId);
+
+      const response = await fetch("/api/admin/process-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Errore durante l'elaborazione dell'immagine");
+      }
+
+      const publicUrl = result.publicUrl;
+
+      // Aggiorna il database Supabase
+      const { error: dbError } = await supabase
+        .from('aircraft_models')
+        .update({ house_livery_url: publicUrl })
+        .eq('id', targetAircraftId);
+
+      if (dbError) throw dbError;
+
+      // Aggiorna UI locale
+      setAircrafts((prev) => 
+        prev.map((a) => (a.id === targetAircraftId ? { ...a, house_livery_url: publicUrl } : a))
+      );
+
+      alert("Immagine elaborata con AI e aggiornata con successo!");
+
+    } catch (error: any) {
+      console.error("Errore durante l'elaborazione AI:", error);
+      alert(`Errore elaborazione AI: ${error.message || error}`);
+    } finally {
+      setUploadingIds((prev) => prev.filter((id) => id !== targetAircraftId));
+      // Pulisci lo stato
+      setImageToCrop(null);
+      setTargetAircraftId(null);
+      setZoom(1);
+    }
+  };
+
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -393,9 +448,15 @@ export default function QuickEditorPage() {
                   </button>
                   <button 
                     onClick={handleUploadCroppedImage}
-                    className="flex-1 md:flex-none px-6 py-2.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-bold font-mono text-sm tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-colors"
+                    className="flex-1 md:flex-none px-6 py-2.5 rounded border border-cyan-800 text-cyan-400 font-mono text-sm hover:bg-cyan-950 transition-colors"
                   >
-                    Estrai & Upload (WebP)
+                    Ritaglia Standard (WebP)
+                  </button>
+                  <button 
+                    onClick={handleUploadProcessedImage}
+                    className="flex-1 md:flex-none px-6 py-2.5 rounded bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold font-mono text-sm tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-colors"
+                  >
+                    ✨ Rilavora con AI & Sky Overlay
                   </button>
                 </div>
 
