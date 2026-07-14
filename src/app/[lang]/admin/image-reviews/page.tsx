@@ -54,6 +54,7 @@ export default function ImageReviewsPage() {
   const [aircrafts, setAircrafts] = useState<AircraftModel[]>([]);
   const [airlines, setAirlines] = useState<Airline[]>([]);
   const [airports, setAirports] = useState<Airport[]>([]);
+  const [showAllAircrafts, setShowAllAircrafts] = useState(false);
 
   // Action states (loading indicators for specific operations)
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -65,12 +66,17 @@ export default function ImageReviewsPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // 1. Fetch Aircrafts that need review
-      const { data: aircraftData, error: aircraftError } = await supabase
+      // 1. Fetch Aircrafts (optionally filtered by image_needs_review)
+      let query = supabase
         .from("aircraft_models")
         .select("*, manufacturers(name)")
-        .eq("image_needs_review", true)
         .order("model_name");
+
+      if (!showAllAircrafts) {
+        query = query.eq("image_needs_review", true);
+      }
+
+      const { data: aircraftData, error: aircraftError } = await query;
       
       if (!aircraftError && aircraftData) {
         setAircrafts(aircraftData as unknown as AircraftModel[]);
@@ -123,7 +129,7 @@ export default function ImageReviewsPage() {
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [supabase, showAllAircrafts]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -374,142 +380,158 @@ export default function ImageReviewsPage() {
           
           {/* TAB AEREI */}
           {activeTab === "aircrafts" && (
-            aircrafts.length === 0 ? (
-              <div className="border border-dashed border-slate-800 bg-slate-950/10 text-center py-16 text-slate-500 font-mono text-xs rounded-xl">
-                Nessun aeromobile ha immagini segnalate da revisionare. Ottimo lavoro!
+            <div className="space-y-6">
+              {/* Opzione Filtro */}
+              <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl max-w-md shadow-md">
+                <input
+                  type="checkbox"
+                  id="showAllAircrafts"
+                  checked={showAllAircrafts}
+                  onChange={(e) => setShowAllAircrafts(e.target.checked)}
+                  className="rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-cyan-500 w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="showAllAircrafts" className="text-xs font-mono text-slate-300 cursor-pointer select-none">
+                  Mostra tutti i {showAllAircrafts ? aircrafts.length : "400+"} aeromobili della flotta
+                </label>
               </div>
-            ) : (
-              <div className="space-y-6">
-                {aircrafts.map((aircraft) => (
-                  <div key={aircraft.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
-                    
-                    {/* Info Modello */}
-                    <div className="xl:col-span-3 space-y-2">
-                      <span className="text-[10px] text-cyan-400 font-mono font-bold uppercase tracking-wider block">
-                        {aircraft.manufacturers?.name || "Aviation"}
-                      </span>
-                      <h3 className="text-lg font-extrabold text-white">{aircraft.model_name}</h3>
-                      <div className="text-[10px] font-mono text-slate-500">ID: {aircraft.id}</div>
-                      
-                      <div className="pt-4">
-                        <button
-                          disabled={updatingId === `resolve-${aircraft.id}`}
-                          onClick={() => handleResolveFlag(aircraft.id, "aircrafts")}
-                          className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono text-xs font-black uppercase py-2.5 rounded-lg transition-all shadow-md hover:shadow-emerald-500/10 flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
-                        >
-                          {updatingId === `resolve-${aircraft.id}` ? "Risoluzione..." : "✔️ Segna come Risolto"}
-                        </button>
-                      </div>
-                    </div>
 
-                    {/* Modulo Livrea Standard */}
-                    <div className="xl:col-span-4 border border-slate-800/80 bg-slate-950/40 p-4 rounded-xl space-y-4">
-                      <div className="flex justify-between items-center border-b border-slate-800/60 pb-2">
-                        <span className="text-xs font-mono font-bold text-slate-300">Livrea Standard (House)</span>
-                      </div>
+              {aircrafts.length === 0 ? (
+                <div className="border border-dashed border-slate-800 bg-slate-950/10 text-center py-16 text-slate-500 font-mono text-xs rounded-xl">
+                  Nessun aeromobile ha immagini segnalate da revisionare. Ottimo lavoro!
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {aircrafts.map((aircraft) => (
+                    <div key={aircraft.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
                       
-                      {aircraft.house_livery_url ? (
-                        <div className="h-32 w-full rounded-lg overflow-hidden bg-slate-950 border border-slate-850">
-                          <img src={aircraft.house_livery_url} alt="House Livery" className="w-full h-full object-cover" />
-                        </div>
-                      ) : (
-                        <div className="h-32 w-full border border-dashed border-slate-850 bg-slate-950/60 rounded-lg flex items-center justify-center text-slate-600 text-[10px]">
-                          Nessuna foto associata
-                        </div>
-                      )}
-
-                      <div className="space-y-2 font-mono text-xs">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="URL Immagine Standard"
-                            value={tempUrls[`${aircraft.id}-house`] || ""}
-                            onChange={(e) => setTempUrls({ ...tempUrls, [`${aircraft.id}-house`]: e.target.value })}
-                            className="flex-1 bg-slate-950 border border-slate-800 p-2.5 rounded text-xs text-white placeholder:text-slate-700"
-                          />
+                      {/* Info Modello */}
+                      <div className="xl:col-span-3 space-y-2">
+                        <span className="text-[10px] text-cyan-400 font-mono font-bold uppercase tracking-wider block">
+                          {aircraft.manufacturers?.name || "Aviation"}
+                        </span>
+                        <h3 className="text-lg font-extrabold text-white">{aircraft.model_name}</h3>
+                        <div className="text-[10px] font-mono text-slate-500">ID: {aircraft.id}</div>
+                        
+                        <div className="pt-4">
                           <button
-                            disabled={updatingId === `${aircraft.id}-house`}
-                            onClick={() => handleUpdateUrl(aircraft.id, "house")}
-                            className="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500 text-cyan-400 px-3 rounded text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                            disabled={updatingId === `resolve-${aircraft.id}`}
+                            onClick={() => handleResolveFlag(aircraft.id, "aircrafts")}
+                            className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono text-xs font-black uppercase py-2.5 rounded-lg transition-all shadow-md hover:shadow-emerald-500/10 flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
                           >
-                            Salva
+                            {updatingId === `resolve-${aircraft.id}` ? "Risoluzione..." : "✔️ Segna come Risolto"}
                           </button>
                         </div>
+                      </div>
 
-                        <div className="relative">
-                          <input
-                            type="file"
-                            id={`file-house-${aircraft.id}`}
-                            accept="image/*"
-                            onChange={(e) => handleFileUpload(e, aircraft.id, "house")}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor={`file-house-${aircraft.id}`}
-                            className="w-full border border-slate-850 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] uppercase font-bold py-2 rounded flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                          >
-                            {uploadingId === `${aircraft.id}-house` ? "Caricamento in corso..." : "📤 Carica File (House)"}
-                          </label>
+                      {/* Modulo Livrea Standard */}
+                      <div className="xl:col-span-4 border border-slate-800/80 bg-slate-950/40 p-4 rounded-xl space-y-4">
+                        <div className="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                          <span className="text-xs font-mono font-bold text-slate-300">Livrea Standard (House)</span>
+                        </div>
+                        
+                        {aircraft.house_livery_url ? (
+                          <div className="h-32 w-full rounded-lg overflow-hidden bg-slate-950 border border-slate-850">
+                            <img src={aircraft.house_livery_url} alt="House Livery" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="h-32 w-full border border-dashed border-slate-850 bg-slate-950/60 rounded-lg flex items-center justify-center text-slate-600 text-[10px]">
+                            Nessuna foto associata
+                          </div>
+                        )}
+
+                        <div className="space-y-2 font-mono text-xs">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="URL Immagine Standard"
+                              value={tempUrls[`${aircraft.id}-house`] || ""}
+                              onChange={(e) => setTempUrls({ ...tempUrls, [`${aircraft.id}-house`]: e.target.value })}
+                              className="flex-1 bg-slate-950 border border-slate-800 p-2.5 rounded text-xs text-white placeholder:text-slate-700"
+                            />
+                            <button
+                              disabled={updatingId === `${aircraft.id}-house`}
+                              onClick={() => handleUpdateUrl(aircraft.id, "house")}
+                              className="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500 text-cyan-400 px-3 rounded text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              Salva
+                            </button>
+                          </div>
+
+                          <div className="relative">
+                            <input
+                              type="file"
+                              id={`file-house-${aircraft.id}`}
+                              accept="image/*"
+                              onChange={(e) => handleFileUpload(e, aircraft.id, "house")}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor={`file-house-${aircraft.id}`}
+                              className="w-full border border-slate-850 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] uppercase font-bold py-2 rounded flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                            >
+                              {uploadingId === `${aircraft.id}-house` ? "Caricamento in corso..." : "📤 Carica File (House)"}
+                            </label>
+                          </div>
                         </div>
                       </div>
+
+                      {/* Modulo Livrea Lancio */}
+                      <div className="xl:col-span-5 border border-slate-800/80 bg-slate-950/40 p-4 rounded-xl space-y-4">
+                        <div className="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                          <span className="text-xs font-mono font-bold text-slate-300">Livrea Cliente di Lancio (Launch Customer)</span>
+                        </div>
+                        
+                        {aircraft.launch_customer_livery_url ? (
+                          <div className="h-32 w-full rounded-lg overflow-hidden bg-slate-950 border border-slate-850">
+                            <img src={aircraft.launch_customer_livery_url} alt="Launch Livery" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="h-32 w-full border border-dashed border-slate-850 bg-slate-950/60 rounded-lg flex items-center justify-center text-slate-600 text-[10px]">
+                            Nessuna foto associata
+                          </div>
+                        )}
+
+                        <div className="space-y-2 font-mono text-xs">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="URL Immagine Lancio"
+                              value={tempUrls[`${aircraft.id}-launch`] || ""}
+                              onChange={(e) => setTempUrls({ ...tempUrls, [`${aircraft.id}-launch`]: e.target.value })}
+                              className="flex-1 bg-slate-950 border border-slate-800 p-2.5 rounded text-xs text-white placeholder:text-slate-700"
+                            />
+                            <button
+                              disabled={updatingId === `${aircraft.id}-launch`}
+                              onClick={() => handleUpdateUrl(aircraft.id, "launch")}
+                              className="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500 text-cyan-400 px-3 rounded text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              Salva
+                            </button>
+                          </div>
+
+                          <div className="relative">
+                            <input
+                              type="file"
+                              id={`file-launch-${aircraft.id}`}
+                              accept="image/*"
+                              onChange={(e) => handleFileUpload(e, aircraft.id, "launch")}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor={`file-launch-${aircraft.id}`}
+                              className="w-full border border-slate-850 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] uppercase font-bold py-2 rounded flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                            >
+                              {uploadingId === `${aircraft.id}-launch` ? "Caricamento in corso..." : "📤 Carica File (Launch)"}
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
-
-                    {/* Modulo Livrea Lancio */}
-                    <div className="xl:col-span-5 border border-slate-800/80 bg-slate-950/40 p-4 rounded-xl space-y-4">
-                      <div className="flex justify-between items-center border-b border-slate-800/60 pb-2">
-                        <span className="text-xs font-mono font-bold text-slate-300">Livrea Cliente di Lancio (Launch Customer)</span>
-                      </div>
-                      
-                      {aircraft.launch_customer_livery_url ? (
-                        <div className="h-32 w-full rounded-lg overflow-hidden bg-slate-950 border border-slate-850">
-                          <img src={aircraft.launch_customer_livery_url} alt="Launch Livery" className="w-full h-full object-cover" />
-                        </div>
-                      ) : (
-                        <div className="h-32 w-full border border-dashed border-slate-850 bg-slate-950/60 rounded-lg flex items-center justify-center text-slate-600 text-[10px]">
-                          Nessuna foto associata
-                        </div>
-                      )}
-
-                      <div className="space-y-2 font-mono text-xs">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="URL Immagine Lancio"
-                            value={tempUrls[`${aircraft.id}-launch`] || ""}
-                            onChange={(e) => setTempUrls({ ...tempUrls, [`${aircraft.id}-launch`]: e.target.value })}
-                            className="flex-1 bg-slate-950 border border-slate-800 p-2.5 rounded text-xs text-white placeholder:text-slate-700"
-                          />
-                          <button
-                            disabled={updatingId === `${aircraft.id}-launch`}
-                            onClick={() => handleUpdateUrl(aircraft.id, "launch")}
-                            className="bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500 text-cyan-400 px-3 rounded text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
-                          >
-                            Salva
-                          </button>
-                        </div>
-
-                        <div className="relative">
-                          <input
-                            type="file"
-                            id={`file-launch-${aircraft.id}`}
-                            accept="image/*"
-                            onChange={(e) => handleFileUpload(e, aircraft.id, "launch")}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor={`file-launch-${aircraft.id}`}
-                            className="w-full border border-slate-850 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] uppercase font-bold py-2 rounded flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                          >
-                            {uploadingId === `${aircraft.id}-launch` ? "Caricamento in corso..." : "📤 Carica File (Launch)"}
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                ))}
-              </div>
-            )
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* TAB COMPAGNIE */}
